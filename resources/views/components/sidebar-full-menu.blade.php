@@ -29,6 +29,11 @@
                     <span>Data Gelombang</span>
                 </a>
             </li>
+            <li class="{{ Request::is('fakultas-prodi*') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('fakultas-prodi.index') }}">
+                    <i class="fas fa-university"></i>
+                    <span>Data Fakultas & Prodi</span>
+                </a>
             @endrole
 
             <!-- New Features Menu -->

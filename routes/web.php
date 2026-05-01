@@ -11,6 +11,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\MahasiswaManagementController;
 use App\Http\Controllers\GelombangController;
+use App\Http\Controllers\FakultasProdiController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -119,6 +120,24 @@ Route::middleware(['auth', 'biodata.complete'])->group(function () {
             Route::get('/{gelombang}/edit', [GelombangController::class, 'edit'])->name('edit');
             Route::put('/{gelombang}', [GelombangController::class, 'update'])->name('update');
             Route::delete('/{gelombang}', [GelombangController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('fakultas-prodi')->name('fakultas-prodi.')->group(function () {
+            Route::get('/', [FakultasProdiController::class, 'index'])->name('index');
+
+            Route::get('/fakultas/create', [FakultasProdiController::class, 'createFakultas'])->name('fakultas.create');
+            Route::get('/prodi/create', [FakultasProdiController::class, 'createProdi'])->name('prodi.create');
+
+            Route::get('/prodi/{prodi}/edit', [FakultasProdiController::class, 'editProdi'])->name('prodi.edit');
+            Route::get('/fakultas/{fakultas}/edit', [FakultasProdiController::class, 'editFakultas'])->name('fakultas.edit');
+
+            Route::post('/fakultas/store', [FakultasProdiController::class, 'storeFakultas'])->name('fakultas.store');
+            Route::put('/fakultas/{fakultas}', [FakultasProdiController::class, 'updateFakultas'])->name('fakultas.update');
+            Route::delete('/fakultas/{fakultas}', [FakultasProdiController::class, 'deleteFakultas'])->name('fakultas.delete');
+
+            Route::post('/prodi/store', [FakultasProdiController::class, 'storeProdi'])->name('prodi.store');
+            Route::put('/prodi/{prodi}', [FakultasProdiController::class, 'updateProdi'])->name('prodi.update');
+            Route::delete('/prodi/{prodi}', [FakultasProdiController::class, 'deleteProdi'])->name('prodi.delete');
         });
 
         Route::get('/hakakses', [HakaksesController::class, 'index'])->name('hakakses.index');
