@@ -10,6 +10,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\MahasiswaManagementController;
+use App\Http\Controllers\GelombangController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -108,6 +109,16 @@ Route::middleware(['auth', 'biodata.complete'])->group(function () {
         Route::get('/{user}/edit', [MahasiswaManagementController::class, 'edit'])->name('edit');
         Route::put('/{user}', [MahasiswaManagementController::class, 'update'])->name('update');
         Route::delete('/{user}', [MahasiswaManagementController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('gelombang')->name('gelombang.')->group(function () {
+            Route::get('/', [GelombangController::class, 'index'])->name('index');
+            Route::get('/create', [GelombangController::class, 'create'])->name('create');
+            Route::post('/', [GelombangController::class, 'store'])->name('store');
+            Route::get('/{gelombang}', [GelombangController::class, 'show'])->name('show');
+            Route::get('/{gelombang}/edit', [GelombangController::class, 'edit'])->name('edit');
+            Route::put('/{gelombang}', [GelombangController::class, 'update'])->name('update');
+            Route::delete('/{gelombang}', [GelombangController::class, 'destroy'])->name('destroy');
         });
 
         Route::get('/hakakses', [HakaksesController::class, 'index'])->name('hakakses.index');

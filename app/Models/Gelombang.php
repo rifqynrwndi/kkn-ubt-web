@@ -13,16 +13,9 @@ class Gelombang extends Model
         'tahun',
         'tgl_mulai',
         'tgl_akhir',
+        'kuota_laki',
+        'kuota_perempuan',
+        'kuota_total',
         'status',
     ];
-
-    protected $casts = [
-        'tgl_mulai' => 'date',
-        'tgl_akhir' => 'date',
-    ];
-
-    public function pesertaKkn()
-    {
-        return $this->hasMany(PesertaKkn::class);
-    }
 }

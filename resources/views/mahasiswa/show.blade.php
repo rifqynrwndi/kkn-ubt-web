@@ -119,7 +119,7 @@
             </div>
 
             <div class="card-footer text-right">
-                <a href="{{ route('mahasiswa.index') }}" class="btn btn-outline-secondary ">
+                <a href="{{ route('mahasiswa.index') }}" class="btn btn-outline-secondary">
                     Kembali
                 </a>
 

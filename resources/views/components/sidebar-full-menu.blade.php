@@ -13,7 +13,7 @@
                 <a class="nav-link" href="{{ url('home') }}"><i class="fas fa-fire"></i><span>Dashboard</span></a>
             </li>
             @role('superadmin')
-            <li class="menu-header">Role Access</li>
+            <li class="menu-header">Admin Panel</li>
             <li class="{{ Request::is('hakakses') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ url('hakakses') }}"><i class="fas fa-user-shield"></i> <span>Role Access</span></a>
             </li>
@@ -21,6 +21,12 @@
                 <a class="nav-link" href="{{ route('mahasiswa.index') }}">
                     <i class="fas fa-users"></i>
                     <span>Data Mahasiswa</span>
+                </a>
+            </li>
+            <li class="{{ Request::is('gelombang*') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('gelombang.index') }}">
+                    <i class="fas fa-users"></i>
+                    <span>Data Gelombang</span>
                 </a>
             </li>
             @endrole
