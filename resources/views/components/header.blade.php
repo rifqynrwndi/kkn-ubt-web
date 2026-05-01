@@ -32,7 +32,16 @@
 
         <li class="dropdown">
             <a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
-                <img alt="image" src="{{ asset('img/avatar/avatar-1.png') }}" class="rounded-circle mr-1">
+                <img
+                    alt="Profile"
+                    src="{{ auth()->user()->mahasiswa?->foto
+                        ? asset('storage/' . auth()->user()->mahasiswa->foto)
+                        : asset('img/avatar/avatar-1.png') }}"
+                    class="rounded-circle mr-1"
+                    width="35"
+                    height="35"
+                    style="object-fit: cover;"
+                >
                 <div class="d-sm-none d-lg-inline-block">
                     Hi, {{ auth()->user()->name }}
                 </div>
