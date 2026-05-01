@@ -17,6 +17,12 @@
             <li class="{{ Request::is('hakakses') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ url('hakakses') }}"><i class="fas fa-user-shield"></i> <span>Role Access</span></a>
             </li>
+            <li class="{{ Request::is('mahasiswa*') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('mahasiswa.index') }}">
+                    <i class="fas fa-users"></i>
+                    <span>Data Mahasiswa</span>
+                </a>
+            </li>
             @endrole
 
             <!-- New Features Menu -->

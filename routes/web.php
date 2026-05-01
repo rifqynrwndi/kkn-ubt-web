@@ -9,6 +9,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\MahasiswaManagementController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -97,6 +98,17 @@ Route::middleware(['auth', 'biodata.complete'])->group(function () {
     Route::get('/about-example', [ExampleController::class, 'about'])->name('about.example');
 
     Route::middleware('superadmin')->group(function () {
+
+        Route::prefix('mahasiswa')->name('mahasiswa.')->group(function () {
+        Route::get('/', [MahasiswaManagementController::class, 'index'])->name('index');
+        Route::get('/create', [MahasiswaManagementController::class, 'create'])->name('create');
+        Route::post('/', [MahasiswaManagementController::class, 'store'])->name('store');
+
+        Route::get('/{user}', [MahasiswaManagementController::class, 'show'])->name('show');
+        Route::get('/{user}/edit', [MahasiswaManagementController::class, 'edit'])->name('edit');
+        Route::put('/{user}', [MahasiswaManagementController::class, 'update'])->name('update');
+        Route::delete('/{user}', [MahasiswaManagementController::class, 'destroy'])->name('destroy');
+        });
 
         Route::get('/hakakses', [HakaksesController::class, 'index'])->name('hakakses.index');
         Route::get('/hakakses/edit/{id}', [HakaksesController::class, 'edit'])->name('hakakses.edit');

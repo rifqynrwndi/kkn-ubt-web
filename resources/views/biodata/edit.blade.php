@@ -62,23 +62,44 @@
                         {{-- PRODI --}}
                         <div class="form-group col-md-6">
                             <label>Program Studi</label>
-                            <input type="hidden" name="prodi_id" value="{{ $mahasiswa->prodi_id }}">
+                            <select name="prodi_id"
+                                    class="form-control @error('prodi_id') is-invalid @enderror"
+                                    required>
+                                <option value="">Pilih Program Studi</option>
 
-                            <input type="text"
-                                class="form-control"
-                                value="{{ $mahasiswa->prodi?->nama_prodi }}"
-                                readonly>
+                                @foreach($prodis as $prodi)
+                                    <option value="{{ $prodi->id }}"
+                                        {{ old('prodi_id', $mahasiswa->prodi_id) == $prodi->id ? 'selected' : '' }}>
+                                        {{ $prodi->nama_prodi }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            @error('prodi_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- JENIS KELAMIN --}}
                         <div class="form-group col-md-6">
                             <label>Jenis Kelamin</label>
-                            <input type="hidden" name="jenis_kelamin" value="{{ $mahasiswa->jenis_kelamin }}">
+                            <select name="jenis_kelamin"
+                                    class="form-control @error('jenis_kelamin') is-invalid @enderror"
+                                    required>
+                                <option value="">Pilih Jenis Kelamin</option>
+                                <option value="L"
+                                    {{ old('jenis_kelamin', $mahasiswa->jenis_kelamin) == 'L' ? 'selected' : '' }}>
+                                    Laki-laki
+                                </option>
+                                <option value="P"
+                                    {{ old('jenis_kelamin', $mahasiswa->jenis_kelamin) == 'P' ? 'selected' : '' }}>
+                                    Perempuan
+                                </option>
+                            </select>
 
-                            <input type="text"
-                                class="form-control"
-                                value="{{ $mahasiswa->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan' }}"
-                                readonly>
+                            @error('jenis_kelamin')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- NO HP --}}
