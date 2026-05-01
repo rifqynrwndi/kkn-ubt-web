@@ -17,7 +17,7 @@ class SettingSeeder extends Seeder
             // General Settings
             [
                 'key' => 'app_name',
-                'value' => 'Laravel Admin',
+                'value' => 'Sistem KKN UBT',
                 'type' => 'text',
                 'group' => 'general',
                 'label' => 'Application Name',
@@ -26,7 +26,7 @@ class SettingSeeder extends Seeder
             ],
             [
                 'key' => 'app_description',
-                'value' => 'A modern admin panel built with Laravel 12 and Stisla',
+                'value' => 'Sistem Pendaftaran dan Pemilihan Lokasi KKN Universitas Borneo Tarakan',
                 'type' => 'textarea',
                 'group' => 'general',
                 'label' => 'Application Description',
@@ -51,11 +51,11 @@ class SettingSeeder extends Seeder
                 'description' => 'Enable maintenance mode',
                 'order' => 4
             ],
-            
+
             // Email Settings
             [
                 'key' => 'contact_email',
-                'value' => 'admin@example.com',
+                'value' => 'lppm@ubt.ac.id',
                 'type' => 'email',
                 'group' => 'email',
                 'label' => 'Contact Email',
@@ -71,7 +71,7 @@ class SettingSeeder extends Seeder
                 'description' => 'Support email address',
                 'order' => 2
             ],
-            
+
             // Social Media
             [
                 'key' => 'facebook_url',
@@ -109,7 +109,7 @@ class SettingSeeder extends Seeder
                 'description' => 'Your LinkedIn profile URL',
                 'order' => 4
             ],
-            
+
             // Appearance
             [
                 'key' => 'items_per_page',

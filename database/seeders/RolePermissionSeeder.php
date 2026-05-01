@@ -17,12 +17,17 @@ class RolePermissionSeeder extends Seeder
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $permissions = [
+            'view-dashboard',
+
             'manage-users',
             'manage-settings',
-            'manage-activity-logs',
             'manage-files',
-            'send-notifications',
-            'view-dashboard',
+            'manage-activity-logs',
+
+            'manage-master-data',
+            'manage-kkn',
+            'manage-gelombang',
+            'verify-pendaftaran',
         ];
 
         foreach ($permissions as $permission) {
@@ -38,7 +43,12 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         Role::firstOrCreate([
-            'name' => 'user',
+            'name' => 'mahasiswa',
+            'guard_name' => 'web',
+        ]);
+
+        Role::firstOrCreate([
+            'name' => 'pembimbing',
             'guard_name' => 'web',
         ]);
 
