@@ -157,3 +157,21 @@
     background-color: #3a3f4b;
     color: #d6d9df;
 }
+
+/* Sidebar mini dark mode */
+[data-bs-theme="dark"] body.sidebar-mini .main-sidebar,
+[data-bs-theme="dark"] body.sidebar-mini .main-sidebar::after,
+[data-bs-theme="dark"] body.sidebar-mini #sidebar-wrapper {
+    background-color: #252934 !important;
+}
+
+/* Item hover/active saat mini */
+[data-bs-theme="dark"] body.sidebar-mini .sidebar-menu li a {
+    color: #cdd3d8 !important;
+}
+
+[data-bs-theme="dark"] body.sidebar-mini .sidebar-menu li.active a,
+[data-bs-theme="dark"] body.sidebar-mini .sidebar-menu li a:hover {
+    background-color: #2b3035 !important;
+    color: #fff !important;
+}

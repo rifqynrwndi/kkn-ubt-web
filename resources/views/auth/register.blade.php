@@ -32,6 +32,46 @@
                         </div>
 
                         <div class="row mb-3">
+                            <label class="col-md-4 col-form-label text-md-end">NPM</label>
+
+                            <div class="col-md-6">
+                                <input type="text"
+                                    class="form-control @error('npm') is-invalid @enderror"
+                                    name="npm"
+                                    value="{{ old('npm') }}"
+                                    required>
+
+                                @error('npm')
+                                    <span class="invalid-feedback">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-md-4 col-form-label text-md-end">Jenis Kelamin</label>
+                            <div class="col-md-6">
+                                <select name="jenis_kelamin" class="form-control" required>
+                                    <option value="">Pilih</option>
+                                    <option value="L">Laki-laki</option>
+                                    <option value="P">Perempuan</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-md-4 col-form-label text-md-end">Program Studi</label>
+                            <div class="col-md-6">
+                                <select name="prodi_id" class="form-control" required>
+                                    @foreach($prodis as $prodi)
+                                        <option value="{{ $prodi->id }}">{{ $prodi->nama_prodi }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
                             <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
 
                             <div class="col-md-6">

@@ -2,7 +2,7 @@
 <div class="main-sidebar sidebar-style-2">
     <aside id="sidebar-wrapper">
         <div class="sidebar-brand">
-        <a href="">UBT</a>
+        <a href=""> KKN UBT</a>
         </div>
         <div class="sidebar-brand sidebar-brand-sm">
         <a href="">UBT</a>

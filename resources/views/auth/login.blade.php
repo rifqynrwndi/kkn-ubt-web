@@ -68,3 +68,21 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+@if(session('success'))
+<script>
+    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+
+    Swal.fire({
+        icon: 'success',
+        title: 'Berhasil',
+        text: '{{ session('success') }}',
+        confirmButtonText: 'OK',
+        background: isDark ? '#1f2937' : '#ffffff',
+        color: isDark ? '#f9fafb' : '#111827',
+        confirmButtonColor: '#6777ef'
+    });
+</script>
+@endif
+@endpush

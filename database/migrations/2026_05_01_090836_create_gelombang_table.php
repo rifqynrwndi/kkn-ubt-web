@@ -18,6 +18,9 @@ return new class extends Migration
             $table->unique(['nama_gelombang', 'tahun']);
             $table->date('tgl_mulai');
             $table->date('tgl_akhir');
+            $table->integer('kuota_laki')->nullable();
+            $table->integer('kuota_perempuan')->nullable();
+            $table->integer('kuota_total')->nullable();
 
             $table->enum('status', [
                 'persiapan',
