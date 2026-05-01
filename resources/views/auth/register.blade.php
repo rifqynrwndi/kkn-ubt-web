@@ -1,12 +1,16 @@
 @extends('layouts.auth')
 
+@section('title', 'Register')
+
 @section('content')
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
             <div class="card-header text-center d-flex justify-content-center">
-            <div class="card-header">{{ __('Register') }}</div>
+                <div class="card-header text-center justify-content-center d-flex">
+                    Daftar Akun KKN Universitas Borneo Tarakan
+                </div>
                 </div>
 
                 <div class="card-body">
@@ -64,11 +68,14 @@
                         </div>
 
                         <div class="row mb-0">
-                            <div class="col-md-6 offset-md-4 text-center">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Register') }}
+                            <div class="col-12 text-center">
+                                <button type="submit" class="btn btn-primary fs-6">
+                                    Register
                                 </button>
-                                <a href="{{ route('login') }}" class="btn btn-link">{{ __('Login') }}</a>
+
+                                <a href="{{ route('login') }}" class="btn btn-link fs-6">
+                                    Login
+                                </a>
                             </div>
                         </div>
                     </form>

@@ -51,7 +51,7 @@
                         </div>
 
                         <div class="d-grid mb-3">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary fs-6">
                                 Login
                             </button>
                         </div>
