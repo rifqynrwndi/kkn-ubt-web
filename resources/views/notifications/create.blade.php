@@ -3,143 +3,148 @@
 @section('title', 'Send Notification')
 
 @section('main')
-    <div class="main-content">
-        <section class="section">
-            <div class="section-header">
-                <h1>Send Notification</h1>
-                <div class="section-header-breadcrumb">
-                    <div class="breadcrumb-item active"><a href="{{ route('home') }}">Dashboard</a></div>
-                    <div class="breadcrumb-item"><a href="{{ route('notifications.index') }}">Notifications</a></div>
-                    <div class="breadcrumb-item">Send</div>
-                </div>
-            </div>
+<div class="main-content">
+    <section class="section">
 
-            <div class="section-body">
-                <h2 class="section-title">Send Notification to Users</h2>
-                <p class="section-lead">
-                    Send custom notifications to selected users.
-                </p>
+        <div class="section-header">
+            <h1>Send Notification</h1>
+        </div>
 
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                @endif
+        <div class="section-body">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
 
-                <div class="row">
-                    <div class="col-12 col-md-8">
-                        <div class="card">
-                            <div class="card-header">
-                                <h4>Notification Details</h4>
-                            </div>
-                            <div class="card-body">
-                                <form method="POST" action="{{ route('notifications.send') }}">
-                                    @csrf
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Notification Form</h4>
+                        </div>
 
+                        <div class="card-body">
+                            <form method="POST" action="{{ route('notifications.send') }}">
+                                @csrf
+
+                                {{-- TITLE --}}
+                                <div class="form-group">
+                                    <label>Judul</label>
+                                    <input type="text"
+                                           name="title"
+                                           class="form-control"
+                                           required>
+                                </div>
+
+                                {{-- MESSAGE --}}
+                                <div class="form-group">
+                                    <label>Pesan Notifikasi</label>
+                                    <textarea name="message"
+                                              rows="4"
+                                              class="form-control"
+                                              required></textarea>
+                                </div>
+
+                                {{-- TYPE --}}
+                                <div class="form-group">
+                                    <label>Jenis Notifikasi</label>
+                                    <select name="type" class="form-control">
+                                        <option value="info">Informasi</option>
+                                        <option value="success">Success</option>
+                                        <option value="warning">Warning</option>
+                                        <option value="danger">Danger</option>
+                                    </select>
+                                </div>
+
+                                <hr>
+
+                                {{-- RECIPIENT GROUP --}}
+                                <div class="form-group">
+                                    <label>Recipient Group</label>
+                                    <select name="recipient_mode"
+                                            id="recipient_mode"
+                                            class="form-control"
+                                            onchange="toggleManualUsers()">
+                                        <option value="all_mahasiswa">All Mahasiswa</option>
+                                        <option value="unverified_mahasiswa">Mahasiswa Belum Verifikasi Email</option>
+                                        <option value="incomplete_biodata">Mahasiswa Belum Lengkapi Biodata</option>
+                                        <option value="manual">Pilih Manual</option>
+                                    </select>
+                                </div>
+
+                                {{-- MANUAL USER PICKER --}}
+                                <div id="manual-users-section" style="display:none;">
                                     <div class="form-group">
-                                        <label>Title <span class="text-danger">*</span></label>
-                                        <input type="text" name="title" class="form-control @error('title') is-invalid @enderror" 
-                                               value="{{ old('title') }}" required>
-                                        @error('title')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                                        <label>Search User</label>
 
-                                    <div class="form-group">
-                                        <label>Message <span class="text-danger">*</span></label>
-                                        <textarea name="message" class="form-control @error('message') is-invalid @enderror" 
-                                                  rows="4" required>{{ old('message') }}</textarea>
-                                        @error('message')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                                        <input type="text"
+                                               id="user-search"
+                                               class="form-control mb-3"
+                                               placeholder="Cari nama mahasiswa...">
 
-                                    <div class="form-group">
-                                        <label>Type <span class="text-danger">*</span></label>
-                                        <select name="type" class="form-control @error('type') is-invalid @enderror" required>
-                                            <option value="info" {{ old('type') == 'info' ? 'selected' : '' }}>Info</option>
-                                            <option value="success" {{ old('type') == 'success' ? 'selected' : '' }}>Success</option>
-                                            <option value="warning" {{ old('type') == 'warning' ? 'selected' : '' }}>Warning</option>
-                                            <option value="danger" {{ old('type') == 'danger' ? 'selected' : '' }}>Danger</option>
-                                        </select>
-                                        @error('type')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                                        <div class="border rounded p-3"
+                                             style="max-height: 300px; overflow-y:auto;">
 
-                                    <div class="form-group">
-                                        <label>Action URL (Optional)</label>
-                                        <input type="url" name="action_url" class="form-control @error('action_url') is-invalid @enderror" 
-                                               value="{{ old('action_url') }}" placeholder="https://example.com">
-                                        @error('action_url')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        <small class="form-text text-muted">URL to redirect when notification is clicked</small>
-                                    </div>
+                                            <div class="row" id="user-list">
+                                                @foreach($users as $user)
+                                                    <div class="col-md-6 mb-2 user-item">
+                                                        <label class="border rounded px-3 py-2 w-100 d-flex align-items-center">
+                                                            <input type="checkbox"
+                                                                   name="users[]"
+                                                                   value="{{ $user->id }}"
+                                                                   class="mr-2 user-checkbox">
 
-                                    <div class="form-group">
-                                        <label>Action Button Text</label>
-                                        <input type="text" name="action_text" class="form-control @error('action_text') is-invalid @enderror" 
-                                               value="{{ old('action_text', 'View') }}">
-                                        @error('action_text')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                                                            <span class="user-name">
+                                                                {{ $user->name }}
+                                                            </span>
+                                                        </label>
+                                                    </div>
+                                                @endforeach
+                                            </div>
 
-                                    <div class="form-group">
-                                        <label>Recipients <span class="text-danger">*</span></label>
-                                        <div class="mb-2">
-                                            <button type="button" class="btn btn-sm btn-primary" onclick="selectAllUsers()">Select All</button>
-                                            <button type="button" class="btn btn-sm btn-secondary" onclick="deselectAllUsers()">Deselect All</button>
                                         </div>
-                                        <div class="selectgroup selectgroup-pills" id="user-list">
-                                            @foreach($users as $user)
-                                                <label class="selectgroup-item">
-                                                    <input type="checkbox" name="users[]" value="{{ $user->id }}" 
-                                                           class="selectgroup-input user-checkbox"
-                                                           {{ in_array($user->id, old('users', [])) ? 'checked' : '' }}>
-                                                    <span class="selectgroup-button">{{ $user->name }}</span>
-                                                </label>
-                                            @endforeach
-                                        </div>
-                                        @error('users')
-                                            <div class="text-danger">{{ $message }}</div>
-                                        @enderror
                                     </div>
+                                </div>
 
-                                    <div class="form-group">
-                                        <button type="submit" class="btn btn-primary btn-lg">
-                                            <i class="fas fa-paper-plane"></i> Send Notification
-                                        </button>
-                                        <a href="{{ route('notifications.index') }}" class="btn btn-secondary btn-lg">
-                                            Cancel
-                                        </a>
-                                    </div>
-                                </form>
-                            </div>
+                                {{-- BUTTON --}}
+                                <div class="text-right mt-4">
+                                    <a href="{{ route('notifications.index') }}"
+                                       class="btn btn-outline-secondary">
+                                        Kembali
+                                    </a>
+
+                                    <button class="btn btn-primary">
+                                        <i class="fas fa-paper-plane"></i>
+                                        Send Notification
+                                    </button>
+                                </div>
+
+                            </form>
                         </div>
                     </div>
+
                 </div>
             </div>
-        </section>
-    </div>
+        </div>
+
+    </section>
+</div>
 @endsection
+
 
 @push('scripts')
 <script>
-function selectAllUsers() {
-    document.querySelectorAll('.user-checkbox').forEach(checkbox => {
-        checkbox.checked = true;
-    });
+function toggleManualUsers() {
+    const mode = document.getElementById('recipient_mode').value;
+    const section = document.getElementById('manual-users-section');
+
+    section.style.display = mode === 'manual' ? 'block' : 'none';
 }
 
-function deselectAllUsers() {
-    document.querySelectorAll('.user-checkbox').forEach(checkbox => {
-        checkbox.checked = false;
+document.getElementById('user-search').addEventListener('keyup', function() {
+    let keyword = this.value.toLowerCase();
+
+    document.querySelectorAll('.user-item').forEach(item => {
+        let name = item.querySelector('.user-name').innerText.toLowerCase();
+
+        item.style.display = name.includes(keyword) ? 'block' : 'none';
     });
-}
+});
 </script>
 @endpush

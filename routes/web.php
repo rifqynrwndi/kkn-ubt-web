@@ -1,161 +1,235 @@
 <?php
 
-use App\Http\Controllers\ActivityLogController;
-use App\Http\Controllers\BiodataController;
-use App\Http\Controllers\ExampleController;
-use App\Http\Controllers\FileManagerController;
-use App\Http\Controllers\HakaksesController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\SettingController;
-use App\Http\Controllers\MahasiswaManagementController;
-use App\Http\Controllers\GelombangController;
-use App\Http\Controllers\FakultasProdiController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('auth.login');
-});
+use App\Http\Controllers\{
+    ActivityLogController,
+    BiodataController,
+    ExampleController,
+    FakultasProdiController,
+    FileManagerController,
+    GelombangController,
+    HakaksesController,
+    HomeController,
+    MahasiswaManagementController,
+    NotificationController,
+    ProfileController,
+    SettingController
+};
+
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', fn () => view('auth.login'));
 
 Auth::routes(['verify' => true]);
 
 /*
 |--------------------------------------------------------------------------
-| AUTH ONLY (boleh akses meski biodata belum lengkap)
+| Authenticated Users
 |--------------------------------------------------------------------------
 */
+
 Route::middleware('auth')->group(function () {
 
-    Route::get('/biodata/edit', [BiodataController::class, 'edit'])
-        ->name('biodata.edit');
+    /*
+    |--------------------------------------------------------------------------
+    | Biodata / Profile Basic
+    |--------------------------------------------------------------------------
+    */
 
-    Route::put('/biodata/update', [BiodataController::class, 'update'])
-        ->name('biodata.update');
+    Route::prefix('biodata')->name('biodata.')->group(function () {
+        Route::get('/edit', [BiodataController::class, 'edit'])->name('edit');
+        Route::put('/update', [BiodataController::class, 'update'])->name('update');
+    });
 
-    Route::get('/profile/change-password', [ProfileController::class, 'changePassword'])
-        ->name('profile.change-password');
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/change-password', [ProfileController::class, 'changePassword'])->name('change-password');
+        Route::put('/password', [ProfileController::class, 'password'])->name('password');
+    });
 
-    Route::put('/profile/password', [ProfileController::class, 'password'])
-        ->name('profile.password');
+    /*
+    |--------------------------------------------------------------------------
+    | Notifications (All Authenticated Users)
+    |--------------------------------------------------------------------------
+    */
 
-    Route::get('/notifications', [NotificationController::class, 'index'])
-        ->name('notifications.index');
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::get('/unread-count', [NotificationController::class, 'unreadCount'])->name('unread-count');
+        Route::get('/recent', [NotificationController::class, 'recent'])->name('recent');
 
-    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])
-        ->name('notifications.unread-count');
+        Route::post('/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('mark-as-read');
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
 
-    Route::get('/notifications/recent', [NotificationController::class, 'recent'])
-        ->name('notifications.recent');
-
-    Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])
-        ->name('notifications.mark-as-read');
-
-    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])
-        ->name('notifications.mark-all-read');
-
-    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])
-        ->name('notifications.destroy');
-
-    Route::delete('/notifications', [NotificationController::class, 'destroyAll'])
-        ->name('notifications.destroy-all');
+        Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
+        Route::delete('/', [NotificationController::class, 'destroyAll'])->name('destroy-all');
+    });
 });
-
 
 /*
 |--------------------------------------------------------------------------
-| AUTH + BIODATA COMPLETE
+| Auth + Biodata Complete
 |--------------------------------------------------------------------------
 */
+
 Route::middleware(['auth', 'biodata.complete'])->group(function () {
 
-    Route::get('/home', [HomeController::class, 'index'])->name('home');
+    /*
+    |--------------------------------------------------------------------------
+    | General Pages
+    |--------------------------------------------------------------------------
+    */
 
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/blank-page', [HomeController::class, 'blank'])->name('blank');
     Route::view('/quick-tour', 'layouts.quick-tour')->name('quick-tour');
 
-    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
+        Route::put('/update', [ProfileController::class, 'update'])->name('update');
+    });
 
-    Route::get('/file-manager', [FileManagerController::class, 'index'])->name('file-manager.index');
-    Route::post('/file-manager/upload', [FileManagerController::class, 'upload'])->name('file-manager.upload');
-    Route::get('/file-manager/{id}/download', [FileManagerController::class, 'download'])->name('file-manager.download');
-    Route::put('/file-manager/{id}', [FileManagerController::class, 'update'])->name('file-manager.update');
-    Route::delete('/file-manager/{id}', [FileManagerController::class, 'destroy'])->name('file-manager.destroy');
-    Route::get('/file-manager/{id}/show', [FileManagerController::class, 'show'])->name('file-manager.show');
-    Route::post('/file-manager/create-folder', [FileManagerController::class, 'createFolder'])->name('file-manager.create-folder');
+    /*
+    |--------------------------------------------------------------------------
+    | File Manager
+    |--------------------------------------------------------------------------
+    */
 
-    Route::get('/table-example', [ExampleController::class, 'table'])->name('table.example');
-    Route::get('/clock-example', [ExampleController::class, 'clock'])->name('clock.example');
-    Route::get('/chart-example', [ExampleController::class, 'chart'])->name('chart.example');
-    Route::get('/form-example', [ExampleController::class, 'form'])->name('form.example');
-    Route::get('/map-example', [ExampleController::class, 'map'])->name('map.example');
-    Route::get('/calendar-example', [ExampleController::class, 'calendar'])->name('calendar.example');
-    Route::get('/gallery-example', [ExampleController::class, 'gallery'])->name('gallery.example');
-    Route::get('/todo-example', [ExampleController::class, 'todo'])->name('todo.example');
-    Route::get('/contact-example', [ExampleController::class, 'contact'])->name('contact.example');
-    Route::get('/faq-example', [ExampleController::class, 'faq'])->name('faq.example');
-    Route::get('/news-example', [ExampleController::class, 'news'])->name('news.example');
-    Route::get('/about-example', [ExampleController::class, 'about'])->name('about.example');
+    Route::prefix('file-manager')->name('file-manager.')->group(function () {
+        Route::get('/', [FileManagerController::class, 'index'])->name('index');
+        Route::post('/upload', [FileManagerController::class, 'upload'])->name('upload');
+        Route::post('/create-folder', [FileManagerController::class, 'createFolder'])->name('create-folder');
+
+        Route::get('/{id}/download', [FileManagerController::class, 'download'])->name('download');
+        Route::get('/{id}/show', [FileManagerController::class, 'show'])->name('show');
+
+        Route::put('/{id}', [FileManagerController::class, 'update'])->name('update');
+        Route::delete('/{id}', [FileManagerController::class, 'destroy'])->name('destroy');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Example Pages
+    |--------------------------------------------------------------------------
+    */
+
+    Route::controller(ExampleController::class)->group(function () {
+        Route::get('/table-example', 'table')->name('table.example');
+        Route::get('/clock-example', 'clock')->name('clock.example');
+        Route::get('/chart-example', 'chart')->name('chart.example');
+        Route::get('/form-example', 'form')->name('form.example');
+        Route::get('/map-example', 'map')->name('map.example');
+        Route::get('/calendar-example', 'calendar')->name('calendar.example');
+        Route::get('/gallery-example', 'gallery')->name('gallery.example');
+        Route::get('/todo-example', 'todo')->name('todo.example');
+        Route::get('/contact-example', 'contact')->name('contact.example');
+        Route::get('/faq-example', 'faq')->name('faq.example');
+        Route::get('/news-example', 'news')->name('news.example');
+        Route::get('/about-example', 'about')->name('about.example');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Superadmin Only
+    |--------------------------------------------------------------------------
+    */
 
     Route::middleware('superadmin')->group(function () {
 
-        Route::prefix('mahasiswa')->name('mahasiswa.')->group(function () {
-        Route::get('/', [MahasiswaManagementController::class, 'index'])->name('index');
-        Route::get('/create', [MahasiswaManagementController::class, 'create'])->name('create');
-        Route::post('/', [MahasiswaManagementController::class, 'store'])->name('store');
+        /*
+        |--------------------------------------------------------------------------
+        | Mahasiswa
+        |--------------------------------------------------------------------------
+        */
 
-        Route::get('/{user}', [MahasiswaManagementController::class, 'show'])->name('show');
-        Route::get('/{user}/edit', [MahasiswaManagementController::class, 'edit'])->name('edit');
-        Route::put('/{user}', [MahasiswaManagementController::class, 'update'])->name('update');
-        Route::delete('/{user}', [MahasiswaManagementController::class, 'destroy'])->name('destroy');
-        });
+        Route::resource('mahasiswa', MahasiswaManagementController::class);
 
-        Route::prefix('gelombang')->name('gelombang.')->group(function () {
-            Route::get('/', [GelombangController::class, 'index'])->name('index');
-            Route::get('/create', [GelombangController::class, 'create'])->name('create');
-            Route::post('/', [GelombangController::class, 'store'])->name('store');
-            Route::get('/{gelombang}', [GelombangController::class, 'show'])->name('show');
-            Route::get('/{gelombang}/edit', [GelombangController::class, 'edit'])->name('edit');
-            Route::put('/{gelombang}', [GelombangController::class, 'update'])->name('update');
-            Route::delete('/{gelombang}', [GelombangController::class, 'destroy'])->name('destroy');
-        });
+        /*
+        |--------------------------------------------------------------------------
+        | Gelombang
+        |--------------------------------------------------------------------------
+        */
+
+        Route::resource('gelombang', GelombangController::class);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Fakultas & Prodi
+        |--------------------------------------------------------------------------
+        */
 
         Route::prefix('fakultas-prodi')->name('fakultas-prodi.')->group(function () {
             Route::get('/', [FakultasProdiController::class, 'index'])->name('index');
 
-            Route::get('/fakultas/create', [FakultasProdiController::class, 'createFakultas'])->name('fakultas.create');
-            Route::get('/prodi/create', [FakultasProdiController::class, 'createProdi'])->name('prodi.create');
+            Route::prefix('fakultas')->name('fakultas.')->group(function () {
+                Route::get('/create', [FakultasProdiController::class, 'createFakultas'])->name('create');
+                Route::post('/', [FakultasProdiController::class, 'storeFakultas'])->name('store');
+                Route::get('/{fakultas}/edit', [FakultasProdiController::class, 'editFakultas'])->name('edit');
+                Route::put('/{fakultas}', [FakultasProdiController::class, 'updateFakultas'])->name('update');
+                Route::delete('/{fakultas}', [FakultasProdiController::class, 'deleteFakultas'])->name('delete');
+            });
 
-            Route::get('/prodi/{prodi}/edit', [FakultasProdiController::class, 'editProdi'])->name('prodi.edit');
-            Route::get('/fakultas/{fakultas}/edit', [FakultasProdiController::class, 'editFakultas'])->name('fakultas.edit');
-
-            Route::post('/fakultas/store', [FakultasProdiController::class, 'storeFakultas'])->name('fakultas.store');
-            Route::put('/fakultas/{fakultas}', [FakultasProdiController::class, 'updateFakultas'])->name('fakultas.update');
-            Route::delete('/fakultas/{fakultas}', [FakultasProdiController::class, 'deleteFakultas'])->name('fakultas.delete');
-
-            Route::post('/prodi/store', [FakultasProdiController::class, 'storeProdi'])->name('prodi.store');
-            Route::put('/prodi/{prodi}', [FakultasProdiController::class, 'updateProdi'])->name('prodi.update');
-            Route::delete('/prodi/{prodi}', [FakultasProdiController::class, 'deleteProdi'])->name('prodi.delete');
+            Route::prefix('prodi')->name('prodi.')->group(function () {
+                Route::get('/create', [FakultasProdiController::class, 'createProdi'])->name('create');
+                Route::post('/', [FakultasProdiController::class, 'storeProdi'])->name('store');
+                Route::get('/{prodi}/edit', [FakultasProdiController::class, 'editProdi'])->name('edit');
+                Route::put('/{prodi}', [FakultasProdiController::class, 'updateProdi'])->name('update');
+                Route::delete('/{prodi}', [FakultasProdiController::class, 'deleteProdi'])->name('delete');
+            });
         });
 
-        Route::get('/hakakses', [HakaksesController::class, 'index'])->name('hakakses.index');
-        Route::get('/hakakses/edit/{id}', [HakaksesController::class, 'edit'])->name('hakakses.edit');
-        Route::put('/hakakses/update/{id}', [HakaksesController::class, 'update'])->name('hakakses.update');
-        Route::delete('/hakakses/delete/{id}', [HakaksesController::class, 'destroy'])->name('hakakses.delete');
+        /*
+        |--------------------------------------------------------------------------
+        | Send Notification / Notification History (Superadmin Only)
+        |--------------------------------------------------------------------------
+        */
 
-        Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
-        Route::get('/activity-logs/{id}', [ActivityLogController::class, 'show'])->name('activity-logs.show');
-        Route::delete('/activity-logs/{id}', [ActivityLogController::class, 'destroy'])->name('activity-logs.destroy');
-        Route::delete('/activity-logs', [ActivityLogController::class, 'clear'])->name('activity-logs.clear');
+        Route::prefix('notifications')->name('notifications.')->group(function () {
+            Route::get('/create', [NotificationController::class, 'create'])->name('create');
+            Route::post('/send', [NotificationController::class, 'send'])->name('send');
 
-        Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
-        Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
-        Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
-        Route::post('/settings/reset', [SettingController::class, 'reset'])->name('settings.reset');
+            Route::get('/history', [NotificationController::class, 'history'])->name('history');
+            Route::delete('/history/{id}', [NotificationController::class, 'destroyHistory'])->name('history.destroy');
+        });
 
-        Route::get('/notifications/create', [NotificationController::class, 'create'])->name('notifications.create');
-        Route::post('/notifications/send', [NotificationController::class, 'send'])->name('notifications.send');
+        /*
+        |--------------------------------------------------------------------------
+        | Hak Akses
+        |--------------------------------------------------------------------------
+        */
+
+        Route::resource('hakakses', HakaksesController::class)
+            ->parameters(['hakakses' => 'id']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Activity Logs
+        |--------------------------------------------------------------------------
+        */
+
+        Route::prefix('activity-logs')->name('activity-logs.')->group(function () {
+            Route::get('/', [ActivityLogController::class, 'index'])->name('index');
+            Route::get('/{id}', [ActivityLogController::class, 'show'])->name('show');
+            Route::delete('/{id}', [ActivityLogController::class, 'destroy'])->name('destroy');
+            Route::delete('/', [ActivityLogController::class, 'clear'])->name('clear');
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Settings
+        |--------------------------------------------------------------------------
+        */
+
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', [SettingController::class, 'index'])->name('index');
+            Route::put('/', [SettingController::class, 'update'])->name('update');
+            Route::post('/', [SettingController::class, 'store'])->name('store');
+            Route::post('/reset', [SettingController::class, 'reset'])->name('reset');
+        });
     });
 });

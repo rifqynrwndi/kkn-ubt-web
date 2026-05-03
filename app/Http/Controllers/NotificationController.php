@@ -2,36 +2,90 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\NotificationLog;
 use App\Models\User;
 use App\Notifications\GeneralNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
-/**
- * User notification management.
- *
- * Handles listing, reading, deleting, and (for admins) sending
- * notifications via the database channel.
- */
 class NotificationController extends Controller
 {
-    /**
-     * Display a listing of notifications.
-     */
     public function index(): View
     {
+        if (auth()->user()->hasRole('superadmin')) {
+            $notifications = NotificationLog::with('sender')
+                ->latest()
+                ->paginate(20);
+
+            return view('notifications.admin-index', compact('notifications'));
+        }
+
         $notifications = auth()->user()
             ->notifications()
+            ->latest()
             ->paginate(20);
 
         return view('notifications.index', compact('notifications'));
     }
 
-    /**
-     * Mark notification as read and redirect to its action URL if set.
-     */
+    public function create(): View
+    {
+        $users = User::role('mahasiswa')
+            ->select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
+
+        return view('notifications.create', compact('users'));
+    }
+
+    public function send(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'message' => 'required|string',
+            'type' => 'required|in:info,success,warning,danger',
+            'recipient_mode' => 'required|in:all_mahasiswa,unverified_mahasiswa,incomplete_biodata,manual',
+            'users' => 'nullable|array',
+            'users.*' => 'exists:users,id',
+            'action_url' => 'nullable|url',
+            'action_text' => 'nullable|string|max:50',
+        ]);
+
+        $users = $this->resolveRecipients($request);
+
+        if ($users->isEmpty()) {
+            return back()->with('error', 'Tidak ada penerima yang ditemukan.');
+        }
+
+        $log = NotificationLog::create([
+            'title' => $request->title,
+            'message' => $request->message,
+            'type' => $request->type,
+            'recipients' => $users->pluck('name')->toArray(),
+            'action_url' => $request->action_url,
+            'action_text' => $request->action_text ?: 'View',
+            'sent_by' => auth()->id(),
+        ]);
+
+        foreach ($users as $user) {
+            $user->notify(new GeneralNotification(
+                title: $request->title,
+                message: $request->message,
+                actionUrl: $request->action_url,
+                actionText: $request->action_text ?: 'View',
+                type: $request->type,
+                notificationLogId: $log->id
+            ));
+        }
+
+        return redirect()
+            ->route('notifications.index')
+            ->with('success', 'Notifikasi berhasil dikirim ke ' . $users->count() . ' pengguna.');
+    }
+
     public function markAsRead(string $id): RedirectResponse
     {
         $notification = auth()->user()
@@ -40,53 +94,65 @@ class NotificationController extends Controller
 
         $notification->markAsRead();
 
-        if (isset($notification->data['action_url'])) {
-            return redirect($notification->data['action_url']);
-        }
-
-        return redirect()->route('notifications.index');
+        return isset($notification->data['action_url'])
+            ? redirect($notification->data['action_url'])
+            : redirect()->route('notifications.index');
     }
 
-    /**
-     * Mark all notifications as read.
-     */
     public function markAllAsRead(): RedirectResponse
     {
         auth()->user()->unreadNotifications->markAsRead();
 
-        return redirect()->route('notifications.index')
-            ->with('success', 'All notifications marked as read.');
+        return back()->with('success', 'Semua notifikasi ditandai telah dibaca.');
     }
 
-    /**
-     * Delete a notification.
-     */
     public function destroy(string $id): RedirectResponse
     {
-        $notification = auth()->user()
+        auth()->user()
             ->notifications()
-            ->findOrFail($id);
+            ->findOrFail($id)
+            ->delete();
 
-        $notification->delete();
-
-        return redirect()->route('notifications.index')
-            ->with('success', 'Notification deleted successfully.');
+        return back()->with('success', 'Notifikasi berhasil dihapus.');
     }
 
-    /**
-     * Delete all notifications.
-     */
     public function destroyAll(): RedirectResponse
     {
         auth()->user()->notifications()->delete();
 
-        return redirect()->route('notifications.index')
-            ->with('success', 'All notifications deleted successfully.');
+        return back()->with('success', 'Semua notifikasi berhasil dihapus.');
     }
 
-    /**
-     * Get unread notifications count (AJAX endpoint).
-     */
+    public function destroyHistory(string $id): RedirectResponse
+    {
+        $log = NotificationLog::findOrFail($id);
+
+        DB::table('notifications')
+            ->where('data->notification_log_id', $log->id)
+            ->delete();
+
+        $log->delete();
+
+        return back()->with(
+            'success',
+            'Riwayat notifikasi dan notifikasi penerima berhasil dihapus.'
+        );
+    }
+
+    public function clearHistory(): RedirectResponse
+    {
+        DB::table('notifications')
+            ->whereNotNull('data->notification_log_id')
+            ->delete();
+
+        NotificationLog::truncate();
+
+        return back()->with(
+            'success',
+            'Seluruh riwayat notifikasi berhasil dihapus.'
+        );
+    }
+
     public function unreadCount(): JsonResponse
     {
         return response()->json([
@@ -94,74 +160,33 @@ class NotificationController extends Controller
         ]);
     }
 
-    /**
-     * Get recent notifications for the dropdown (AJAX endpoint).
-     */
     public function recent(): JsonResponse
     {
-        $notifications = auth()->user()
-            ->notifications()
-            ->latest()
-            ->take(5)
-            ->get();
-
-        return response()->json($notifications);
+        return response()->json(
+            auth()->user()
+                ->notifications()
+                ->latest()
+                ->take(5)
+                ->get()
+        );
     }
 
-    /**
-     * Send a test notification to the current user.
-     */
-    public function sendTest(): RedirectResponse
+    private function resolveRecipients(Request $request)
     {
-        auth()->user()->notify(new GeneralNotification(
-            'Test Notification',
-            'This is a test notification to verify the notification system is working correctly.',
-            route('notifications.index'),
-            'View Notifications',
-            'info'
-        ));
+        return match ($request->recipient_mode) {
+            'all_mahasiswa' => User::role('mahasiswa')->get(),
 
-        return redirect()->route('notifications.index')
-            ->with('success', 'Test notification sent successfully.');
-    }
+            'unverified_mahasiswa' => User::role('mahasiswa')
+                ->whereNull('email_verified_at')
+                ->get(),
 
-    /**
-     * Show create notification form (admin only).
-     */
-    public function create(): View
-    {
-        $users = User::select('id', 'name', 'email')->get();
-        return view('notifications.create', compact('users'));
-    }
+            'incomplete_biodata' => User::role('mahasiswa')
+                ->where('is_biodata_complete', false)
+                ->get(),
 
-    /**
-     * Send notification to selected users (admin only).
-     */
-    public function send(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'message' => 'required|string',
-            'type' => 'required|in:info,success,warning,danger',
-            'users' => 'required|array',
-            'users.*' => 'exists:users,id',
-            'action_url' => 'nullable|url',
-            'action_text' => 'nullable|string',
-        ]);
+            'manual' => User::whereIn('id', $request->users ?? [])->get(),
 
-        $users = User::whereIn('id', $request->users)->get();
-
-        foreach ($users as $user) {
-            $user->notify(new GeneralNotification(
-                $request->title,
-                $request->message,
-                $request->action_url,
-                $request->action_text ?? 'View',
-                $request->type
-            ));
-        }
-
-        return redirect()->route('notifications.create')
-            ->with('success', 'Notification sent to ' . count($users) . ' user(s).');
+            default => collect(),
+        };
     }
 }
