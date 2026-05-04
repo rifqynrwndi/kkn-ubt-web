@@ -18,4 +18,11 @@ class Gelombang extends Model
         'kuota_total',
         'status',
     ];
+
+    public function pesertaKkn()
+    {
+        return $this->hasMany(PesertaKkn::class);
+    }
 }
+
+

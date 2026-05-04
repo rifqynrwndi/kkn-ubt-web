@@ -81,12 +81,18 @@
 
                                     <td class="text-center" style="white-space: nowrap;">
                                         <a href="{{ route('gelombang.show', $item->id) }}"
-                                           class="btn btn-info btn-sm">
+                                           class="btn btn-info btn-sm"
+                                           data-toggle="tooltip"
+                                           data-placement="top"
+                                           title="Lihat Gelombang">
                                             <i class="fas fa-eye"></i>
                                         </a>
 
                                         <a href="{{ route('gelombang.edit', $item->id) }}"
-                                           class="btn btn-primary btn-sm">
+                                           class="btn btn-primary btn-sm"
+                                           data-toggle="tooltip"
+                                           data-placement="top"
+                                           title="Edit Gelombang">
                                             <i class="fas fa-edit"></i>
                                         </a>
 
@@ -97,6 +103,9 @@
                                             @method('DELETE')
 
                                             <button class="btn btn-danger btn-sm"
+                                                    data-toggle="tooltip"
+                                                    data-placement="top"
+                                                    title="Hapus Gelombang"
                                                     onclick="return confirm('Hapus data?')">
                                                 <i class="fas fa-trash"></i>
                                             </button>

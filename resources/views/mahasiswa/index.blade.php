@@ -66,11 +66,13 @@
                             <td class="text-center" style="white-space: nowrap;">
                                 <a href="{{ route('mahasiswa.show', $mhs->id) }}"
                                     class="btn btn-info btn-sm"
+                                    data-toggle="tooltip"
+                                    data-placement="top"
                                     title="Detail Biodata">
                                     <i class="fas fa-eye"></i>
                                 </a>
 
-                                <a href="{{ route('mahasiswa.edit', $mhs) }}" class="btn btn-warning btn-sm">
+                                <a href="{{ route('mahasiswa.edit', $mhs) }}" class="btn btn-warning btn-sm" data-toggle="tooltip" data-placement="top" title="Edit Mahasiswa">
                                     <i class="fas fa-edit"></i>
                                 </a>
 
@@ -81,6 +83,9 @@
                                     @method('DELETE')
 
                                     <button class="btn btn-danger btn-sm"
+                                            data-toggle="tooltip"
+                                            data-placement="top"
+                                            title="Hapus Mahasiswa"
                                             onclick="return confirm('Hapus mahasiswa?')">
                                         <i class="fas fa-trash"></i>
                                     </button>

@@ -85,7 +85,7 @@
                                                     <a href="{{ route('hakakses.edit', $user->id) }}" class="btn btn-sm btn-info">
                                                         <i class="fas fa-edit"></i> Edit
                                                     </a>
-                                                    <form action="{{ route('hakakses.delete', $user->id) }}" method="POST" class="d-inline">
+                                                    <form action="{{ route('hakakses.destroy', $user->id) }}" method="POST" class="d-inline">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this user?')">

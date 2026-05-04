@@ -56,7 +56,10 @@
 
                                         {{-- EDIT FAKULTAS --}}
                                         <a href="{{ route('fakultas-prodi.fakultas.edit', $item->fakultas->id) }}"
-                                           class="btn btn-info btn-sm">
+                                        class="btn btn-info btn-sm"
+                                        data-toggle="tooltip"
+                                        data-placement="top"
+                                        title="Edit Fakultas">
                                             <i class="fas fa-edit"></i>
                                         </a>
 
@@ -68,7 +71,7 @@
                                             @csrf
                                             @method('DELETE')
 
-                                            <button class="btn btn-danger btn-sm">
+                                            <button class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="top" title="Hapus Fakultas" >
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
@@ -80,7 +83,10 @@
 
                                         {{-- EDIT PRODI (ke blade edit) --}}
                                         <a href="{{ route('fakultas-prodi.prodi.edit', $item->id) }}"
-                                           class="btn btn-info btn-sm">
+                                           class="btn btn-info btn-sm"
+                                           data-toggle="tooltip"
+                                           data-placement="top"
+                                           title="Edit Prodi">
                                             <i class="fas fa-edit"></i>
                                         </a>
 
@@ -92,7 +98,7 @@
                                             @csrf
                                             @method('DELETE')
 
-                                            <button class="btn btn-danger btn-sm">
+                                            <button class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="top" title="Hapus Prodi">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
@@ -117,7 +123,10 @@
 
                                             {{-- EDIT FAKULTAS --}}
                                             <a href="{{ route('fakultas-prodi.fakultas.edit', $fak->id) }}"
-                                               class="btn btn-info btn-sm">
+                                               class="btn btn-info btn-sm"
+                                               data-toggle="tooltip"
+                                               data-placement="top"
+                                               title="Edit Fakultas">
                                                 <i class="fas fa-edit"></i>
                                             </a>
 
@@ -129,7 +138,7 @@
                                                 @csrf
                                                 @method('DELETE')
 
-                                                <button class="btn btn-danger btn-sm">
+                                                <button class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="top" title="Hapus Fakultas">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>

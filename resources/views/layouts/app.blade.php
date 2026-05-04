@@ -97,6 +97,13 @@
         });
     </script>
 
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+
+
     <!-- Additional JS (if any) -->
     @stack('scripts')
 </body>
