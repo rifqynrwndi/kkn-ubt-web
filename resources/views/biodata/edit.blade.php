@@ -9,12 +9,59 @@
     </div>
 
     <div class="section-body">
+
+        @if (session('status') == 'verification-link-sent')
+            <div class="alert alert-success">
+                Link verifikasi berhasil dikirim ke email Anda.
+            </div>
+        @endif
+
         <div class="card">
             <div class="card-header">
                 <h4>Data Biodata</h4>
             </div>
 
             <div class="card-body">
+
+                {{-- EMAIL VERIFICATION SECTION --}}
+                <div class="mb-4">
+                    <label>Email Akun</label>
+
+                    <div class="d-flex align-items-center flex-wrap">
+                        <input type="email"
+                               class="form-control"
+                               value="{{ auth()->user()->email }}"
+                               readonly>
+
+                        @if(auth()->user()->hasVerifiedEmail())
+                            <span class="badge badge-success ml-2 mt-2 mt-md-0">
+                                <i class="fas fa-check-circle"></i> Terverifikasi
+                            </span>
+                        @else
+                            <span class="badge badge-warning ml-2 mt-2 mt-md-0">
+                                <i class="fas fa-exclamation-circle"></i> Belum Verifikasi
+                            </span>
+                        @endif
+                    </div>
+
+                    @unless(auth()->user()->hasVerifiedEmail())
+                        <small class="text-danger d-block mt-2">
+                            Email belum diverifikasi. Silakan cek inbox/spam email Anda.
+                        </small>
+
+                        <form method="POST"
+                              action="{{ route('verification.send') }}"
+                              class="mt-2">
+                            @csrf
+
+                            <button type="submit" class="btn btn-warning btn-sm">
+                                <i class="fas fa-paper-plane"></i> Kirim Ulang Email Verifikasi
+                            </button>
+                        </form>
+                    @endunless
+                </div>
+
+                {{-- FORM BIODATA --}}
                 <form action="{{ route('biodata.update') }}"
                       method="POST"
                       enctype="multipart/form-data">
@@ -53,10 +100,10 @@
                         <div class="form-group col-md-6">
                             <label>NPM</label>
                             <input type="text"
-                                name="npm"
-                                class="form-control"
-                                value="{{ old('npm', $mahasiswa->npm) }}"
-                                readonly>
+                                   name="npm"
+                                   class="form-control"
+                                   value="{{ old('npm', $mahasiswa->npm) }}"
+                                   readonly>
                         </div>
 
                         {{-- PRODI --}}
@@ -87,12 +134,10 @@
                                     class="form-control @error('jenis_kelamin') is-invalid @enderror"
                                     required>
                                 <option value="">Pilih Jenis Kelamin</option>
-                                <option value="L"
-                                    {{ old('jenis_kelamin', $mahasiswa->jenis_kelamin) == 'L' ? 'selected' : '' }}>
+                                <option value="L" {{ old('jenis_kelamin', $mahasiswa->jenis_kelamin) == 'L' ? 'selected' : '' }}>
                                     Laki-laki
                                 </option>
-                                <option value="P"
-                                    {{ old('jenis_kelamin', $mahasiswa->jenis_kelamin) == 'P' ? 'selected' : '' }}>
+                                <option value="P" {{ old('jenis_kelamin', $mahasiswa->jenis_kelamin) == 'P' ? 'selected' : '' }}>
                                     Perempuan
                                 </option>
                             </select>
@@ -161,10 +206,11 @@
 
                     <div class="text-right">
                         <button type="submit" class="btn btn-primary">
-                            Simpan Biodata
+                            <i class="fas fa-save"></i> Simpan Biodata
                         </button>
                     </div>
                 </form>
+
             </div>
         </div>
     </div>

@@ -12,6 +12,7 @@
 
         <ul class="sidebar-menu">
 
+            {{-- DASHBOARD --}}
             <li class="menu-header">Dashboard</li>
 
             <li class="{{ Request::is('home') ? 'active' : '' }}">
@@ -22,6 +23,7 @@
             </li>
 
 
+            {{-- ADMIN PANEL --}}
             @role('superadmin')
                 <li class="menu-header">Admin Panel</li>
 
@@ -55,6 +57,7 @@
             @endrole
 
 
+            {{-- FEATURES --}}
             <li class="menu-header">Features</li>
 
             <li class="{{ Request::is('notifications*') ? 'active' : '' }}">
@@ -73,6 +76,7 @@
             </li>
 
 
+            {{-- ADMIN TOOLS --}}
             @role('superadmin')
                 <li class="menu-header">Admin Tools</li>
 
@@ -92,14 +96,24 @@
             @endrole
 
 
+            {{-- PROFILE --}}
             <li class="menu-header">Profile</li>
 
-            <li class="{{ Request::is('profile/edit') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('profile.edit') }}">
-                    <i class="far fa-user"></i>
-                    <span>Profile</span>
-                </a>
-            </li>
+            @role('superadmin')
+                <li class="{{ Request::is('profile/edit') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('profile.edit') }}">
+                        <i class="far fa-user"></i>
+                        <span>Profile</span>
+                    </a>
+                </li>
+            @else
+                <li class="{{ Request::is('biodata/edit') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('biodata.edit') }}">
+                        <i class="far fa-user"></i>
+                        <span>Profile</span>
+                    </a>
+                </li>
+            @endrole
 
             <li class="{{ Request::is('profile/change-password') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('profile.change-password') }}">
