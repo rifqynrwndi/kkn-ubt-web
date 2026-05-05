@@ -24,10 +24,12 @@ return new class extends Migration
 
             $table->enum('status_pendaftaran', [
                 'draft',
-                'submitted',
-                'revision_required',
-                'verified',
-                'rejected'
+                'pending_documents',
+                'pending_verification',
+                'revision',
+                'approved',
+                'rejected',
+                'expired'
             ])->default('draft');
 
             $table->timestamp('submitted_at')->nullable();

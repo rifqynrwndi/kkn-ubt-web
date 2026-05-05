@@ -16,6 +16,9 @@ use App\Http\Controllers\{
     HomeController,
     MahasiswaManagementController,
     NotificationController,
+    PendaftaranKknController,
+    DokumenPendaftaranController,
+    VerifikasiDokumenController,
     ProfileController,
     SettingController
 };
@@ -52,6 +55,18 @@ Route::middleware('auth')->group(function () {
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/change-password', [ProfileController::class, 'changePassword'])->name('change-password');
         Route::put('/password', [ProfileController::class, 'password'])->name('password');
+    });
+
+    Route::prefix('pendaftaran-kkn')->name('pendaftaran-kkn.')->group(function () {
+        Route::get('/', [PendaftaranKknController::class, 'index'])->name('index');
+        Route::post('/', [PendaftaranKknController::class, 'store'])->name('store');
+    });
+
+    Route::prefix('dokumen-pendaftaran')->middleware('auth')->name('dokumen-pendaftaran.')->group(function () {
+        Route::get('/', [DokumenPendaftaranController::class, 'index'])->name('index');
+        Route::post('/upload', [DokumenPendaftaranController::class, 'store'])->name('store');
+        Route::get('/{id}', [DokumenPendaftaranController::class, 'show'])->name('show');
+        Route::delete('/{id}', [DokumenPendaftaranController::class, 'destroy'])->name('destroy');
     });
 
     Route::get('/email/verify', function () {
@@ -199,6 +214,7 @@ Route::middleware(['auth', 'biodata.complete'])->group(function () {
                 Route::put('/{prodi}', [FakultasProdiController::class, 'updateProdi'])->name('update');
                 Route::delete('/{prodi}', [FakultasProdiController::class, 'deleteProdi'])->name('delete');
             });
+
         });
 
         /*
@@ -223,6 +239,12 @@ Route::middleware(['auth', 'biodata.complete'])->group(function () {
 
         Route::resource('hakakses', HakaksesController::class)
             ->parameters(['hakakses' => 'id']);
+
+        Route::prefix('verifikasi-dokumen')->name('verifikasi-dokumen.')->group(function () {
+            Route::get('/', [VerifikasiDokumenController::class, 'index'])->name('index');
+            Route::get('/{id}', [VerifikasiDokumenController::class, 'show'])->name('show');
+            Route::put('/dokumen/{id}', [VerifikasiDokumenController::class, 'update'])->name('update');
+        });
 
         /*
         |--------------------------------------------------------------------------

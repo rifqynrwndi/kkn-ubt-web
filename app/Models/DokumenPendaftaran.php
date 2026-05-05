@@ -36,4 +36,21 @@ class DokumenPendaftaran extends Model
     {
         return $this->belongsTo(User::class, 'verified_by');
     }
+
+    public function getJenisDokumenLabelAttribute(): string
+    {
+        return [
+            'ktm' => 'KTM',
+            'transkrip' => 'Transkrip',
+            'surat_sehat' => 'Surat Sehat',
+            'pas_foto' => 'Pas Foto',
+        ][$this->jenis_dokumen] ?? $this->jenis_dokumen;
+    }
+
+    public const REQUIRED_DOCUMENTS = [
+        'ktm',
+        'transkrip',
+        'surat_sehat',
+        'pas_foto',
+    ];
 }

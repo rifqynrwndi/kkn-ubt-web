@@ -54,11 +54,27 @@
                         <span>Fakultas & Prodi</span>
                     </a>
                 </li>
+
+                <li class="{{ Request::is('verifikasi-dokumen*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('verifikasi-dokumen.index') }}">
+                        <i class="fas fa-file"></i>
+                        <span>Verifikasi Dokumen</span>
+                    </a>
+                </li>
             @endrole
 
 
             {{-- FEATURES --}}
             <li class="menu-header">Features</li>
+
+            @role('mahasiswa')
+            <li class="{{ Request::is('pendaftaran-kkn*') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('pendaftaran-kkn.index') }}">
+                    <i class="fas fa-file-signature"></i>
+                    <span>Pendaftaran</span>
+                </a>
+            </li>
+            @endrole
 
             <li class="{{ Request::is('notifications*') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('notifications.index') }}">

@@ -19,6 +19,10 @@ class HomeController extends Controller
 
     private function adminDashboard(): View
     {
+        $activeGelombang = Gelombang::whereIn('status', ['pendaftaran', 'berjalan'])
+            ->latest()
+            ->first();
+
         $stats = [
             'total_mahasiswa' => User::role('mahasiswa')->count(),
 
@@ -29,18 +33,16 @@ class HomeController extends Controller
             'incomplete_biodata' => User::role('mahasiswa')
                 ->where(function ($q) {
                     $q->whereDoesntHave('mahasiswa')
-                      ->orWhereHas('mahasiswa', function ($q2) {
-                          $q2->where('is_biodata_complete', false);
-                      });
+                    ->orWhereHas('mahasiswa', function ($q2) {
+                        $q2->where('is_biodata_complete', false);
+                    });
                 })
                 ->count(),
-
-            'active_gelombang' => Gelombang::where('status', 'berjalan')->count(),
         ];
 
         $gelombangs = Gelombang::withCount([
             'pesertaKkn as peserta_kkn_count' => function ($q) {
-                $q->where('status_pendaftaran', 'verified');
+                $q->where('status_pendaftaran', 'approved');
             }
         ])->get();
 
@@ -60,7 +62,7 @@ class HomeController extends Controller
             $reminders[] = $stats['incomplete_biodata'] . ' mahasiswa belum melengkapi biodata.';
         }
 
-        if ($stats['active_gelombang'] == 0) {
+        if (!$activeGelombang) {
             $reminders[] = 'Tidak ada gelombang aktif saat ini.';
         }
 
@@ -68,7 +70,8 @@ class HomeController extends Controller
             'stats',
             'gelombangChart',
             'latestMahasiswa',
-            'reminders'
+            'reminders',
+            'activeGelombang'
         ));
     }
 
@@ -86,7 +89,11 @@ class HomeController extends Controller
             ->take(5)
             ->get();
 
-        $activeGelombang = Gelombang::where('status', 'berjalan')->first();
+        // Cek apakah ada gelombang aktif untuk ditampilkan di dashboard
+
+        $activeGelombang = Gelombang::whereIn('status', ['pendaftaran', 'berjalan'])
+            ->latest()
+            ->first();
 
         $reminders = [];
 
