@@ -74,6 +74,13 @@
                     <span>Pendaftaran</span>
                 </a>
             </li>
+
+            <li class="{{ Request::is('dokumen-pendaftaran*') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('dokumen-pendaftaran.index') }}">
+                    <i class="fas fa-file-upload"></i>
+                    <span>Dokumen Pendaftaran</span>
+                </a>
+            </li>
             @endrole
 
             <li class="{{ Request::is('notifications*') ? 'active' : '' }}">
@@ -83,14 +90,6 @@
                     <livewire:notification-badge />
                 </a>
             </li>
-
-            <li class="{{ Request::is('file-manager*') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('file-manager.index') }}">
-                    <i class="fas fa-folder"></i>
-                    <span>File Manager</span>
-                </a>
-            </li>
-
 
             {{-- ADMIN TOOLS --}}
             @role('superadmin')

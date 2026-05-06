@@ -61,7 +61,18 @@
                                 @endif
                             </td>
 
-                            <td>-</td>
+                            <td>
+                                @if($mhs->mahasiswa?->pesertaKkn->count() > 0)
+                                {{-- // buat dia ikut gelombang namanya apa --}}
+                                    <span class="badge badge-outline-info">
+                                        {{ $mhs->mahasiswa->pesertaKkn->map(fn($p) => $p->gelombang->nama_gelombang)->join(', ') }}
+                                    </span>
+                                @else
+                                    <span class="badge badge-outline-secondary">
+                                        Belum Terdaftar
+                                    </span>
+                                @endif
+                            </td>
 
                             <td class="text-center" style="white-space: nowrap;">
                                 <a href="{{ route('mahasiswa.show', $mhs->id) }}"

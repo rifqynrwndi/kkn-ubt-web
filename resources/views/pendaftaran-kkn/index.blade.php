@@ -51,7 +51,20 @@
                             Anda sudah terdaftar pada gelombang ini.
                             <br>
                             Status Pendaftaran:
-                            <strong>{{ ucwords(str_replace('_', ' ', $pendaftaran->status_pendaftaran)) }}</strong>
+                            @if($pendaftaran->status_pendaftaran === 'draft')
+                                <strong>Draft - Dokumen Belum Lengkap</strong>
+                            @elseif($pendaftaran->status_pendaftaran === 'pending_documents')
+                                <strong>Dokumen Belum Lengkap - Dokumen Sedang Diproses</strong>
+                            @elseif($pendaftaran->status_pendaftaran === 'revision')
+                                <strong>Terdapat Revisi - Dokumen Sedang Diproses</strong>
+                            @elseif($pendaftaran->status_pendaftaran === 'verified')
+                                <strong>Verified - Dokumen Lengkap</strong>
+                            @elseif($pendaftaran->status_pendaftaran === 'rejected')
+                                <strong>Rejected - Dokumen Tidak Lengkap</strong>
+                            @else
+                                <span class="badge badge-info">{{ ucwords(str_replace('_', ' ', $pendaftaran->status_pendaftaran)) }}</span>
+                            @endif
+
                         </div>
 
                         @if(

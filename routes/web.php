@@ -62,11 +62,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [PendaftaranKknController::class, 'store'])->name('store');
     });
 
-    Route::prefix('dokumen-pendaftaran')->middleware('auth')->name('dokumen-pendaftaran.')->group(function () {
-        Route::get('/', [DokumenPendaftaranController::class, 'index'])->name('index');
-        Route::post('/upload', [DokumenPendaftaranController::class, 'store'])->name('store');
-        Route::get('/{id}', [DokumenPendaftaranController::class, 'show'])->name('show');
-        Route::delete('/{id}', [DokumenPendaftaranController::class, 'destroy'])->name('destroy');
+    Route::prefix('dokumen-pendaftaran')->group(function () {
+        Route::get('/', [DokumenPendaftaranController::class, 'index'])->name('dokumen-pendaftaran.index');
+        Route::get('/create', [DokumenPendaftaranController::class, 'create'])->name('dokumen-pendaftaran.create');
+        Route::post('/', [DokumenPendaftaranController::class, 'store'])->name('dokumen-pendaftaran.store');
+        Route::get('/{id}', [DokumenPendaftaranController::class, 'show'])->name('dokumen-pendaftaran.show');
+        Route::delete('/{id}', [DokumenPendaftaranController::class, 'destroy'])->name('dokumen-pendaftaran.destroy');
     });
 
     Route::get('/email/verify', function () {
@@ -147,27 +148,6 @@ Route::middleware(['auth', 'biodata.complete'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Example Pages
-    |--------------------------------------------------------------------------
-    */
-
-    Route::controller(ExampleController::class)->group(function () {
-        Route::get('/table-example', 'table')->name('table.example');
-        Route::get('/clock-example', 'clock')->name('clock.example');
-        Route::get('/chart-example', 'chart')->name('chart.example');
-        Route::get('/form-example', 'form')->name('form.example');
-        Route::get('/map-example', 'map')->name('map.example');
-        Route::get('/calendar-example', 'calendar')->name('calendar.example');
-        Route::get('/gallery-example', 'gallery')->name('gallery.example');
-        Route::get('/todo-example', 'todo')->name('todo.example');
-        Route::get('/contact-example', 'contact')->name('contact.example');
-        Route::get('/faq-example', 'faq')->name('faq.example');
-        Route::get('/news-example', 'news')->name('news.example');
-        Route::get('/about-example', 'about')->name('about.example');
-    });
-
-    /*
-    |--------------------------------------------------------------------------
     | Superadmin Only
     |--------------------------------------------------------------------------
     */
@@ -244,6 +224,8 @@ Route::middleware(['auth', 'biodata.complete'])->group(function () {
             Route::get('/', [VerifikasiDokumenController::class, 'index'])->name('index');
             Route::get('/{id}', [VerifikasiDokumenController::class, 'show'])->name('show');
             Route::put('/dokumen/{id}', [VerifikasiDokumenController::class, 'update'])->name('update');
+            Route::post('/verifikasi-dokumen/bulk-approve',[VerifikasiDokumenController::class, 'bulkApprove'])->name('bulk-approve');
+            Route::put('/verifikasi-dokumen/{peserta}/bulk-update',[VerifikasiDokumenController::class, 'bulkUpdate'])->name('bulk-update');
         });
 
         /*
