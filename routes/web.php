@@ -16,6 +16,8 @@ use App\Http\Controllers\{
     HomeController,
     MahasiswaManagementController,
     NotificationController,
+    DosenPembimbingLapanganController,
+    DesaController,
     PendaftaranKknController,
     DokumenPendaftaranController,
     VerifikasiDokumenController,
@@ -169,6 +171,36 @@ Route::middleware(['auth', 'biodata.complete'])->group(function () {
         */
 
         Route::resource('gelombang', GelombangController::class);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Dosen Pembimbing Lapangan
+        |--------------------------------------------------------------------------
+        */
+
+        Route::resource('pembimbing-lapangan', DosenPembimbingLapanganController::class);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Desa
+        |--------------------------------------------------------------------------
+        */
+
+        Route::resource('desa', DesaController::class);
+
+        Route::prefix('desa')->name('desa.')->group(function () {
+            Route::get('/kecamatan/create', [DesaController::class, 'createKecamatan'])
+                ->name('createKecamatan');
+
+            Route::post('/kecamatan/store', [DesaController::class, 'storeKecamatan'])
+                ->name('storeKecamatan');
+
+            Route::get('/kecamatan/{kecamatan}/edit', [DesaController::class, 'editKecamatan'])
+                ->name('editKecamatan');
+
+            Route::put('/kecamatan/{kecamatan}', [DesaController::class, 'updateKecamatan'])
+                ->name('updateKecamatan');
+        });
 
         /*
         |--------------------------------------------------------------------------

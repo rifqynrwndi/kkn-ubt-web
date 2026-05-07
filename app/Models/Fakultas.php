@@ -16,4 +16,9 @@ class Fakultas extends Model
     {
         return $this->hasMany(ProgramStudi::class, 'fakultas_id');
     }
+
+    public function kuotaDesa()
+    {
+        return $this->hasMany(KuotaFakultasDesa::class);
+    }
 }

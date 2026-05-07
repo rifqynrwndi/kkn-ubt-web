@@ -55,6 +55,20 @@
                     </a>
                 </li>
 
+                <li class="{{ Request::is('pembimbing-lapangan*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('pembimbing-lapangan.index') }}">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <span>Data Pembimbing</span>
+                    </a>
+                </li>
+
+                <li class="{{ Request::is('desa*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('desa.index') }}">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Data Desa</span>
+                    </a>
+                </li>
+
                 <li class="{{ Request::is('verifikasi-dokumen*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('verifikasi-dokumen.index') }}">
                         <i class="fas fa-file"></i>

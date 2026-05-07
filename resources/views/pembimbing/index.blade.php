@@ -1,0 +1,125 @@
+@extends('layouts.app')
+
+@section('title', 'Dosen Pembimbing Lapangan')
+
+@section('content')
+<section class="section">
+
+    <div class="section-header d-flex justify-content-between">
+        <h1>Dosen Pembimbing Lapangan</h1>
+
+        <a href="{{ route('pembimbing-lapangan.create') }}"
+           class="btn btn-primary">
+            Tambah DPL
+        </a>
+    </div>
+
+    <div class="section-body">
+
+        <div class="card">
+            <div class="card-body p-0">
+
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Email</th>
+                                <th>Fakultas</th>
+                                <th>NIDN</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @forelse($dpl as $item)
+                                <tr>
+
+                                    <td>
+                                        {{ $item->user->name }}
+                                    </td>
+
+                                    <td>
+                                        {{ $item->user->email }}
+                                    </td>
+
+                                    <td>
+                                        {{ $item->fakultas?->nama_fakultas ?? '-' }}
+                                    </td>
+
+                                    <td>
+                                        {{ $item->nidn ?? '-' }}
+                                    </td>
+
+                                    <td>
+                                        @if($item->status === 'aktif')
+                                            <span class="badge badge-success">
+                                                Aktif
+                                            </span>
+                                        @else
+                                            <span class="badge badge-secondary">
+                                                Nonaktif
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <td>
+                                        <div class="d-flex">
+
+                                            {{-- DETAIL --}}
+                                            <a href="{{ route('pembimbing-lapangan.show', $item->id) }}"
+                                            class="btn btn-info btn-sm mr-1">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+
+                                            {{-- EDIT --}}
+                                            <a href="{{ route('pembimbing-lapangan.edit', $item->id) }}"
+                                            class="btn btn-warning btn-sm mr-1">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+
+                                            {{-- DELETE --}}
+                                            <form action="{{ route('pembimbing-lapangan.destroy', $item->id) }}"
+                                                method="POST"
+                                                onsubmit="return confirm('Hapus DPL ini?')">
+
+                                                @csrf
+                                                @method('DELETE')
+
+                                                <button class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+
+                                        </div>
+                                    </td>
+
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6"
+                                        class="text-center text-muted py-4">
+                                        Belum ada data DPL.
+                                    </td>
+                                </tr>
+                            @endforelse
+
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
+
+            <div class="card-footer">
+                {{ $dpl->links() }}
+            </div>
+
+        </div>
+
+    </div>
+</section>
+@endsection
