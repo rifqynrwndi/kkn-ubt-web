@@ -23,9 +23,13 @@
             </li>
 
 
-            {{-- ADMIN PANEL --}}
+            {{-- ADMIN MENU --}}
             @role('superadmin')
-                <li class="menu-header">Admin Panel</li>
+
+                {{-- USER & ACCESS --}}
+                <li class="menu-header">
+                    User & Access
+                </li>
 
                 <li class="{{ Request::is('hakakses*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('hakakses.index') }}">
@@ -39,6 +43,19 @@
                         <i class="fas fa-users"></i>
                         <span>Data Mahasiswa</span>
                     </a>
+                </li>
+
+                <li class="{{ Request::is('pembimbing-lapangan*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('pembimbing-lapangan.index') }}">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <span>Data Pembimbing</span>
+                    </a>
+                </li>
+
+
+                {{-- AKADEMIK --}}
+                <li class="menu-header">
+                    Akademik KKN
                 </li>
 
                 <li class="{{ Request::is('gelombang*') ? 'active' : '' }}">
@@ -55,11 +72,17 @@
                     </a>
                 </li>
 
-                <li class="{{ Request::is('pembimbing-lapangan*') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ route('pembimbing-lapangan.index') }}">
-                        <i class="fas fa-chalkboard-teacher"></i>
-                        <span>Data Pembimbing</span>
+                <li class="{{ Request::is('verifikasi-dokumen*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('verifikasi-dokumen.index') }}">
+                        <i class="fas fa-file"></i>
+                        <span>Verifikasi Dokumen</span>
                     </a>
+                </li>
+
+
+                {{-- PENEMPATAN --}}
+                <li class="menu-header">
+                    Penempatan
                 </li>
 
                 <li class="{{ Request::is('desa*') ? 'active' : '' }}">
@@ -69,12 +92,36 @@
                     </a>
                 </li>
 
-                <li class="{{ Request::is('verifikasi-dokumen*') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ route('verifikasi-dokumen.index') }}">
-                        <i class="fas fa-file"></i>
-                        <span>Verifikasi Dokumen</span>
+                <li class="{{ Request::is('kelompok-kkn*') ? 'active' : '' }}">
+                    <a class="nav-link"
+                    href="{{ route('kelompok-kkn.index') }}">
+
+                        <i class="fas fa-users-cog"></i>
+                        <span>Kelompok KKN</span>
+
                     </a>
                 </li>
+
+
+                {{-- SYSTEM --}}
+                <li class="menu-header">
+                    System
+                </li>
+
+                <li class="{{ Request::is('activity-logs*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('activity-logs.index') }}">
+                        <i class="fas fa-history"></i>
+                        <span>Activity Logs</span>
+                    </a>
+                </li>
+
+                <li class="{{ Request::is('settings*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('settings.index') }}">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+
             @endrole
 
 

@@ -145,11 +145,21 @@ class MahasiswaManagementController extends Controller
             ->with('success', 'Data mahasiswa berhasil diperbarui.');
     }
 
-    public function destroy(User $user)
+    public function destroy($id)
     {
-        $user->mahasiswa?->delete();
+        $user = User::with('mahasiswa')->findOrFail($id);
+
+        if ($user->mahasiswa) {
+            $user->mahasiswa->delete();
+        }
+
+        $user->roles()->detach();
+
         $user->delete();
 
-        return back()->with('success', 'Mahasiswa berhasil dihapus.');
+        return back()->with(
+            'success',
+            'Mahasiswa berhasil dihapus.'
+        );
     }
 }

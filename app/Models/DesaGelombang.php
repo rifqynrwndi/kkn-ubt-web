@@ -38,4 +38,9 @@ class DesaGelombang extends Model
         {
             return $this->hasMany(KuotaFakultasDesa::class);
         }
+
+        public function kelompokKkn()
+        {
+            return $this->hasMany(KelompokKkn::class);
+        }
 }

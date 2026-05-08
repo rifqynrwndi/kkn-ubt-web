@@ -6,6 +6,8 @@ use App\Models\DokumenPendaftaran;
 use App\Models\PesertaKkn;
 use Illuminate\Http\Request;
 use App\Notifications\DokumenVerifiedNotification;
+use Illuminate\Support\Facades\DB;
+use App\Notifications\BulkDokumenVerifiedNotification;
 
 class VerifikasiDokumenController extends Controller
 {
@@ -144,33 +146,44 @@ class VerifikasiDokumenController extends Controller
             'peserta_ids.*' => 'exists:peserta_kkn,id',
         ]);
 
-        $pesertaList = PesertaKkn::with('dokumenPendaftaran')
+        DB::transaction(function () use ($request) {
+
+            $pesertaList = PesertaKkn::with([
+                'dokumenPendaftaran',
+                'mahasiswa.user'
+            ])
             ->whereIn('id', $request->peserta_ids)
             ->get();
 
-        foreach ($pesertaList as $peserta) {
-            foreach ($peserta->dokumenPendaftaran as $dokumen) {
-                if ($dokumen->status_verifikasi !== 'verified') {
-                    $dokumen->update([
-                        'status_verifikasi' => 'verified',
-                        'verified_by' => auth()->id(),
-                        'verified_at' => now(),
-                        'catatan_revisi' => null,
-                    ]);
+            foreach ($pesertaList as $peserta) {
+
+                foreach ($peserta->dokumenPendaftaran as $dokumen) {
+
+                    if ($dokumen->status_verifikasi !== 'verified') {
+
+                        $dokumen->update([
+                            'status_verifikasi' => 'verified',
+                            'verified_by' => auth()->id(),
+                            'verified_at' => now(),
+                            'catatan_revisi' => null,
+                        ]);
+
+                    }
+
                 }
+
+                $this->syncPesertaStatus($peserta);
+
+                $peserta->mahasiswa->user->notify(
+                    new BulkDokumenVerifiedNotification($peserta)
+                );
             }
 
-            $this->syncPesertaStatus($peserta);
-
-            $peserta->mahasiswa->user
-                ->notify(new DokumenVerifiedNotification(
-                    $peserta->dokumenPendaftaran->first()
-                ));
-        }
+        });
 
         return back()->with(
             'success',
-            count($pesertaList).' peserta berhasil diverifikasi.'
+            'Peserta berhasil diverifikasi secara massal.'
         );
     }
 
@@ -178,35 +191,61 @@ class VerifikasiDokumenController extends Controller
     {
         $request->validate([
             'documents' => 'required|array',
-            'documents.*.status_verifikasi' => 'required|in:verified,revision_required,rejected',
-            'documents.*.catatan_revisi' => 'nullable|string',
+            'documents.*.status_verifikasi' =>
+                'required|in:verified,revision_required,rejected',
+
+            'documents.*.catatan_revisi' =>
+                'nullable|string',
         ]);
 
-        $peserta = PesertaKkn::with('dokumenPendaftaran', 'mahasiswa.user')
-            ->findOrFail($pesertaId);
+        DB::transaction(function () use ($request, $pesertaId) {
 
-        foreach ($request->documents as $dokumenId => $data) {
-            $dokumen = DokumenPendaftaran::where('id', $dokumenId)
-                ->where('peserta_kkn_id', $peserta->id)
+            $peserta = PesertaKkn::with([
+                'dokumenPendaftaran',
+                'mahasiswa.user'
+            ])->findOrFail($pesertaId);
+
+            foreach ($request->documents as $dokumenId => $data) {
+
+                $dokumen = DokumenPendaftaran::where(
+                    'id',
+                    $dokumenId
+                )
+                ->where(
+                    'peserta_kkn_id',
+                    $peserta->id
+                )
                 ->first();
 
-            if (!$dokumen) {
-                continue;
+                if (!$dokumen) {
+                    continue;
+                }
+
+                $dokumen->update([
+                    'status_verifikasi' =>
+                        $data['status_verifikasi'],
+
+                    'catatan_revisi' =>
+                        $data['catatan_revisi'] ?? null,
+
+                    'verified_by' => auth()->id(),
+
+                    'verified_at' => now(),
+                ]);
+
             }
 
-            $dokumen->update([
-                'status_verifikasi' => $data['status_verifikasi'],
-                'catatan_revisi' => $data['catatan_revisi'] ?? null,
-                'verified_by' => auth()->id(),
-                'verified_at' => now(),
-            ]);
-        }
+            $this->syncPesertaStatus(
+                $peserta->fresh()
+            );
 
-        $this->syncPesertaStatus($peserta->fresh());
+            $peserta->mahasiswa->user->notify(
+                new BulkDokumenVerifiedNotification(
+                    $peserta->fresh()
+                )
+            );
 
-        $peserta->mahasiswa->user->notify(
-            new DokumenVerifiedNotification($peserta->fresh())
-        );
+        });
 
         return back()->with(
             'success',

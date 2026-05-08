@@ -152,7 +152,7 @@
                                                 Aktif
                                             </span>
                                         @else
-                                            <span class="badge badge-secondary">
+                                            <span class="badge badge-danger">
                                                 Nonaktif
                                             </span>
                                         @endif

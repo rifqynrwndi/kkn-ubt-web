@@ -93,21 +93,66 @@
 
                     </div>
 
-                    {{-- ALAMAT --}}
-                    <div class="form-group">
-                        <label>Alamat</label>
+                    <hr>
 
-                        <textarea name="alamat"
-                                  rows="4"
-                                  class="form-control @error('alamat') is-invalid @enderror"
-                                  placeholder="Masukkan alamat desa">{{ old('alamat', $desa->alamat) }}</textarea>
+                    {{-- RELASI DESA GELOMBANG --}}
+                    <h6 class="mb-3">
+                        Penempatan Gelombang
+                    </h6>
 
-                        @error('alamat')
-                            <div class="invalid-feedback">
-                                {{ $message }}
+                    <div class="row">
+
+                        {{-- GELOMBANG --}}
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Gelombang</label>
+
+                                <select name="gelombang_id"
+                                        class="form-control @error('gelombang_id') is-invalid @enderror">
+
+                                    <option value="">
+                                        Belum Dipilih
+                                    </option>
+
+                                    @foreach($gelombang as $item)
+                                        <option value="{{ $item->id }}"
+                                            {{ old('gelombang_id', $desaGelombang->gelombang_id ?? '') == $item->id ? 'selected' : '' }}>
+                                            {{ $item->nama_gelombang }}
+                                        </option>
+                                    @endforeach
+
+                                </select>
+
+                                @error('gelombang_id')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
                             </div>
-                        @enderror
+                        </div>
+
+                        {{-- KUOTA --}}
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Kuota Total</label>
+
+                                <input type="number"
+                                       name="kuota_total"
+                                       class="form-control @error('kuota_total') is-invalid @enderror"
+                                       value="{{ old('kuota_total', $desaGelombang->kuota_total ?? 12) }}"
+                                       min="1">
+
+                                @error('kuota_total')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+                        </div>
+
                     </div>
+
+                    <hr>
 
                     {{-- STATUS --}}
                     <div class="form-group">
@@ -135,8 +180,6 @@
                         @enderror
                     </div>
 
-                    <hr>
-
                     <div class="d-flex justify-content-end">
 
                         <button type="submit"
@@ -154,5 +197,6 @@
         </div>
 
     </div>
+
 </section>
 @endsection

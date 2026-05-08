@@ -11,6 +11,7 @@ class PesertaKkn extends Model
     protected $fillable = [
         'mahasiswa_id',
         'gelombang_id',
+        'kelompok_kkn_id',
         'status_pendaftaran',
         'submitted_at',
         'verified_by',
@@ -46,5 +47,10 @@ class PesertaKkn extends Model
     public function verificationLogs()
     {
         return $this->hasMany(VerificationLog::class);
+    }
+
+    public function kelompokKkn()
+    {
+        return $this->belongsTo(KelompokKkn::class);
     }
 }

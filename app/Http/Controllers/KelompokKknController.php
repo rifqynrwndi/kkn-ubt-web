@@ -1,0 +1,461 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\DesaGelombang;
+use App\Models\DosenPembimbingLapangan;
+use App\Models\KelompokKkn;
+use App\Models\PesertaKkn;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+
+class KelompokKknController extends Controller
+{
+    public function index(Request $request): View
+    {
+        $query = KelompokKkn::with([
+            'desaGelombang.desa',
+            'desaGelombang.gelombang',
+            'dosenPembimbingLapangan.user',
+            'pesertaKkn',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Search
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('search')) {
+
+            $query->where(function ($q) use ($request) {
+
+                $q->where(
+                    'kode_kelompok',
+                    'like',
+                    '%' . $request->search . '%'
+                )
+                ->orWhere(
+                    'nama_kelompok',
+                    'like',
+                    '%' . $request->search . '%'
+                );
+
+            });
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Filter Status
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('status')) {
+
+            $query->where(
+                'status',
+                $request->status
+            );
+
+        }
+
+        $kelompok = $query
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view(
+            'kelompok-kkn.index',
+            compact('kelompok')
+        );
+    }
+
+    public function create(): View
+    {
+        $desaGelombang = DesaGelombang::with([
+            'desa',
+            'gelombang',
+        ])->get();
+
+        $dpl = DosenPembimbingLapangan::with('user')
+            ->where('status', 'aktif')
+            ->get();
+
+        return view(
+            'kelompok-kkn.create',
+            compact(
+                'desaGelombang',
+                'dpl'
+            )
+        );
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+
+            'desa_gelombang_id' =>
+                'required|exists:desa_gelombang,id',
+
+            'dosen_pembimbing_lapangan_id' =>
+                'nullable|exists:dosen_pembimbing_lapangan,id',
+
+            'kuota' =>
+                'required|integer|min:1|max:20',
+
+            'status' =>
+                'required|in:draft,dibuka,ditutup',
+
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Generate Nama Kelompok
+        |--------------------------------------------------------------------------
+        */
+
+        $desaGelombang = DesaGelombang::with([
+            'desa',
+            'gelombang',
+        ])->findOrFail(
+            $validated['desa_gelombang_id']
+        );
+
+        $validated['nama_kelompok'] =
+            $desaGelombang->desa->nama_desa
+            . ' - ' .
+            $desaGelombang->gelombang->nama_gelombang;
+
+        KelompokKkn::create($validated);
+
+        return redirect()
+            ->route('kelompok-kkn.index')
+            ->with(
+                'success',
+                'Kelompok KKN berhasil dibuat.'
+            );
+    }
+
+    public function show(
+        KelompokKkn $kelompok_kkn
+    ): View {
+
+        $kelompok_kkn->load([
+
+            'desaGelombang.desa',
+            'desaGelombang.gelombang',
+
+            'dosenPembimbingLapangan.user',
+
+            'pesertaKkn.mahasiswa.user',
+            'pesertaKkn.mahasiswa.prodi.fakultas',
+
+        ]);
+
+        return view(
+            'kelompok-kkn.show',
+            compact('kelompok_kkn')
+        );
+    }
+
+    public function edit(
+        KelompokKkn $kelompok_kkn
+    ): View {
+
+        $desaGelombang = DesaGelombang::with([
+            'desa',
+            'gelombang',
+        ])->get();
+
+        $dpl = DosenPembimbingLapangan::with('user')
+            ->where('status', 'aktif')
+            ->get();
+
+        return view(
+            'kelompok-kkn.edit',
+            compact(
+                'kelompok_kkn',
+                'desaGelombang',
+                'dpl'
+            )
+        );
+    }
+
+    public function update(
+        Request $request,
+        KelompokKkn $kelompok_kkn
+    ): RedirectResponse {
+
+        $validated = $request->validate([
+
+            'desa_gelombang_id' =>
+                'required|exists:desa_gelombang,id',
+
+            'dosen_pembimbing_lapangan_id' =>
+                'nullable|exists:dosen_pembimbing_lapangan,id',
+
+            'kuota' =>
+                'required|integer|min:1|max:20',
+
+            'status' =>
+                'required|in:draft,dibuka,ditutup,penuh',
+
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Nama Kelompok
+        |--------------------------------------------------------------------------
+        */
+
+        $desaGelombang = DesaGelombang::with([
+            'desa',
+            'gelombang',
+        ])->findOrFail(
+            $validated['desa_gelombang_id']
+        );
+
+        $validated['nama_kelompok'] =
+            $desaGelombang->desa->nama_desa
+            . ' - ' .
+            $desaGelombang->gelombang->nama_gelombang;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Auto Full Check
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $kelompok_kkn->pesertaKkn()->count()
+            >=
+            $validated['kuota']
+        ) {
+
+            $validated['status'] = 'penuh';
+
+        }
+
+        $kelompok_kkn->update($validated);
+
+        return redirect()
+            ->route('kelompok-kkn.index')
+            ->with(
+                'success',
+                'Kelompok KKN berhasil diperbarui.'
+            );
+    }
+
+    public function destroy(
+        KelompokKkn $kelompok_kkn
+    ): RedirectResponse {
+
+        if ($kelompok_kkn->pesertaKkn()->exists()) {
+
+            return back()->with(
+                'error',
+                'Kelompok tidak dapat dihapus karena sudah memiliki anggota.'
+            );
+
+        }
+
+        $kelompok_kkn->delete();
+
+        return redirect()
+            ->route('kelompok-kkn.index')
+            ->with(
+                'success',
+                'Kelompok KKN berhasil dihapus.'
+            );
+    }
+
+    public function buka(
+        KelompokKkn $kelompok_kkn
+    ): RedirectResponse {
+
+        if ($kelompok_kkn->is_full) {
+
+            return back()->with(
+                'error',
+                'Kelompok sudah penuh.'
+            );
+
+        }
+
+        $kelompok_kkn->update([
+            'status' => 'dibuka'
+        ]);
+
+        return back()->with(
+            'success',
+            'Kelompok berhasil dibuka.'
+        );
+    }
+
+    public function tutup(
+        KelompokKkn $kelompok_kkn
+    ): RedirectResponse {
+
+        $kelompok_kkn->update([
+            'status' => 'ditutup'
+        ]);
+
+        return back()->with(
+            'success',
+            'Kelompok berhasil ditutup.'
+        );
+    }
+
+    public function createAnggota(KelompokKkn $kelompok_kkn): View
+    {
+        $peserta = PesertaKkn::with('mahasiswa.user')
+            ->whereNull('kelompok_kkn_id')
+            ->get();
+
+        return view(
+            'kelompok-kkn.tambah-anggota',
+            compact(
+                'kelompok_kkn',
+                'peserta'
+            )
+        );
+    }
+
+    public function tambahAnggota(Request $request, KelompokKkn $kelompok_kkn): RedirectResponse
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
+
+        $validated = $request->validate([
+            'peserta_kkn_id' => [
+                'required',
+                'exists:peserta_kkn,id',
+            ],
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Kelompok Full Check
+        |--------------------------------------------------------------------------
+        */
+
+        if ($kelompok_kkn->is_full) {
+
+            return back()->with(
+                'error',
+                'Kelompok sudah penuh.'
+            );
+
+        }
+
+        $peserta = PesertaKkn::findOrFail(
+            $validated['peserta_kkn_id']
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent Double Group
+        |--------------------------------------------------------------------------
+        */
+
+        if ($peserta->kelompok_kkn_id) {
+
+            return back()->with(
+                'error',
+                'Mahasiswa sudah memiliki kelompok.'
+            );
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Assign Kelompok
+        |--------------------------------------------------------------------------
+        */
+
+        $peserta->kelompok_kkn_id = $kelompok_kkn->id;
+        $peserta->save();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Auto Full Status
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $kelompok_kkn->fresh()->pesertaKkn()->count()
+            >=
+            $kelompok_kkn->kuota
+        ) {
+
+            $kelompok_kkn->update([
+                'status' => 'penuh'
+            ]);
+
+        }
+
+        return redirect()
+            ->route('kelompok-kkn.show', $kelompok_kkn)
+            ->with(
+                'success',
+                'Anggota berhasil ditambahkan.'
+            );
+    }
+
+    public function hapusAnggota(KelompokKkn $kelompok_kkn, PesertaKkn $peserta): RedirectResponse
+    {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ensure Member Belongs To Group
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $peserta->kelompok_kkn_id
+            !=
+            $kelompok_kkn->id
+        ) {
+
+            return back()->with(
+                'error',
+                'Anggota tidak ditemukan pada kelompok ini.'
+            );
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Remove From Group
+        |--------------------------------------------------------------------------
+        */
+
+        $peserta->update([
+            'kelompok_kkn_id' => null,
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Reopen Group If Needed
+        |--------------------------------------------------------------------------
+        */
+
+        if ($kelompok_kkn->status === 'penuh') {
+
+            $kelompok_kkn->update([
+                'status' => 'dibuka'
+            ]);
+
+        }
+
+        return back()->with(
+            'success',
+            'Anggota berhasil dihapus.'
+        );
+    }
+}

@@ -36,7 +36,8 @@
 
                 <div class="row">
 
-                    <div class="col-md-6 mb-4">
+                    {{-- NAMA DESA --}}
+                    <div class="col-md-4 mb-4">
                         <small class="text-muted d-block">
                             Nama Desa
                         </small>
@@ -46,7 +47,8 @@
                         </strong>
                     </div>
 
-                    <div class="col-md-6 mb-4">
+                    {{-- KECAMATAN --}}
+                    <div class="col-md-4 mb-4">
                         <small class="text-muted d-block">
                             Kecamatan
                         </small>
@@ -56,42 +58,25 @@
                         </strong>
                     </div>
 
-                </div>
-
-                <div class="row">
-
-                    <div class="col-md-6 mb-4">
+                    {{-- STATUS --}}
+                    <div class="col-md-4 mb-4">
                         <small class="text-muted d-block">
                             Status
                         </small>
 
-                        @if($desa->aktif)
-                            <span class="badge badge-success px-3 py-2">
-                                Aktif
-                            </span>
-                        @else
-                            <span class="badge badge-secondary px-3 py-2">
-                                Nonaktif
-                            </span>
-                        @endif
+                        <div>
+                            @if($desa->aktif)
+                                <span class="badge badge-success px-3 py-2">
+                                    Aktif
+                                </span>
+                            @else
+                                <span class="badge badge-secondary px-3 py-2">
+                                    Nonaktif
+                                </span>
+                            @endif
+                        </div>
                     </div>
 
-                </div>
-
-                <div>
-                    <small class="text-muted d-block mb-2">
-                        Alamat
-                    </small>
-
-                    @if($desa->alamat)
-                        <div class="border rounded p-3">
-                            {{ $desa->alamat }}
-                        </div>
-                    @else
-                        <div class="border rounded p-3 text-muted">
-                            Tidak ada alamat
-                        </div>
-                    @endif
                 </div>
 
             </div>
@@ -151,7 +136,7 @@
 
         </div>
 
-        {{-- PENEMPATAN GELombang --}}
+        {{-- PENEMPATAN GELOMBANG --}}
         <div class="card shadow-sm mt-4">
 
             <div class="card-header">
@@ -169,7 +154,6 @@
                                 <th>Gelombang</th>
                                 <th>Kuota</th>
                                 <th>Status</th>
-                                <th>DPL</th>
                             </tr>
                         </thead>
 
@@ -180,7 +164,7 @@
                                 <tr>
 
                                     <td>
-                                        {{ $item->gelombang->nama ?? '-' }}
+                                        {{ $item->gelombang->nama_gelombang ?? '-' }}
                                     </td>
 
                                     <td>
@@ -209,16 +193,12 @@
                                         @endif
                                     </td>
 
-                                    <td>
-                                        {{ $item->dosenPembimbingLapangan->user->name ?? '-' }}
-                                    </td>
-
                                 </tr>
 
                             @empty
 
                                 <tr>
-                                    <td colspan="4"
+                                    <td colspan="3"
                                         class="text-center text-muted py-4">
                                         Belum ada penempatan gelombang.
                                     </td>

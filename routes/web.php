@@ -21,6 +21,7 @@ use App\Http\Controllers\{
     PendaftaranKknController,
     DokumenPendaftaranController,
     VerifikasiDokumenController,
+    KelompokKknController,
     ProfileController,
     SettingController
 };
@@ -113,7 +114,7 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'biodata.complete'])->group(function () {
+Route::middleware(['auth','verified','biodata.complete'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
@@ -200,7 +201,24 @@ Route::middleware(['auth', 'biodata.complete'])->group(function () {
 
             Route::put('/kecamatan/{kecamatan}', [DesaController::class, 'updateKecamatan'])
                 ->name('updateKecamatan');
+
+            Route::delete('/kecamatan/{kecamatan}', [DesaController::class, 'destroyKecamatan'])
+                ->name('destroyKecamatan');
         });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Kelompok KKN
+        |--------------------------------------------------------------------------
+        */
+
+        Route::resource('kelompok-kkn', KelompokKknController::class);
+
+        Route::get('kelompok-kkn/{kelompok_kkn}/anggota/create',[KelompokKknController::class, 'createAnggota'])->name('kelompok-kkn.anggota.create');
+        Route::post('kelompok-kkn/{kelompok_kkn}/anggota',[KelompokKknController::class, 'tambahAnggota'])->name('kelompok-kkn.anggota.store');
+        Route::delete('kelompok-kkn/{kelompok_kkn}/anggota/{peserta}',[KelompokKknController::class, 'hapusAnggota'])->name('kelompok-kkn.anggota.destroy');
+        Route::put('kelompok-kkn/{kelompok_kkn}/buka',[KelompokKknController::class, 'buka'])->name('kelompok-kkn.buka');
+        Route::put('kelompok-kkn/{kelompok_kkn}/tutup',[KelompokKknController::class, 'tutup'])->name('kelompok-kkn.tutup');
 
         /*
         |--------------------------------------------------------------------------
@@ -235,12 +253,20 @@ Route::middleware(['auth', 'biodata.complete'])->group(function () {
         |--------------------------------------------------------------------------
         */
 
-        Route::prefix('notifications')->name('notifications.')->group(function () {
-            Route::get('/create', [NotificationController::class, 'create'])->name('create');
-            Route::post('/send', [NotificationController::class, 'send'])->name('send');
+        Route::prefix('notifications/admin')->name('notifications.admin.')->group(function () {
 
-            Route::get('/history', [NotificationController::class, 'history'])->name('history');
-            Route::delete('/history/{id}', [NotificationController::class, 'destroyHistory'])->name('history.destroy');
+            Route::get('/create', [NotificationController::class, 'create'])
+                ->name('create');
+
+            Route::post('/send', [NotificationController::class, 'send'])
+                ->name('send');
+
+            Route::get('/history', [NotificationController::class, 'history'])
+                ->name('history');
+
+            Route::delete('/history/{id}', [NotificationController::class, 'destroyHistory'])
+                ->name('history.destroy');
+
         });
 
         /*
@@ -256,8 +282,8 @@ Route::middleware(['auth', 'biodata.complete'])->group(function () {
             Route::get('/', [VerifikasiDokumenController::class, 'index'])->name('index');
             Route::get('/{id}', [VerifikasiDokumenController::class, 'show'])->name('show');
             Route::put('/dokumen/{id}', [VerifikasiDokumenController::class, 'update'])->name('update');
-            Route::post('/verifikasi-dokumen/bulk-approve',[VerifikasiDokumenController::class, 'bulkApprove'])->name('bulk-approve');
-            Route::put('/verifikasi-dokumen/{peserta}/bulk-update',[VerifikasiDokumenController::class, 'bulkUpdate'])->name('bulk-update');
+            Route::post('/bulk-approve',[VerifikasiDokumenController::class, 'bulkApprove'])->name('bulk-approve');
+            Route::put('/{peserta}/bulk-update',[VerifikasiDokumenController::class, 'bulkUpdate'])->name('bulk-update');
         });
 
         /*

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Desa;
+use App\Models\DesaGelombang;
+use App\Models\Gelombang;
 use App\Models\Kecamatan;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -15,7 +17,10 @@ class DesaController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Desa::with('kecamatan');
+        $query = Desa::with([
+            'kecamatan',
+            'desaGelombang.gelombang',
+        ]);
 
         /*
         |--------------------------------------------------------------------------
@@ -23,7 +28,11 @@ class DesaController extends Controller
         |--------------------------------------------------------------------------
         */
         if ($request->filled('search')) {
-            $query->where('nama_desa', 'like', '%' . $request->search . '%');
+            $query->where(
+                'nama_desa',
+                'like',
+                '%' . $request->search . '%'
+            );
         }
 
         /*
@@ -32,7 +41,10 @@ class DesaController extends Controller
         |--------------------------------------------------------------------------
         */
         if ($request->filled('kecamatan_id')) {
-            $query->where('kecamatan_id', $request->kecamatan_id);
+            $query->where(
+                'kecamatan_id',
+                $request->kecamatan_id
+            );
         }
 
         /*
@@ -41,7 +53,10 @@ class DesaController extends Controller
         |--------------------------------------------------------------------------
         */
         if ($request->filled('aktif')) {
-            $query->where('aktif', $request->aktif);
+            $query->where(
+                'aktif',
+                $request->aktif
+            );
         }
 
         $desa = $query
@@ -49,7 +64,8 @@ class DesaController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        $kecamatan = Kecamatan::orderBy('nama_kecamatan')->get();
+        $kecamatan = Kecamatan::orderBy('nama_kecamatan')
+            ->get();
 
         return view('desa.index', compact(
             'desa',
@@ -62,9 +78,20 @@ class DesaController extends Controller
      */
     public function create(): View
     {
-        $kecamatan = Kecamatan::orderBy('nama_kecamatan')->get();
+        $kecamatan = Kecamatan::orderBy('nama_kecamatan')
+            ->get();
 
-        return view('desa.create', compact('kecamatan'));
+        $gelombang = Gelombang::whereIn(
+                'status',
+                ['persiapan', 'pendaftaran', 'berjalan', 'selesai']
+            )
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('desa.create', compact(
+            'kecamatan',
+            'gelombang'
+        ));
     }
 
     /**
@@ -75,17 +102,46 @@ class DesaController extends Controller
         $validated = $request->validate([
             'kecamatan_id' => 'required|exists:kecamatan,id',
             'nama_desa' => 'required|string|max:255',
-            'kontak_nama' => 'nullable|string|max:255',
-            'kontak_hp' => 'nullable|string|max:30',
             'alamat' => 'nullable|string',
             'aktif' => 'required|boolean',
+
+            'gelombang_id' => 'nullable|exists:gelombang,id',
+            'kuota_total' => 'nullable|integer|min:1',
         ]);
 
-        Desa::create($validated);
+        /*
+        |--------------------------------------------------------------------------
+        | Create Desa
+        |--------------------------------------------------------------------------
+        */
+        $desa = Desa::create([
+            'kecamatan_id' => $validated['kecamatan_id'],
+            'nama_desa' => $validated['nama_desa'],
+            'alamat' => $validated['alamat'] ?? null,
+            'aktif' => $validated['aktif'],
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Auto Create Desa Gelombang
+        |--------------------------------------------------------------------------
+        */
+        if ($request->filled('gelombang_id')) {
+
+            DesaGelombang::create([
+                'desa_id' => $desa->id,
+                'gelombang_id' => $validated['gelombang_id'],
+                'kuota_total' => $validated['kuota_total'] ?? 12,
+                'status' => 'draft',
+            ]);
+        }
 
         return redirect()
             ->route('desa.index')
-            ->with('success', 'Data desa berhasil ditambahkan.');
+            ->with(
+                'success',
+                'Data desa berhasil ditambahkan.'
+            );
     }
 
     /**
@@ -96,26 +152,26 @@ class DesaController extends Controller
         $desa->load([
             'kecamatan',
             'desaGelombang.gelombang',
-            'desaGelombang.dosenPembimbingLapangan.user',
         ]);
 
         /*
         |--------------------------------------------------------------------------
-        | Statistik Future Ready
+        | Statistik
         |--------------------------------------------------------------------------
         */
-        $kecamatan = Kecamatan::orderBy('nama_kecamatan')->get();
-
         $jumlahGelombang = $desa->desaGelombang->count();
 
-        $totalKuota = $desa->desaGelombang->sum('kuota_total');
+        $totalKuota = $desa->desaGelombang
+            ->sum('kuota_total');
 
         $desaGelombangAktif = $desa->desaGelombang
-            ->where('status', 'dibuka');
+                ->whereIn(
+                    'status',
+                    ['draft', 'dibuka', 'penuh']
+                );
 
         return view('desa.show', compact(
             'desa',
-            'kecamatan',
             'jumlahGelombang',
             'totalKuota',
             'desaGelombangAktif'
@@ -127,33 +183,82 @@ class DesaController extends Controller
      */
     public function edit(Desa $desa): View
     {
-        $kecamatan = Kecamatan::orderBy('nama_kecamatan')->get();
+        $kecamatan = Kecamatan::orderBy('nama_kecamatan')
+            ->get();
+
+        $gelombang = Gelombang::whereIn(
+                'status',
+                ['persiapan', 'pendaftaran', 'berjalan', 'selesai']
+            )
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $desaGelombang = $desa->desaGelombang()
+            ->first();
 
         return view('desa.edit', compact(
             'desa',
-            'kecamatan'
+            'kecamatan',
+            'gelombang',
+            'desaGelombang'
         ));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Desa $desa): RedirectResponse
-    {
+    public function update(
+        Request $request,
+        Desa $desa
+    ): RedirectResponse {
+
         $validated = $request->validate([
             'kecamatan_id' => 'required|exists:kecamatan,id',
             'nama_desa' => 'required|string|max:255',
-            'kontak_nama' => 'nullable|string|max:255',
-            'kontak_hp' => 'nullable|string|max:30',
             'alamat' => 'nullable|string',
             'aktif' => 'required|boolean',
+
+            'gelombang_id' => 'nullable|exists:gelombang,id',
+            'kuota_total' => 'nullable|integer|min:1',
         ]);
 
-        $desa->update($validated);
+        /*
+        |--------------------------------------------------------------------------
+        | Update Desa
+        |--------------------------------------------------------------------------
+        */
+        $desa->update([
+            'kecamatan_id' => $validated['kecamatan_id'],
+            'nama_desa' => $validated['nama_desa'],
+            'alamat' => $validated['alamat'] ?? null,
+            'aktif' => $validated['aktif'],
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Sync Desa Gelombang
+        |--------------------------------------------------------------------------
+        */
+        if ($request->filled('gelombang_id')) {
+
+            DesaGelombang::updateOrCreate(
+                [
+                    'desa_id' => $desa->id,
+                    'gelombang_id' => $validated['gelombang_id'],
+                ],
+                [
+                    'kuota_total' => $validated['kuota_total'] ?? 12,
+                    'status' => 'draft',
+                ]
+            );
+        }
 
         return redirect()
             ->route('desa.index')
-            ->with('success', 'Data desa berhasil diperbarui.');
+            ->with(
+                'success',
+                'Data desa berhasil diperbarui.'
+            );
     }
 
     /**
@@ -163,10 +268,11 @@ class DesaController extends Controller
     {
         /*
         |--------------------------------------------------------------------------
-        | Prevent Delete If Already Used
+        | Prevent Delete If Used
         |--------------------------------------------------------------------------
         */
         if ($desa->desaGelombang()->exists()) {
+
             return back()->with(
                 'error',
                 'Desa tidak dapat dihapus karena sudah digunakan pada gelombang.'
@@ -175,7 +281,7 @@ class DesaController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Soft Disable Instead Hard Delete
+        | Soft Disable
         |--------------------------------------------------------------------------
         */
         $desa->update([
@@ -184,44 +290,113 @@ class DesaController extends Controller
 
         return redirect()
             ->route('desa.index')
-            ->with('success', 'Desa berhasil dinonaktifkan.');
+            ->with(
+                'success',
+                'Desa berhasil dinonaktifkan.'
+            );
     }
 
-    public function createKecamatan() : View
+    /**
+     * Form Create Kecamatan
+     */
+    public function createKecamatan(): View
     {
         return view('kecamatan.create');
     }
 
-    public function storeKecamatan(Request $request)
+    /**
+     * Store Kecamatan
+     */
+    public function storeKecamatan(Request $request): RedirectResponse
     {
         $request->validate([
             'nama_kecamatan' => 'required|unique:kecamatan,nama_kecamatan',
-            'kabupaten' => 'required|string|max:255'
+            'kabupaten' => 'required|string|max:255',
         ]);
 
-        Kecamatan::create($request->only('nama_kecamatan', 'kabupaten'));
+        Kecamatan::create(
+            $request->only(
+                'nama_kecamatan',
+                'kabupaten'
+            )
+        );
 
         return redirect()
             ->route('desa.index')
-            ->with('success', 'Kecamatan ditambahkan');
+            ->with(
+                'success',
+                'Kecamatan berhasil ditambahkan.'
+            );
     }
 
-    public function editKecamatan(Kecamatan $kecamatan)
-    {
-        return view('desa.edit_kecamatan', compact('kecamatan'));
+    /**
+     * Form Edit Kecamatan
+     */
+    public function editKecamatan(
+        Kecamatan $kecamatan
+    ): View {
+
+        return view(
+            'desa.edit_kecamatan',
+            compact('kecamatan')
+        );
     }
 
-    public function updateKecamatan(Request $request, Kecamatan $kecamatan)
-    {
+    /**
+     * Update Kecamatan
+     */
+    public function updateKecamatan(
+        Request $request,
+        Kecamatan $kecamatan
+    ): RedirectResponse {
+
         $request->validate([
-            'nama_kecamatan' => 'required|unique:kecamatan,nama_kecamatan,' . $kecamatan->id,
-            'kabupaten' => 'required|string|max:255'
+            'nama_kecamatan' =>
+                'required|unique:kecamatan,nama_kecamatan,' . $kecamatan->id,
+
+            'kabupaten' =>
+                'required|string|max:255',
         ]);
 
-        $kecamatan->update($request->only('nama_kecamatan', 'kabupaten'));
+        $kecamatan->update(
+            $request->only(
+                'nama_kecamatan',
+                'kabupaten'
+            )
+        );
 
         return redirect()
             ->route('desa.index')
-            ->with('success', 'Kecamatan diperbarui');
+            ->with(
+                'success',
+                'Kecamatan berhasil diperbarui.'
+            );
+    }
+
+    public function destroyKecamatan($id)
+    {
+        $kecamatan = Kecamatan::findOrFail($id);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent Delete If Used
+        |--------------------------------------------------------------------------
+        */
+
+        if ($kecamatan->desa()->exists()) {
+
+            return back()->with(
+                'error',
+                'Kecamatan tidak dapat dihapus karena masih memiliki desa.'
+            );
+
+        }
+
+        $kecamatan->delete();
+
+        return back()->with(
+            'success',
+            'Kecamatan berhasil dihapus.'
+        );
     }
 }
