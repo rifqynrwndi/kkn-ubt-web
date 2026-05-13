@@ -93,7 +93,7 @@
 
                     <div class="alert alert-warning mb-0">
 
-                        Belum ada peserta available yang dapat ditambahkan.
+                        Belum ada peserta yang dapat ditambahkan.
 
                     </div>
 

@@ -93,7 +93,7 @@
                             </tr>
                             <tr>
                                 <th>Status Verifikasi</th>
-                                <td>{{ $pendaftaran?->status ?? '-' }}</td>
+                                <td>{{ $pendaftaran?->status_pendaftaran ?? '-' }}</td>
                             </tr>
                             <tr>
                                 <th>Tanggal Daftar</th>

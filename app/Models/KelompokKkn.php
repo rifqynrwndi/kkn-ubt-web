@@ -47,6 +47,38 @@ class KelompokKkn extends Model
         return $this->terisi >= $this->kuota;
     }
 
+    public function ketua()
+    {
+        return $this->belongsTo(
+            PesertaKkn::class,
+            'ketua_peserta_id'
+        );
+    }
+
+    public function generateKetua()
+    {
+        if ($this->ketua_peserta_id) {
+            return;
+        }
+
+        $randomKetua = $this->pesertaKkn()
+            ->inRandomOrder()
+            ->first();
+
+        if ($randomKetua) {
+
+            $this->updateQuietly([
+                'ketua_peserta_id' => $randomKetua->id
+            ]);
+
+        }
+    }
+
+    public function kuotaFakultas()
+    {
+        return $this->hasMany(KelompokKuota::class);
+    }
+
     protected static function booted()
     {
         static::creating(function ($kelompok) {

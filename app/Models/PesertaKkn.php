@@ -53,4 +53,9 @@ class PesertaKkn extends Model
     {
         return $this->belongsTo(KelompokKkn::class);
     }
+
+    public function warLogs()
+    {
+        return $this->hasMany(WarLog::class);
+    }
 }

@@ -17,7 +17,17 @@ class Gelombang extends Model
         'kuota_perempuan',
         'kuota_total',
         'status',
+        'skip_dokumen',
     ];
+
+    protected $casts = [
+        'skip_dokumen' => 'boolean',
+    ];
+
+    public function getSkipDokumenAttribute(): bool
+    {
+        return (bool) $this->attributes['skip_dokumen'];
+    }
 
     public function pesertaKkn()
     {

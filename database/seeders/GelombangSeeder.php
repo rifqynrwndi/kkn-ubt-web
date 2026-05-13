@@ -11,7 +11,7 @@ class GelombangSeeder extends Seeder
     {
         Gelombang::firstOrCreate(
             [
-                'nama_gelombang' => 'Gelombang 1',
+                'nama_gelombang' => 'KKN XIX PERIODE 1',
                 'tahun' => now()->year,
             ],
             [

@@ -40,10 +40,11 @@ class DokumenPendaftaran extends Model
     public static function getDocumentLabels(): array
     {
         return [
-            'ktm' => 'Kartu Tanda Mahasiswa (KTM)',
-            'transkrip' => 'Transkrip Nilai',
-            'surat_sehat' => 'Surat Keterangan Sehat',
-            'pas_foto' => 'Pas Foto',
+            'dhs' => 'Daftar Hasil Studi (DHS)',
+            'surat_pernyataan' => 'Surat Pernyataan KKN',
+            'surat_ortu' => 'Surat Keterangan Orang Tua',
+            'surat_vaksin' => 'Surat Keterangan Vaksin',
+            'surat_dokter' => 'Surat Keterangan Dokter',
         ];
     }
 
@@ -54,9 +55,10 @@ class DokumenPendaftaran extends Model
     }
 
     public const REQUIRED_DOCUMENTS = [
-        'ktm',
-        'transkrip',
-        'surat_sehat',
-        'pas_foto',
+        'dhs',
+        'surat_pernyataan',
+        'surat_ortu',
+        'surat_vaksin',
+        'surat_dokter',
     ];
 }

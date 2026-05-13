@@ -68,14 +68,14 @@
 
                                         <td>
                                             <span class="badge badge-info">
-                                                {{ $peserta->dokumenPendaftaran->count() }}/4 Dokumen
+                                                {{ $peserta->dokumenPendaftaran->count() }}/5 Dokumen
                                             </span>
                                         </td>
 
                                         <td>
                                             @switch($peserta->status_pendaftaran)
                                                 @case('draft')
-                                                    <span class="badge badge-secondary">Draft</span>
+                                                    <span class="badge">Draft</span>
                                                     @break
 
                                                 @case('pending_documents')

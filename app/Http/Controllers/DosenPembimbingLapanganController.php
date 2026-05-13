@@ -58,7 +58,6 @@ class DosenPembimbingLapanganController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
 
-                // default password
                 'password' => Hash::make('password'),
             ]);
 

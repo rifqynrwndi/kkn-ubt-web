@@ -22,6 +22,9 @@ use App\Http\Controllers\{
     DokumenPendaftaranController,
     VerifikasiDokumenController,
     KelompokKknController,
+    WarAdminController,
+    WarController,
+    WarMonitorController,
     ProfileController,
     SettingController
 };
@@ -61,8 +64,11 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::prefix('pendaftaran-kkn')->name('pendaftaran-kkn.')->group(function () {
-        Route::get('/', [PendaftaranKknController::class, 'index'])->name('index');
-        Route::post('/', [PendaftaranKknController::class, 'store'])->name('store');
+        Route::get('/', [PendaftaranKknController::class,'index'])->name('index');
+        Route::get('/gelombang', [PendaftaranKknController::class, 'gelombang'])->name('gelombang');
+        Route::post('/store', [PendaftaranKknController::class, 'store'])->name('store');
+        Route::get('/plotting', [PendaftaranKknController::class, 'plotting'])->name('plotting');
+        Route::post('/plotting/{kelompok}', [PendaftaranKknController::class, 'ambilKelompok'])->name('ambil-kelompok');
     });
 
     Route::prefix('dokumen-pendaftaran')->group(function () {
@@ -114,7 +120,7 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth','verified','biodata.complete'])->group(function () {
+Route::middleware(['auth','biodata.complete', 'email.verified.except.superadmin'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
@@ -125,6 +131,36 @@ Route::middleware(['auth','verified','biodata.complete'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/blank-page', [HomeController::class, 'blank'])->name('blank');
     Route::view('/quick-tour', 'layouts.quick-tour')->name('quick-tour');
+
+    /*
+    |--------------------------------------------------------------------------
+    | WAR KKN — Mahasiswa
+    |--------------------------------------------------------------------------
+    */
+
+    Route::prefix('war')->name('war.')->group(function () {
+
+        // Lobby — lihat jadwal & status war
+        Route::get('/', [WarController::class, 'index'])->name('index');
+
+        // Arena — halaman rebutan (hanya saat war aktif)
+        Route::get('/{session}/arena', [WarController::class, 'arena'])->name('arena');
+
+        // Sudah join — halaman konfirmasi
+        Route::get('/{session}/joined', [WarController::class, 'joined'])->name('joined');
+
+        // Core action — JOIN kelompok (AJAX, throttle anti-spam)
+        Route::post('/{session}/join/{kelompokId}', [WarController::class, 'join'])
+            ->name('join')
+            ->middleware('throttle:10,1'); // maks 10 request/menit per user
+
+        // Status check — AJAX polling (apakah war masih aktif? sudah dapat kelompok?)
+        Route::get('/{session}/status', [WarController::class, 'status'])->name('status');
+
+        // Kelompok list — AJAX untuk live refresh daftar kelompok
+        Route::get('/{session}/kelompoks', [WarController::class, 'kelompokList'])->name('kelompoks');
+
+    });
 
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
@@ -247,6 +283,61 @@ Route::middleware(['auth','verified','biodata.complete'])->group(function () {
 
         });
 
+        /*
+        |--------------------------------------------------------------------------
+        | War Admin — Session Management
+        |--------------------------------------------------------------------------
+        */
+
+        Route::prefix('admin/war')->name('admin.war.')->group(function () {
+
+            // Dashboard
+            Route::get('/', [WarAdminController::class, 'index'])->name('index');
+
+            // CRUD Session
+            Route::post('/', [WarAdminController::class, 'store'])->name('store');
+            Route::get('/{war}', [WarAdminController::class, 'show'])->name('show');
+            Route::put('/{war}', [WarAdminController::class, 'update'])->name('update');
+            Route::delete('/{war}', [WarAdminController::class, 'destroy'])->name('destroy');
+
+            // Status Control
+            Route::post('/{war}/activate', [WarAdminController::class, 'activate'])->name('activate');
+            Route::post('/{war}/stop', [WarAdminController::class, 'stop'])->name('stop');
+            Route::post('/{war}/reset', [WarAdminController::class, 'reset'])->name('reset');
+
+            // Faculty Config
+            Route::post('/{war}/set-faculty-quota', [WarAdminController::class, 'setFacultyQuota'])->name('setFacultyQuota');
+            Route::post('/{war}/set-faculty-schedule', [WarAdminController::class, 'setFacultySchedule'])->name('setFacultySchedule');
+
+            // Monitor Page (Blade)
+            Route::get('/{war}/monitor', [WarAdminController::class, 'monitor'])->name('monitor');
+
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | War Monitor — Realtime AJAX Endpoints (Admin)
+        |--------------------------------------------------------------------------
+        */
+
+        Route::prefix('admin/war/{session}/monitor')->name('admin.war.monitor.')->group(function () {
+
+            // Live stats summary
+            Route::get('/stats', [WarMonitorController::class, 'stats'])->name('stats');
+
+            // Live kelompok list
+            Route::get('/kelompoks', [WarMonitorController::class, 'kelompoks'])->name('kelompoks');
+
+            // Live activity log
+            Route::get('/logs', [WarMonitorController::class, 'logs'])->name('logs');
+
+            // Live participant list
+            Route::get('/participants', [WarMonitorController::class, 'participants'])->name('participants');
+
+            // Export CSV
+            Route::get('/export-log', [WarMonitorController::class, 'exportLog'])->name('exportLog');
+
+        });
         /*
         |--------------------------------------------------------------------------
         | Send Notification / Notification History (Superadmin Only)

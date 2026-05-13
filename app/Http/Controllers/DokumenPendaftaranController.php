@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DokumenPendaftaran;
 use App\Models\File;
+use App\Models\NotificationLog;
 use App\Models\PesertaKkn;
 use App\Models\User;
 use App\Notifications\DokumenUploadedNotification;
@@ -15,25 +16,54 @@ use Illuminate\Support\Facades\Storage;
 class DokumenPendaftaranController extends Controller
 {
     private array $requiredDocuments = [
-        'ktm',
-        'transkrip',
-        'surat_sehat',
-        'pas_foto',
+        'dhs',
+        'surat_pernyataan',
+        'surat_ortu',
+        'surat_vaksin',
+        'surat_dokter',
     ];
 
     public function index(): View
     {
-        $peserta = PesertaKkn::where('mahasiswa_id', auth()->id())
+        $peserta = PesertaKkn::where(
+                'mahasiswa_id',
+                auth()->id()
+            )
             ->latest()
-            ->firstOrFail();
+            ->first();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Belum Daftar KKN
+        |--------------------------------------------------------------------------
+        */
+        if (! $peserta) {
+
+            return view('dokumen-pendaftaran.index', [
+                'peserta'           => null,
+                'dokumen'           => collect(),
+                'requiredDocuments' => [],
+                'uploadedDocuments' => [],
+            ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Dokumen Mahasiswa
+        |--------------------------------------------------------------------------
+        */
         $dokumen = $peserta->dokumenPendaftaran()
-            ->with('file', 'verifier')
+            ->with([
+                'file',
+                'verifier',
+            ])
             ->get();
 
         $requiredDocuments = DokumenPendaftaran::getDocumentLabels();
 
-        $uploadedDocuments = $dokumen->keyBy('jenis_dokumen');
+        $uploadedDocuments = $dokumen->keyBy(
+            'jenis_dokumen'
+        );
 
         return view('dokumen-pendaftaran.index', compact(
             'peserta',
@@ -45,16 +75,37 @@ class DokumenPendaftaranController extends Controller
 
     public function show($id)
     {
-        $dokumen = DokumenPendaftaran::with('file', 'pesertaKkn')->findOrFail($id);
+        $dokumen = DokumenPendaftaran::with([
+                'file',
+                'pesertaKkn',
+            ])
+            ->findOrFail($id);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Authorization
+        |--------------------------------------------------------------------------
+        */
         if (
             auth()->id() !== $dokumen->pesertaKkn->mahasiswa_id &&
-            !auth()->user()->hasRole('superadmin')
+            ! auth()->user()->hasRole('superadmin')
         ) {
+
             abort(403);
         }
 
-        if (!$dokumen->file || !Storage::disk('local')->exists($dokumen->file->path)) {
+        /*
+        |--------------------------------------------------------------------------
+        | File Not Found
+        |--------------------------------------------------------------------------
+        */
+        if (
+            ! $dokumen->file ||
+            ! Storage::disk('local')->exists(
+                $dokumen->file->path
+            )
+        ) {
+
             abort(404, 'File tidak ditemukan.');
         }
 
@@ -66,9 +117,27 @@ class DokumenPendaftaranController extends Controller
 
     public function create(): View|RedirectResponse
     {
-        $peserta = PesertaKkn::where('mahasiswa_id', auth()->id())
+        $peserta = PesertaKkn::where(
+                'mahasiswa_id',
+                auth()->id()
+            )
             ->latest()
-            ->firstOrFail();
+            ->first();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Belum Daftar KKN
+        |--------------------------------------------------------------------------
+        */
+        if (! $peserta) {
+
+            return redirect()
+                ->route('pendaftaran-kkn.index')
+                ->with(
+                    'error',
+                    'Silakan daftar KKN terlebih dahulu.'
+                );
+        }
 
         $uploadedTypes = $peserta->dokumenPendaftaran()
             ->pluck('jenis_dokumen')
@@ -76,14 +145,25 @@ class DokumenPendaftaranController extends Controller
 
         $documents = DokumenPendaftaran::getDocumentLabels();
 
-        $missingDocuments = collect(array_keys($documents))
+        $missingDocuments = collect(
+                array_keys($documents)
+            )
             ->diff($uploadedTypes)
             ->values();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Semua Dokumen Sudah Upload
+        |--------------------------------------------------------------------------
+        */
         if ($missingDocuments->isEmpty()) {
+
             return redirect()
                 ->route('dokumen-pendaftaran.index')
-                ->with('info', 'Semua dokumen sudah diupload.');
+                ->with(
+                    'info',
+                    'Semua dokumen sudah diupload.'
+                );
         }
 
         $defaultDocument = $missingDocuments->first();
@@ -98,24 +178,63 @@ class DokumenPendaftaranController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $peserta = PesertaKkn::where('mahasiswa_id', auth()->id())
+        $peserta = PesertaKkn::where(
+                'mahasiswa_id',
+                auth()->id()
+            )
             ->latest()
-            ->firstOrFail();
+            ->first();
 
-        if ($peserta->status_pendaftaran === 'approved') {
-            return back()->with('error', 'Dokumen sudah disetujui, tidak dapat diubah.');
+        /*
+        |--------------------------------------------------------------------------
+        | Belum Daftar KKN
+        |--------------------------------------------------------------------------
+        */
+        if (! $peserta) {
+
+            return redirect()
+                ->route('pendaftaran-kkn.index')
+                ->with(
+                    'error',
+                    'Silakan daftar KKN terlebih dahulu.'
+                );
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Sudah Approved
+        |--------------------------------------------------------------------------
+        */
+        if ($peserta->status_pendaftaran === 'approved') {
+
+            return back()->with(
+                'error',
+                'Dokumen sudah disetujui, tidak dapat diubah.'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
         $request->validate([
-            'jenis_dokumen' => 'required|string|in:ktm,transkrip,surat_sehat,pas_foto',
-            'file' => 'required|mimes:pdf,jpg,jpeg,png|max:2048',
+            'jenis_dokumen' =>
+                'required|string|in:dhs,surat_pernyataan,surat_ortu,surat_vaksin,surat_dokter',
+
+            'file' =>
+                'required|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
-        $peserta = PesertaKkn::where('mahasiswa_id', auth()->id())
-            ->latest()
-            ->firstOrFail();
-
-        $path = $request->file('file')->store('dokumen-pendaftaran', 'local');
+        /*
+        |--------------------------------------------------------------------------
+        | Upload File
+        |--------------------------------------------------------------------------
+        */
+        $path = $request->file('file')->store(
+            'dokumen-pendaftaran',
+            'local'
+        );
 
         $file = File::create([
             'user_id'       => auth()->id(),
@@ -129,48 +248,112 @@ class DokumenPendaftaranController extends Controller
             'is_public'     => false,
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Existing File
+        |--------------------------------------------------------------------------
+        */
         $existing = DokumenPendaftaran::where([
             'peserta_kkn_id' => $peserta->id,
             'jenis_dokumen'  => $request->jenis_dokumen,
         ])->first();
 
         if ($existing && $existing->file) {
-            Storage::disk('local')->delete($existing->file->path);
+
+            Storage::disk('local')->delete(
+                $existing->file->path
+            );
+
             $existing->file->delete();
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Save Dokumen
+        |--------------------------------------------------------------------------
+        */
         DokumenPendaftaran::updateOrCreate(
             [
                 'peserta_kkn_id' => $peserta->id,
                 'jenis_dokumen'  => $request->jenis_dokumen,
             ],
             [
-                'file_id'            => $file->id,
-                'status_verifikasi'  => 'pending',
-                'verified_by'        => null,
-                'verified_at'        => null,
-                'catatan_revisi'     => null,
+                'file_id'           => $file->id,
+                'status_verifikasi' => 'pending',
+                'verified_by'       => null,
+                'verified_at'       => null,
+                'catatan_revisi'    => null,
             ]
         );
 
-        $this->updateStatusPeserta($peserta);
+        /*
+        |--------------------------------------------------------------------------
+        | Update Status Peserta
+        |--------------------------------------------------------------------------
+        */
+        $this->updateStatusPeserta(
+            $peserta
+        );
 
+        /*
+        |--------------------------------------------------------------------------
+        | Notification Admin
+        |--------------------------------------------------------------------------
+        */
         $admins = User::role('superadmin')->get();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Simpan Ke Notification Log
+        |--------------------------------------------------------------------------
+        */
+        $log = NotificationLog::create([
+            'title' => 'Dokumen Pendaftaran Baru',
+            'message' => auth()->user()->name . ' mengupload dokumen ' . $request->jenis_dokumen,
+            'type' => 'info',
+            'recipients' => $admins->pluck('name')->toArray(),
+            'action_url' => route('dokumen-pendaftaran.index'),
+            'action_text' => 'Lihat Dokumen',
+            'sent_by' => auth()->id(),
+        ]);
+
         foreach ($admins as $admin) {
-            $admin->notify(new DokumenUploadedNotification($peserta));
+
+            $admin->notify(
+                new DokumenUploadedNotification(
+                    $peserta,
+                    $log->id
+                )
+            );
         }
 
-        return redirect()->route('dokumen-pendaftaran.index')->with('success', 'Dokumen berhasil diunggah.');
-
+        return redirect()
+            ->route('dokumen-pendaftaran.index')
+            ->with(
+                'success',
+                'Dokumen berhasil diunggah.'
+            );
     }
 
     public function destroy($id): RedirectResponse
     {
-        $dokumen = DokumenPendaftaran::with('file', 'pesertaKkn')->findOrFail($id);
+        $dokumen = DokumenPendaftaran::with([
+                'file',
+                'pesertaKkn',
+            ])
+            ->findOrFail($id);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Delete File
+        |--------------------------------------------------------------------------
+        */
         if ($dokumen->file) {
-            Storage::disk('local')->delete($dokumen->file->path);
+
+            Storage::disk('local')->delete(
+                $dokumen->file->path
+            );
+
             $dokumen->file->delete();
         }
 
@@ -178,33 +361,69 @@ class DokumenPendaftaranController extends Controller
 
         $dokumen->delete();
 
-        $this->updateStatusPeserta($peserta);
+        /*
+        |--------------------------------------------------------------------------
+        | Update Status Peserta
+        |--------------------------------------------------------------------------
+        */
+        $this->updateStatusPeserta(
+            $peserta
+        );
 
-        return redirect()->route('dokumen-pendaftaran.index')->with('success', 'Dokumen berhasil dihapus.');
+        return redirect()
+            ->route('dokumen-pendaftaran.index')
+            ->with(
+                'success',
+                'Dokumen berhasil dihapus.'
+            );
     }
 
-    private function updateStatusPeserta(PesertaKkn $peserta): void
-    {
+    private function updateStatusPeserta(
+        PesertaKkn $peserta
+    ): void {
+
         $uploadedTypes = $peserta->dokumenPendaftaran()
             ->pluck('jenis_dokumen')
             ->toArray();
 
-        $missing = array_diff($this->requiredDocuments, $uploadedTypes);
+        $missing = array_diff(
+            $this->requiredDocuments,
+            $uploadedTypes
+        );
 
+        /*
+        |--------------------------------------------------------------------------
+        | Belum Upload Sama Sekali
+        |--------------------------------------------------------------------------
+        */
         if (count($uploadedTypes) === 0) {
+
             $peserta->update([
                 'status_pendaftaran' => 'draft',
             ]);
+
             return;
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Dokumen Belum Lengkap
+        |--------------------------------------------------------------------------
+        */
         if (count($missing) > 0) {
+
             $peserta->update([
                 'status_pendaftaran' => 'pending_documents',
             ]);
+
             return;
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Lengkap Menunggu Verifikasi
+        |--------------------------------------------------------------------------
+        */
         $peserta->update([
             'status_pendaftaran' => 'pending_verification',
         ]);

@@ -175,3 +175,102 @@
     background-color: #2b3035 !important;
     color: #fff !important;
 }
+
+/* =========================
+   PAGINATION DARK MODE
+   ========================= */
+
+[data-bs-theme="dark"] .pagination .page-link {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+}
+
+[data-bs-theme="dark"] .pagination .page-link:hover {
+    background-color: #6777ef;
+    color: #b12525;
+    border-color: #6777ef;
+}
+
+[data-bs-theme="dark"] .pagination .page-item.active .page-link {
+    background-color: #6777ef;
+    border-color: #6777ef;
+    color: #6777ef;
+}
+
+[data-bs-theme="dark"] .pagination .page-item.disabled .page-link {
+    opacity: 0.5;
+    background-color: #6777ef;
+    color: #aaa;
+}
+
+/* =========================
+   WAR & JOINED DARK MODE
+   ========================= */
+
+[data-bs-theme="dark"] .sc-blue { background: linear-gradient(135deg, #1c2340, #252b4d) !important; color: #a4b3f5 !important; }
+[data-bs-theme="dark"] .sc-green { background: linear-gradient(135deg, #162f1e, #1d3b26) !important; color: #76d289 !important; }
+[data-bs-theme="dark"] .sc-red { background: linear-gradient(135deg, #3d1b1b, #4a2121) !important; color: #ff8787 !important; }
+[data-bs-theme="dark"] .sc-orange { background: linear-gradient(135deg, #3d2d14, #4f3b19) !important; color: #ffca66 !important; }
+
+[data-bs-theme="dark"] .sc-blue .icon-wrap { background: rgba(164,179,245,.15) !important; }
+[data-bs-theme="dark"] .sc-green .icon-wrap { background: rgba(118,210,137,.15) !important; }
+[data-bs-theme="dark"] .sc-red .icon-wrap { background: rgba(255,135,135,.15) !important; }
+[data-bs-theme="dark"] .sc-orange .icon-wrap { background: rgba(255,202,102,.15) !important; }
+
+[data-bs-theme="dark"] .detail-value,
+[data-bs-theme="dark"] .anggota-info .name {
+    color: #f1f3f8 !important;
+}
+
+[data-bs-theme="dark"] .detail-row {
+    border-bottom-color: #374151 !important;
+}
+
+[data-bs-theme="dark"] .anggota-item {
+    border-bottom-color: #374151 !important;
+}
+
+[data-bs-theme="dark"] .anggota-avatar.L { background: #252b4d !important; color: #a4b3f5 !important; }
+[data-bs-theme="dark"] .anggota-avatar.P { background: #421c29 !important; color: #ff87b4 !important; }
+
+[data-bs-theme="dark"] .badge-faculty {
+    background: #252b4d !important;
+    color: #a4b3f5 !important;
+}
+
+[data-bs-theme="dark"] .share-btn {
+    border-color: #374151 !important;
+    color: #a0aec0 !important;
+}
+
+[data-bs-theme="dark"] .share-btn:hover {
+    border-color: #6777ef !important;
+    color: #6777ef !important;
+    background: rgba(103,119,239,.1) !important;
+}
+
+[data-bs-theme="dark"] .info-card .card-header {
+    border-bottom-color: #374151 !important;
+}
+
+[data-bs-theme="dark"] .kelompok-card {
+    background-color: #2b3035 !important;
+}
+
+[data-bs-theme="dark"] .kelompok-card .kelompok-header {
+    border-bottom-color: #374151 !important;
+}
+
+[data-bs-theme="dark"] .kelompok-card .kelompok-title {
+    color: #f1f3f8 !important;
+}
+
+[data-bs-theme="dark"] .kelompok-card .quota-box {
+    background-color: #1f2128 !important;
+}
+
+[data-bs-theme="dark"] .countdown-box {
+    background-color: rgba(0,0,0,0.3) !important;
+    border-color: rgba(255,255,255,0.1) !important;
+}

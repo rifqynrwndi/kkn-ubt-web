@@ -13,19 +13,27 @@ class MahasiswaManagementController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::role('mahasiswa')->with('mahasiswa');
+        $query = User::with('mahasiswa.pesertaKkn.gelombang');
 
-        if ($request->search) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', "%{$request->search}%")
-                  ->orWhere('email', 'like', "%{$request->search}%")
-                  ->orWhereHas('mahasiswa', function ($mq) use ($request) {
-                      $mq->where('npm', 'like', "%{$request->search}%");
-                  });
-            });
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                ->orWhere('email', 'like', '%' . $request->search . '%');
         }
 
-        $mahasiswas = $query->paginate(10);
+        if ($request->filled('status')) {
+            if ($request->status == 'verified') {
+                $query->whereNotNull('email_verified_at');
+            } elseif ($request->status == 'unverified') {
+                $query->whereNull('email_verified_at');
+            }
+        }
+
+        if ($request->ajax()) {
+            $mahasiswas = $query->latest()->paginate(10);
+            return view('mahasiswa.partials.table', compact('mahasiswas'))->render();
+        }
+
+        $mahasiswas = $query->latest()->paginate(10)->withQueryString();
 
         return view('mahasiswa.index', compact('mahasiswas'));
     }

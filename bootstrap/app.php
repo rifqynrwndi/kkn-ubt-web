@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
 
             'biodata.complete' => \App\Http\Middleware\EnsureBiodataComplete::class,
+            'email.verified.except.superadmin' => \App\Http\Middleware\EnsureEmailVerifiedExceptSuperadmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

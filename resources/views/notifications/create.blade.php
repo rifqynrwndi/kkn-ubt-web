@@ -20,7 +20,7 @@
                         </div>
 
                         <div class="card-body">
-                            <form method="POST" action="{{ route('notifications.send') }}">
+                            <form method="POST" action="{{ route('notifications.admin.send') }}">
                                 @csrf
 
                                 {{-- TITLE --}}
