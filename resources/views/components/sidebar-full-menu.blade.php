@@ -133,16 +133,6 @@
                     </a>
                 </li>
 
-                <li class="{{ Request::is('import-mahasiswa*') ? 'active' : '' }}">
-                    <a class="nav-link"
-                       href="{{ route('import-mahasiswa.index') }}">
-
-                        <i class="fas fa-upload"></i>
-                        <span>Import Mahasiswa</span>
-
-                    </a>
-                </li>
-
                 <li class="{{ Request::is('pembimbing-lapangan*') ? 'active' : '' }}">
                     <a class="nav-link"
                        href="{{ route('pembimbing-lapangan.index') }}">

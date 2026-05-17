@@ -13,7 +13,6 @@ use App\Http\Controllers\{
     GelombangController,
     HakaksesController,
     HomeController,
-    ImportMahasiswaController,
     MahasiswaManagementController,
     NotificationController,
     DosenPembimbingLapanganController,
@@ -404,18 +403,6 @@ Route::middleware(['auth','biodata.complete', 'email.verified.except.superadmin'
             Route::post('/reset', [SettingController::class, 'reset'])->name('reset');
         });
 
-        /*
-        |--------------------------------------------------------------------------
-        | Import Mahasiswa
-        |--------------------------------------------------------------------------
-        */
-        Route::prefix('import-mahasiswa')->name('import-mahasiswa.')->group(function () {
-            Route::get('/', [ImportMahasiswaController::class, 'index'])->name('index');
-            Route::post('/preview', [ImportMahasiswaController::class, 'preview'])->name('preview');
-            Route::post('/import', [ImportMahasiswaController::class, 'import'])->name('import');
-            Route::get('/sql', [ImportMahasiswaController::class, 'sqlImport'])->name('sql');
-            Route::post('/sql-preview', [ImportMahasiswaController::class, 'sqlPreview'])->name('sql-preview');
-            Route::post('/sql-run', [ImportMahasiswaController::class, 'sqlRun'])->name('sql-run');
-        });
+    });
     });
 });

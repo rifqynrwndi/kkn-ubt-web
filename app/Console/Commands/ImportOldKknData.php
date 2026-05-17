@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Models\User;
 use App\Models\Mahasiswa;
-use App\Models\Fakultas;
+use App\Models\PesertaKkn;
 use App\Models\ProgramStudi;
+use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -13,308 +13,172 @@ use Illuminate\Support\Str;
 
 class ImportOldKknData extends Command
 {
-    protected $signature = 'import:old-kkn';
+    protected $signature = 'import:old-kkn
+                            {--skip-mahasiswa : Only import users, skip mahasiswa profiles}
+                            {--skip-peserta : Skip creating PesertaKkn records}
+                            {--gelombang= : Gelombang ID for PesertaKkn records}
+                            {--limit=0 : Limit how many users to import (0 = all)}
+                            {--chunk=500 : Chunk size for processing}';
 
-    protected $description = 'Import data KKN lama';
+    protected $description = 'Import data KKN lama dari database old_mysql ke database baru';
+
+    private array $fakultasMap = [1 => 1, 2 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6, 7 => 7];
+
+    private array $prodiMap = [
+        1  => 15, 2  => 17, 3  => 18, 4  => 16,
+        15 => 13, 16 => 14,
+        5  => 10, 6  => 11, 7  => 12,
+        8  => 19,
+        9  => 6,  10 => 7,  11 => 8,  12 => 9,
+        13 => 4,  14 => 5,
+        17 => 2,  18 => 1,  19 => 3,
+        20 => 21, 21 => 20, 23 => 20,
+    ];
 
     public function handle()
     {
-        $this->info('Starting import...');
+        $this->info('Starting optimized import...');
+        $this->info('Memory limit: ' . ini_get('memory_limit'));
 
-        /*
-        |--------------------------------------------------------------------------
-        | Mapping Fakultas Lama -> ID Fakultas Baru
-        |--------------------------------------------------------------------------
-        */
-        $fakultasMap = [
-            1 => 1, // Perikanan dan Ilmu Kelautan
-            2 => 2, // Pertanian
-            3 => 3, // Teknik
-            4 => 4, // Ekonomi
-            5 => 5, // FKIP
-            6 => 6, // Hukum
-            7 => 7, // Ilmu Kesehatan
-        ];
+        if (! $this->canConnect()) {
+            $this->error('Tidak dapat terhubung ke database old_mysql. Periksa konfigurasi OLD_DB_* di .env');
+            return 1;
+        }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Mapping Prodi Lama -> ID Prodi Baru
-        |--------------------------------------------------------------------------
-        |
-        | SESUAIKAN DENGAN ID DI DATABASE BARU
-        |
-        */
-        $prodiMap = [
+        $skipMahasiswa = $this->option('skip-mahasiswa');
+        $skipPeserta   = $this->option('skip-peserta');
+        $gelombangId   = $this->option('gelombang');
+        $limit         = (int) $this->option('limit');
+        $chunk         = (int) $this->option('chunk');
 
-            // FKIP
-            1  => 15,  // Bimbingan dan Konseling
-            2  => 17, // Pendidikan Bahasa Indonesia
-            3  => 18, // Pendidikan Bahasa Inggris
-            4  => 16, // PGSD
-            15 => 13,  // Pendidikan Matematika
-            16 => 14,  // Pendidikan Biologi
+        $total = DB::connection('old_mysql')->table('users')->count();
+        $total = $limit > 0 ? min($limit, $total) : $total;
 
-            // Ekonomi
-            5  => 10, // Ekonomi Pembangunan
-            6  => 11, // Manajemen
-            7  => 12, // Akuntansi
+        $this->info("Total users in old DB: {$total}");
+        $this->info("Chunk size: {$chunk}");
+        if ($skipMahasiswa) $this->warn('Skipping mahasiswa profiles');
+        if ($skipPeserta)   $this->warn('Skipping PesertaKkn records');
+        if ($gelombangId)   $this->info("Gelombang ID: {$gelombangId}");
 
-            // Hukum
-            8  => 19, // Hukum
-
-            // Teknik
-            9  => 6, // Teknik Elektro
-            10 => 7, // Teknik Mesin
-            11 => 8, // Teknik Sipil
-            12 => 9, // Teknik Komputer
-
-            // Pertanian
-            13 => 4, // Agribisnis
-            14 => 5, // Agroteknologi
-
-            // Perikanan
-            17 => 2, // Manajemen Sumber Daya Perairan
-            18 => 1,  // Akuakultur
-            19 => 3, // Teknologi Hasil Perikanan
-
-            // Kesehatan
-            20 => 21, // Kebidanan
-            21 => 20, // Keperawatan
-            23 => 20, // Keperawatan
-        ];
-
-        $oldUsers = DB::connection('old_mysql')
-            ->table('users')
-            ->get();
-
-        $bar = $this->output->createProgressBar(
-            $oldUsers->count()
-        );
-
+        $bar = $this->output->createProgressBar($total);
         $bar->start();
 
         $createdUser = 0;
         $createdMahasiswa = 0;
-        $createdAdmin = 0;
+        $createdPeserta = 0;
+        $skipped = 0;
 
-        foreach ($oldUsers as $oldUser) {
+        $prodiCache = ProgramStudi::all()->keyBy('id');
 
-            /*
-            |--------------------------------------------------------------------------
-            | Safe Field
-            |--------------------------------------------------------------------------
-            */
-            $name = $oldUser->nama
-                ?? $oldUser->name
-                ?? 'Unknown';
+        DB::connection('old_mysql')
+            ->table('users')
+            ->when($limit > 0, fn($q) => $q->limit($limit))
+            ->orderBy('id')
+            ->chunk($chunk, function ($oldUsers) use (
+                &$createdUser, &$createdMahasiswa, &$createdPeserta, &$skipped,
+                $skipMahasiswa, $skipPeserta, $gelombangId, $prodiCache, $bar
+            ) {
+                $oldUserIds = $oldUsers->pluck('id');
 
-            $email = $oldUser->email ?? null;
-
-            $npm = $oldUser->npm
-                ?? $oldUser->username
-                ?? null;
-
-            $roleId = $oldUser->role ?? null;
-
-            if (! $email) {
-
-                $bar->advance();
-                continue;
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Cek User Exist
-            |--------------------------------------------------------------------------
-            */
-            $user = User::where(
-                'email',
-                $email
-            )->first();
-
-            if (! $user) {
-
-                $user = User::create([
-                    'name' => $name,
-
-                    'email' => $email,
-
-                    'password' => $oldUser->password
-                        ?? Hash::make('password123'),
-
-                    'email_verified_at' =>
-                        $oldUser->email_verified_at
-                        ?? now(),
-
-                    'remember_token' =>
-                        $oldUser->remember_token
-                        ?? Str::random(10),
-                ]);
-
-                $createdUser++;
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | ROLE HANDLING
-            |--------------------------------------------------------------------------
-            */
-
-            // SUPERADMIN
-            if ($roleId == 4) {
-
-                $user->syncRoles([
-                    'superadmin'
-                ]);
-
-                $createdAdmin++;
-
-                $bar->advance();
-                continue;
-            }
-
-            // MAHASISWA
-            $user->syncRoles([
-                'mahasiswa'
-            ]);
-
-            /*
-            |--------------------------------------------------------------------------
-            | Ambil Data Mahasiswa Lama
-            |--------------------------------------------------------------------------
-            */
-            if ($npm) {
-
-                $oldMahasiswa = DB::connection('old_mysql')
+                $oldMahasiswas = DB::connection('old_mysql')
                     ->table('mahasiswa')
-                    ->where(
-                        'user_id',
-                        $oldUser->id
-                    )
-                    ->first();
+                    ->whereIn('user_id', $oldUserIds)
+                    ->get()
+                    ->keyBy('user_id');
 
-                /*
-                |--------------------------------------------------------------------------
-                | Mapping Jenis Kelamin
-                |--------------------------------------------------------------------------
-                */
-                $jenisKelamin = null;
+                $existingEmails = User::whereIn('email', $oldUsers->pluck('email')->filter())
+                    ->pluck('id', 'email');
 
-                if ($oldMahasiswa?->jenis_kelamin == 1) {
-                    $jenisKelamin = 'L';
-                }
+                foreach ($oldUsers as $old) {
+                    $bar->advance();
 
-                if ($oldMahasiswa?->jenis_kelamin == 2) {
-                    $jenisKelamin = 'P';
-                }
+                    $email = $old->email ?? null;
+                    if (! $email) { $skipped++; continue; }
 
-                /*
-                |--------------------------------------------------------------------------
-                | Mapping Fakultas Baru
-                |--------------------------------------------------------------------------
-                */
-                $fakultasId = null;
+                    // Skip admin
+                    if (($old->role ?? null) == 4) { $skipped++; continue; }
 
-                if (
-                    isset(
-                        $fakultasMap[
-                            $oldMahasiswa->fakultas ?? null
-                        ]
-                    )
-                ) {
+                    // Already exists
+                    if (isset($existingEmails[$email])) { $skipped++; continue; }
 
-                    $fakultasId = $fakultasMap[
-                        $oldMahasiswa->fakultas
-                    ];
-                }
+                    $user = User::create([
+                        'name'              => $old->nama ?? $old->name ?? 'Unknown',
+                        'email'             => $email,
+                        'password'          => $old->password ?? Hash::make(Str::random(16)),
+                        'email_verified_at' => $old->email_verified_at ?? now(),
+                        'remember_token'    => $old->remember_token ?? Str::random(10),
+                    ]);
+                    $user->assignRole('mahasiswa');
+                    $createdUser++;
 
-                /*
-                |--------------------------------------------------------------------------
-                | Mapping Prodi Baru
-                |--------------------------------------------------------------------------
-                */
-                $prodiId = null;
+                    if ($skipMahasiswa) continue;
 
-                if (
-                    isset(
-                        $prodiMap[
-                            $oldMahasiswa->prodi ?? null
-                        ]
-                    )
-                ) {
+                    $oldMhs = $oldMahasiswas[$old->id] ?? null;
+                    if (! $oldMhs) continue;
 
-                    $prodiId = $prodiMap[
-                        $oldMahasiswa->prodi
-                    ];
-                }
-
-                /*
-                |--------------------------------------------------------------------------
-                | Validasi Prodi Exists
-                |--------------------------------------------------------------------------
-                */
-                $prodiExists = ProgramStudi::find($prodiId);
-
-                if (! $prodiExists) {
+                    $npm    = $oldMhs->npm ?? $old->username ?? null;
+                    $gender = match ((int) ($oldMhs->jenis_kelamin ?? 0)) {
+                        1 => 'L', 2 => 'P', default => null,
+                    };
                     $prodiId = null;
+                    $oldProdi = $oldMhs->prodi ?? null;
+                    if ($oldProdi && isset($this->prodiMap[$oldProdi])) {
+                        $mapped = $this->prodiMap[$oldProdi];
+                        $prodiId = isset($prodiCache[$mapped]) ? $mapped : null;
+                    }
+
+                    Mahasiswa::updateOrCreate(
+                        ['user_id' => $user->id],
+                        [
+                            'npm'                  => $npm,
+                            'jenis_kelamin'        => $gender,
+                            'prodi_id'             => $prodiId,
+                            'foto'                 => $oldMhs->foto ?? null,
+                            'no_hp'                => $oldMhs->hp ?? null,
+                            'nama_ortu'            => $oldMhs->nama_ortu ?? null,
+                            'no_hp_ortu'           => $oldMhs->hp_ortu ?? null,
+                            'alamat_ortu'          => $oldMhs->alamat_ortu ?? null,
+                            'is_biodata_complete'  => ! empty($gender),
+                        ]
+                    );
+                    $createdMahasiswa++;
+
+                    if ($skipPeserta || ! $gelombangId) continue;
+
+                    PesertaKkn::firstOrCreate(
+                        [
+                            'mahasiswa_id' => $user->id,
+                            'gelombang_id' => $gelombangId,
+                        ],
+                        [
+                            'status_pendaftaran' => 'approved',
+                            'submitted_at'       => now(),
+                        ]
+                    );
+                    $createdPeserta++;
                 }
 
-                /*
-                |--------------------------------------------------------------------------
-                | Simpan Mahasiswa
-                |--------------------------------------------------------------------------
-                */
-                Mahasiswa::updateOrCreate(
-                    [
-                        'user_id' => $user->id,
-                    ],
-                    [
-                        'npm' => $npm,
-
-                        'jenis_kelamin' =>
-                            $jenisKelamin,
-
-                        'foto' =>
-                            $oldMahasiswa->foto ?? null,
-
-                        'no_hp' =>
-                            $oldMahasiswa->hp ?? null,
-
-                        'prodi_id' =>
-                            $prodiId,
-
-                        'nama_ortu' =>
-                            $oldMahasiswa->nama_ortu ?? null,
-
-                        'no_hp_ortu' =>
-                            $oldMahasiswa->hp_ortu ?? null,
-
-                        'alamat_ortu' =>
-                            $oldMahasiswa->alamat_ortu ?? null,
-
-                        'is_biodata_complete' => 1,
-
-                        'created_at' =>
-                            $oldMahasiswa->created_at ?? now(),
-
-                        'updated_at' =>
-                            $oldMahasiswa->updated_at ?? now(),
-                    ]
-                );
-
-                $createdMahasiswa++;
-            }
-
-            $bar->advance();
-        }
+                // Free memory
+                unset($oldUsers, $oldMahasiswas, $existingEmails);
+            });
 
         $bar->finish();
-
         $this->newLine(2);
 
         $this->info('Import selesai!');
-        $this->info("User created: $createdUser");
-        $this->info("Mahasiswa created: $createdMahasiswa");
-        $this->info("Admin assigned: $createdAdmin");
+        $this->info("User:      {$createdUser} created");
+        $this->info("Mahasiswa: {$createdMahasiswa} created");
+        $this->info("Peserta:   {$createdPeserta} created");
+        $this->info("Skipped:   {$skipped}");
+    }
+
+    private function canConnect(): bool
+    {
+        try {
+            DB::connection('old_mysql')->getPdo();
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 }
