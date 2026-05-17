@@ -62,10 +62,8 @@
                                     <td>{{ \Carbon\Carbon::parse($item->tgl_mulai)->format('d M Y') }}</td>
                                     <td>{{ \Carbon\Carbon::parse($item->tgl_akhir)->format('d M Y') }}</td>
                                     <td>
-                                        <i class="fas fa-male text-primary mr-1"></i> {{ $item->total_pria }}
-                                        <br>
-                                        <i class="fas fa-female text-danger mr-1"></i> {{ $item->total_wanita }}
-                                        <br>
+                                        Laki-laki: {{ $item->total_pria }} <br>
+                                        Perempuan: {{ $item->total_wanita }} <br>
                                         <b>Total: {{ $item->total_peserta }}</b>
                                     </td>
 

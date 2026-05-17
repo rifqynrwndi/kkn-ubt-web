@@ -78,7 +78,8 @@ class ImportOldKknData extends Command
             ->when($limit > 0, fn($q) => $q->limit($limit))
             ->orderBy('id')
             ->chunk($chunk, function ($oldUsers) use (
-                &$createdUser, &$createdMahasiswa, &$createdPeserta, &$skipped,
+                &$createdUser, &$createdMahasiswa, &$createdPeserta,
+                &$skippedNoEmail, &$skippedAdmin, &$skippedExists, &$skippedNoMhs,
                 $skipMahasiswa, $skipPeserta, $gelombangId, $prodiCache, $bar
             ) {
                 $oldUserIds = $oldUsers->pluck('id');
@@ -115,7 +116,7 @@ class ImportOldKknData extends Command
                     if ($skipMahasiswa) continue;
 
                     $oldMhs = $oldMahasiswas[$old->id] ?? null;
-                    if (! $oldMhs) continue;
+                    if (! $oldMhs) { $skippedNoMhs++; continue; }
 
                     $npm    = $oldMhs->npm ?? $old->username ?? null;
                     $gender = match ((int) ($oldMhs->jenis_kelamin ?? 0)) {
