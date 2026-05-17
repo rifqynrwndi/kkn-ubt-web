@@ -274,3 +274,114 @@
     background-color: rgba(0,0,0,0.3) !important;
     border-color: rgba(255,255,255,0.1) !important;
 }
+
+/* =========================
+   WAR MONITOR DARK MODE
+   ========================= */
+
+[data-bs-theme="dark"] .sec-card {
+    background: #1f2430;
+}
+[data-bs-theme="dark"] .sec-card .card-header {
+    border-bottom-color: rgba(255,255,255,.06);
+}
+[data-bs-theme="dark"] .kl-row {
+    border-bottom-color: rgba(255,255,255,.04);
+}
+[data-bs-theme="dark"] .kl-row:hover {
+    background: rgba(255,255,255,.03);
+}
+[data-bs-theme="dark"] .kl-num {
+    background: rgba(255,255,255,.08);
+    color: #b5bccd;
+}
+[data-bs-theme="dark"] .kl-name {
+    color: #f1f3f8;
+}
+[data-bs-theme="dark"] .kl-loc {
+    color: #aab1c1;
+}
+[data-bs-theme="dark"] .kl-bar {
+    background: rgba(255,255,255,.08);
+}
+[data-bs-theme="dark"] .kl-count {
+    color: #aab1c1;
+}
+[data-bs-theme="dark"] .kl-badge.available {
+    background: rgba(71,195,99,.15);
+    color: #63d47c;
+}
+[data-bs-theme="dark"] .kl-badge.full {
+    background: rgba(252,84,75,.15);
+    color: #fc7c75;
+}
+[data-bs-theme="dark"] .kl-badge.near {
+    background: rgba(255,164,38,.15);
+    color: #ffb84d;
+}
+[data-bs-theme="dark"] .fak-bar {
+    background: rgba(255,255,255,.08);
+}
+[data-bs-theme="dark"] .fak-count,
+[data-bs-theme="dark"] .fak-pct {
+    color: #aab1c1;
+}
+[data-bs-theme="dark"] .log-item {
+    background: rgba(255,255,255,.03);
+}
+[data-bs-theme="dark"] .log-time {
+    color: #6c757d;
+}
+[data-bs-theme="dark"] .fak-empty,
+[data-bs-theme="dark"] .log-empty {
+    color: #6c757d;
+}
+
+/* =========================
+   WAR ARENA DARK MODE
+   ========================= */
+
+[data-bs-theme="dark"] .kelompok-list-item {
+    border-bottom-color: rgba(255,255,255,.08);
+}
+[data-bs-theme="dark"] .kelompok-list-item:hover {
+    background: rgba(255,255,255,.04);
+}
+[data-bs-theme="dark"] .kl-number {
+    background: rgba(255,255,255,.08);
+    color: #b5bccd;
+}
+[data-bs-theme="dark"] .kl-location {
+    color: #aab1c1;
+}
+[data-bs-theme="dark"] .kl-quota .q-num {
+    color: #a4b0f5;
+}
+[data-bs-theme="dark"] .kl-quota .q-label {
+    color: #6c757d;
+}
+[data-bs-theme="dark"] .kl-full-badge {
+    background: rgba(201,42,42,.15);
+    color: #fc544b;
+}
+[data-bs-theme="dark"] .kl-bar-fill.ok   { background: linear-gradient(90deg,#63d47c,#2f9e44); }
+[data-bs-theme="dark"] .kl-bar-fill.warn { background: linear-gradient(90deg,#ffb84d,#e67700); }
+[data-bs-theme="dark"] .kl-bar-fill.full { background: linear-gradient(90deg,#fc544b,#c92a2a); }
+
+[data-bs-theme="dark"] .kl-section-divider {
+    background: rgba(255,255,255,.04);
+    color: #6c757d;
+    border-bottom-color: rgba(255,255,255,.06);
+}
+[data-bs-theme="dark"] .kelompok-list-item.is-disabled {
+    opacity: .35;
+}
+[data-bs-theme="dark"] .kelompok-list-item.is-disabled .kl-number {
+    background: rgba(255,255,255,.04);
+    color: #555;
+}
+[data-bs-theme="dark"] .kl-full-badge[style*="fff8e1"],
+[data-bs-theme="dark"] .kl-full-badge[style*="e67700"] {
+    background: rgba(255,164,38,.15) !important;
+    color: #ffb84d !important;
+}

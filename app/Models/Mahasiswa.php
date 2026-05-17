@@ -43,4 +43,9 @@ class Mahasiswa extends Model
     {
         return $this->hasMany(PesertaKkn::class, 'mahasiswa_id', 'user_id');
     }
+
+    public function getNameAttribute(): ?string
+    {
+        return $this->user?->name;
+    }
 }

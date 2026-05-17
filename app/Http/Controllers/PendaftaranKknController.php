@@ -57,7 +57,7 @@ class PendaftaranKknController extends Controller
                         'desaGelombang.gelombang',
                         'dosenPembimbingLapangan.user',
                         'pesertaKkn.mahasiswa.user',
-                        'ketua',
+                        'ketua.mahasiswa.user',
                     ])
                     ->find($pendaftaran->kelompok_kkn_id);
             }
@@ -67,6 +67,32 @@ class PendaftaranKknController extends Controller
             'gelombang'   => $gelombangAktif,
             'pendaftaran' => $pendaftaran,
             'kelompok'    => $kelompok,
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Detail Kelompok Saya
+    |--------------------------------------------------------------------------
+    */
+    public function kelompokSaya(): View
+    {
+        $user = auth()->user();
+
+        $peserta = PesertaKkn::with([
+                'kelompokKkn.desaGelombang.desa.kecamatan',
+                'kelompokKkn.dosenPembimbingLapangan.user',
+                'kelompokKkn.pesertaKkn.mahasiswa.user',
+                'kelompokKkn.pesertaKkn.mahasiswa.prodi.fakultas',
+            ])
+            ->where('mahasiswa_id', $user->id)
+            ->whereNotNull('kelompok_kkn_id')
+            ->firstOrFail();
+
+        return view('war.joined', [
+            'session'     => null,
+            'peserta'     => $peserta,
+            'participant' => null,
         ]);
     }
 
@@ -291,15 +317,10 @@ class PendaftaranKknController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Auto Set Ketua Jika Belum Ada
+        | Auto Set Ketua Jika Belum Ada (Random)
         |--------------------------------------------------------------------------
         */
-        if (! $kelompok->ketua_id) {
-
-            $kelompok->update([
-                'ketua_id' => $pendaftaran->mahasiswa_id,
-            ]);
-        }
+        $kelompok->generateKetua();
 
         return redirect()
             ->route('pendaftaran-kkn.index')

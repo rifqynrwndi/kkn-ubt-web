@@ -19,31 +19,25 @@ class KelompokKuotaSeeder extends Seeder
             return;
         }
 
-        KelompokKuota::truncate();
-
-        $rows = [];
-
         foreach ($kelompoks as $kelompok) {
             foreach ($fakultasList as $fakultas) {
                 $kuota = $this->resolveKuota($fakultas->nama_fakultas);
 
-                $rows[] = [
-                    'kelompok_kkn_id' => $kelompok->id,
-                    'fakultas_id'     => $fakultas->id,
-                    'kuota'           => $kuota,
-                    'kuota_laki'      => $kuota === 3 ? 1 : 1,
-                    'kuota_perempuan' => $kuota === 3 ? 2 : 1,
-                    'created_at'      => now(),
-                    'updated_at'      => now(),
-                ];
+                KelompokKuota::updateOrCreate(
+                    [
+                        'kelompok_kkn_id' => $kelompok->id,
+                        'fakultas_id'     => $fakultas->id,
+                    ],
+                    [
+                        'kuota'           => $kuota,
+                        'kuota_laki'      => 1,
+                        'kuota_perempuan' => $kuota === 3 ? 2 : 1,
+                    ]
+                );
             }
         }
 
-        foreach (array_chunk($rows, 500) as $chunk) {
-            KelompokKuota::insert($chunk);
-        }
-
-        $total = count($rows);
+        $total = KelompokKuota::count();
         $this->command->info("KelompokKuota selesai: {$total} rows.");
     }
 

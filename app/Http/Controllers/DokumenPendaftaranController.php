@@ -343,6 +343,19 @@ class DokumenPendaftaranController extends Controller
             ])
             ->findOrFail($id);
 
+        abort_if(
+            auth()->id() !== $dokumen->pesertaKkn->mahasiswa_id
+            && ! auth()->user()->hasRole('superadmin'),
+            403,
+            'Anda tidak memiliki akses untuk menghapus dokumen ini.'
+        );
+
+        abort_if(
+            $dokumen->pesertaKkn->status_pendaftaran === 'approved',
+            403,
+            'Dokumen tidak dapat dihapus karena status pendaftaran sudah disetujui.'
+        );
+
         /*
         |--------------------------------------------------------------------------
         | Delete File

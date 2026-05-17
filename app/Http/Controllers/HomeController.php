@@ -114,9 +114,4 @@ class HomeController extends Controller
             'reminders' => $reminders,
         ]);
     }
-
-    public function blank(): View
-    {
-        return view('layouts.blank-page');
-    }
 }

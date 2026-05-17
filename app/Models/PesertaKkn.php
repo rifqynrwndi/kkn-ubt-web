@@ -58,4 +58,9 @@ class PesertaKkn extends Model
     {
         return $this->hasMany(WarLog::class);
     }
+
+    public function getNameAttribute(): ?string
+    {
+        return $this->mahasiswa?->user?->name;
+    }
 }

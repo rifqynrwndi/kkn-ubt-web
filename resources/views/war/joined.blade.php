@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Berhasil Bergabung — WAR KKN')
+@section('title', 'Berhasil Bergabung — Plotting KKN')
 
 @push('css')
 <style>
@@ -49,6 +49,7 @@
 .detail-label { font-size: 12px; color: #adb5bd; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
 .detail-value { font-size: 15px; font-weight: 600; color: #1a1a2e; }
 
+/* ── LIST ANGGOTA ──────────────────────────────── */
 .anggota-item {
     display: flex;
     align-items: center;
@@ -77,22 +78,6 @@
     background: #e8ecff;
     color: #4f5ece;
 }
-
-.share-btn {
-    border: 2px solid #e9ecef;
-    border-radius: 12px;
-    padding: 14px;
-    text-align: center;
-    cursor: pointer;
-    transition: all .2s;
-    color: #6c757d;
-    font-size: 13px;
-}
-.share-btn:hover {
-    border-color: #6777ef;
-    color: #6777ef;
-    background: #f0f4ff;
-}
 </style>
 @endpush
 
@@ -104,33 +89,38 @@
         <h1>Status Kelompok KKN</h1>
         <div class="section-header-breadcrumb">
             <div class="breadcrumb-item"><a href="{{ route('home') }}">Dashboard</a></div>
-            <div class="breadcrumb-item"><a href="{{ route('war.index') }}">WAR KKN</a></div>
-            <div class="breadcrumb-item">Kelompokku</div>
+            <div class="breadcrumb-item"><a href="{{ route('pendaftaran-kkn.index') }}">Pendaftaran KKN</a></div>
+            <div class="breadcrumb-item active">Detail Kelompok</div>
         </div>
     </div>
 
     <div class="section-body">
 
-        {{-- ── HERO ──────────────────────────────────────── --}}
+        {{-- ── HERO ─────────────────────────────────── --}}
         <div class="joined-hero">
             <div class="check-icon">✓</div>
-            <h1>Selamat! Kamu Berhasil Join</h1>
-            <p>
-                Kamu bergabung ke
-                <strong>{{ $peserta->kelompokKkn->nama_kelompok }}</strong>
-                @if($participant)
-                    · {{ $participant->joined_at?->diffForHumans() }}
-                @endif
-            </p>
+            @if($session && $participant)
+                <h1>Selamat! Kamu Berhasil Bergabung</h1>
+                <p>
+                    Kamu telah bergabung ke
+                    <strong>{{ $peserta->kelompokKkn->nama_kelompok }}</strong>
+                    &nbsp;&middot;&nbsp; {{ $participant->joined_at?->diffForHumans() }}
+                </p>
+            @else
+                <h1>Detail Kelompok KKN</h1>
+                <p>
+                    <strong>{{ $peserta->kelompokKkn->nama_kelompok }}</strong>
+                </p>
+            @endif
         </div>
 
         <div class="row">
 
-            {{-- ── DETAIL KELOMPOK ──────────────────────── --}}
+            {{-- ── DETAIL KELOMPOK ──────────────────── --}}
             <div class="col-md-5 mb-4">
                 <div class="card info-card">
                     <div class="card-header">
-                        <i class="fas fa-info-circle mr-1"></i> Detail Kelompok
+                        <i class="fas fa-info-circle mr-2 text-primary"></i> Detail Kelompok
                     </div>
                     <div class="card-body">
 
@@ -154,7 +144,7 @@
                         <div class="detail-row">
                             <div class="detail-label">Dosen Pembimbing Lapangan</div>
                             <div class="detail-value">
-                                {{ $k->dosenPembimbingLapangan?->user?->name ?? 'Belum ditentukan' }}
+                                {{ $k->dosenPembimbingLapangan?->user?->name ?? 'Belum Ditentukan' }}
                             </div>
                         </div>
 
@@ -169,9 +159,13 @@
                             <div class="detail-label">Status Kelompok</div>
                             <div class="detail-value">
                                 @if($k->is_full)
-                                    <span class="badge badge-danger" style="border-radius:20px;padding:6px 14px;">Penuh</span>
+                                    <span class="badge badge-danger" style="border-radius:20px;padding:6px 14px;">
+                                        <i class="fas fa-lock mr-1"></i> Penuh
+                                    </span>
                                 @else
-                                    <span class="badge badge-success" style="border-radius:20px;padding:6px 14px;">Tersedia</span>
+                                    <span class="badge badge-success" style="border-radius:20px;padding:6px 14px;">
+                                        <i class="fas fa-door-open mr-1"></i> Masih Tersedia
+                                    </span>
                                 @endif
                             </div>
                         </div>
@@ -189,11 +183,11 @@
                 </div>
             </div>
 
-            {{-- ── DAFTAR ANGGOTA ────────────────────────── --}}
+            {{-- ── DAFTAR ANGGOTA ───────────────────── --}}
             <div class="col-md-7 mb-4">
                 <div class="card info-card">
                     <div class="card-header d-flex align-items-center justify-content-between">
-                        <span><i class="fas fa-users mr-1"></i> Anggota Kelompok</span>
+                        <span><i class="fas fa-users mr-2 text-primary"></i> Anggota Kelompok</span>
                         <span class="text-muted" style="font-size:13px;">
                             {{ $k->pesertaKkn->count() }} orang
                         </span>
@@ -215,6 +209,9 @@
                                         @if($isMe)
                                             <span class="badge badge-primary ml-1" style="font-size:10px;border-radius:10px;">Kamu</span>
                                         @endif
+                                        @if($p->id === $k->ketua_peserta_id)
+                                            <span class="badge badge-warning ml-1" style="font-size:10px;border-radius:10px;">Ketua</span>
+                                        @endif
                                     </div>
                                     <div class="prodi">
                                         {{ $p->mahasiswa?->prodi?->nama_prodi ?? '-' }}
@@ -225,7 +222,7 @@
                                 </span>
                             </div>
                         @empty
-                            <p class="text-muted text-center py-4">Belum ada anggota</p>
+                            <p class="text-muted text-center py-4">Belum ada anggota terdaftar</p>
                         @endforelse
 
                     </div>
@@ -234,7 +231,7 @@
 
         </div>
 
-        {{-- ── CTA ────────────────────────────────────── --}}
+        {{-- ── TOMBOL KEMBALI ──────────────────────── --}}
         <div class="row justify-content-center">
             <div class="col-md-6 text-center">
                 <a href="{{ route('home') }}" class="btn btn-primary btn-lg" style="border-radius:12px;padding:12px 36px;font-weight:700;">

@@ -389,6 +389,14 @@
 
                         </div>
 
+                        <div class="text-right mt-3">
+                            <a href="{{ route('pendaftaran-kkn.kelompok') }}"
+                               class="btn btn-primary"
+                               style="border-radius:10px;font-weight:600;padding:8px 22px;">
+                                <i class="fas fa-users mr-1"></i> Lihat Detail Kelompok
+                            </a>
+                        </div>
+
                     </div>
 
                 @endif

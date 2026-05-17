@@ -84,6 +84,8 @@ class WarAllocationService
     ): WarParticipant {
         $peserta->update(['kelompok_kkn_id' => $kelompok->id]);
 
+        $kelompok->generateKetua();
+
         $participant = WarParticipant::create([
             'war_session_id'  => $session->id,
             'peserta_kkn_id'  => $peserta->id,

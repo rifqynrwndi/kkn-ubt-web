@@ -59,7 +59,7 @@
                        href="{{ route('war.index') }}">
 
                         <i class="fas fa-fist-raised"></i>
-                        <span>WAR KKN</span>
+                        <span>Plotting KKN</span>
 
                     </a>
                 </li>
@@ -129,6 +129,16 @@
 
                         <i class="fas fa-users"></i>
                         <span>Data Mahasiswa</span>
+
+                    </a>
+                </li>
+
+                <li class="{{ Request::is('import-mahasiswa*') ? 'active' : '' }}">
+                    <a class="nav-link"
+                       href="{{ route('import-mahasiswa.index') }}">
+
+                        <i class="fas fa-upload"></i>
+                        <span>Import Mahasiswa</span>
 
                     </a>
                 </li>
@@ -210,7 +220,7 @@
                        href="{{ route('admin.war.index') }}">
 
                         <i class="fas fa-flag"></i>
-                        <span>War Control</span>
+                        <span>Plotting Kelompok</span>
 
                     </a>
                 </li>

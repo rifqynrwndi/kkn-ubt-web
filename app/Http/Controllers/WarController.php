@@ -42,7 +42,8 @@ class WarController extends Controller
         | Apakah mahasiswa sudah terdaftar & approved di gelombang war aktif?
         */
         $peserta     = null;
-        $warStatus   = null; // 'no_war' | 'not_registered' | 'not_approved' | 'already_joined' | 'ready'
+        $warStatus   = null;
+        $warStats    = null;
 
         if ($activeWar) {
             $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswa?->user_id)
@@ -59,6 +60,18 @@ class WarController extends Controller
             } else {
                 $warStatus = 'ready';
             }
+
+            $kelompokStats = KelompokKkn::whereHas('desaGelombang',
+                fn ($q) => $q->where('gelombang_id', $activeWar->gelombang_id)
+            )
+            ->selectRaw('COUNT(*) as total, SUM(CASE WHEN status = "penuh" THEN 1 ELSE 0 END) as penuh')
+            ->first();
+
+            $warStats = [
+                'total_peserta'  => $activeWar->participants()->count(),
+                'kelompok_sisa'  => ($kelompokStats->total ?? 0) - ($kelompokStats->penuh ?? 0),
+                'kelompok_penuh' => $kelompokStats->penuh ?? 0,
+            ];
         } else {
             $warStatus = 'no_war';
         }
@@ -68,6 +81,7 @@ class WarController extends Controller
             'scheduledWars',
             'peserta',
             'warStatus',
+            'warStats',
         ));
     }
 
@@ -122,9 +136,31 @@ class WarController extends Controller
                 'kuotaFakultas.fakultas',
             ])
             ->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $session->gelombang_id))
-            ->where('status', '!=', 'penuh')
             ->orderBy('nama_kelompok')
-            ->get();
+            ->get()
+            ->each(function ($k) use ($peserta) {
+                $fakultasId = $peserta->mahasiswa->prodi->fakultas_id;
+                $prodiId    = $peserta->mahasiswa->prodi_id;
+
+                $kuotaFakultas = $k->kuotaFakultas->where('fakultas_id', $fakultasId)->first();
+                $fakCount = $k->pesertaKkn->filter(fn($p) =>
+                    $p->mahasiswa?->prodi?->fakultas_id === $fakultasId
+                )->count();
+                $prodiCount = $k->pesertaKkn->filter(fn($p) =>
+                    $p->mahasiswa?->prodi_id === $prodiId
+                )->count();
+
+                $fakOver = $kuotaFakultas && $fakCount >= $kuotaFakultas->kuota;
+                $prodiOver = $prodiCount >= \App\Services\War\WarRuleService::MAX_SAME_PRODI;
+
+                $k->can_join = !$k->is_full && !$fakOver && !$prodiOver;
+            })
+            ->sortBy(function ($k) {
+                if ($k->is_full) return 2;
+                if (!$k->can_join) return 1;
+                return 0;
+            })
+            ->values();
 
         /*
         |--------------------------------------------------------------------------
@@ -251,24 +287,44 @@ class WarController extends Controller
     {
         abort_if($session->status !== 'active', 403, 'WAR tidak aktif.');
 
+        $mahasiswa = auth()->user()->mahasiswa;
+        $fakultasId = $mahasiswa?->prodi?->fakultas_id;
+        $prodiId    = $mahasiswa?->prodi_id;
+
         $kelompoks = KelompokKkn::with([
                 'desaGelombang.desa',
-                'pesertaKkn',
-                'kuotaFakultas.fakultas',
+                'pesertaKkn.mahasiswa.prodi',
+                'kuotaFakultas',
             ])
             ->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $session->gelombang_id))
             ->orderBy('nama_kelompok')
             ->get()
-            ->map(fn ($k) => [
-                'id'          => $k->id,
-                'nama'        => $k->nama_kelompok,
-                'desa'        => $k->desaGelombang?->desa?->nama_desa,
-                'terisi'      => $k->terisi,
-                'kuota'       => $k->kuota,
-                'sisa'        => $k->sisa_kuota,
-                'is_full'     => $k->is_full,
-                'status'      => $k->status,
-            ]);
+            ->map(function ($k) use ($fakultasId, $prodiId) {
+                $kuotaFakultas = $k->kuotaFakultas->where('fakultas_id', $fakultasId)->first();
+                $fakCount = $k->pesertaKkn->filter(fn($p) => $p->mahasiswa?->prodi?->fakultas_id === $fakultasId)->count();
+                $prodiCount = $k->pesertaKkn->filter(fn($p) => $p->mahasiswa?->prodi_id === $prodiId)->count();
+
+                $fakOver = $kuotaFakultas && $fakCount >= $kuotaFakultas->kuota;
+                $prodiOver = $prodiCount >= \App\Services\War\WarRuleService::MAX_SAME_PRODI;
+
+                return [
+                    'id'          => $k->id,
+                    'nama'        => $k->nama_kelompok,
+                    'desa'        => $k->desaGelombang?->desa?->nama_desa,
+                    'terisi'      => $k->terisi,
+                    'kuota'       => $k->kuota,
+                    'sisa'        => $k->sisa_kuota,
+                    'is_full'     => $k->is_full,
+                    'status'      => $k->status,
+                    'can_join'    => !$k->is_full && !$fakOver && !$prodiOver,
+                ];
+            })
+            ->sortBy(function ($k) {
+                if ($k['is_full']) return 2;
+                if (!$k['can_join']) return 1;
+                return 0;
+            })
+            ->values();
 
         return response()->json([
             'kelompoks'   => $kelompoks,

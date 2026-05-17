@@ -105,6 +105,55 @@
     </script>
 
 
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Flash Messages via SweetAlert2 -->
+    @if(session('success') || session('error') || session('info') || session('warning'))
+    <script>
+    (function () {
+        var theme = document.documentElement.getAttribute('data-bs-theme');
+        var isDark = theme === 'dark';
+        @if(session('success'))
+        Swal.fire({
+            icon: 'success', title: 'Berhasil!',
+            text: '{!! addslashes(session('success')) !!}',
+            confirmButtonColor: '#6777ef',
+            background: isDark ? '#1f2430' : '#fff',
+            color: isDark ? '#d6d9df' : '#545454',
+        });
+        @endif
+        @if(session('error'))
+        Swal.fire({
+            icon: 'error', title: 'Gagal!',
+            text: '{!! addslashes(session('error')) !!}',
+            confirmButtonColor: '#6777ef',
+            background: isDark ? '#1f2430' : '#fff',
+            color: isDark ? '#d6d9df' : '#545454',
+        });
+        @endif
+        @if(session('info'))
+        Swal.fire({
+            icon: 'info', title: 'Info',
+            text: '{!! addslashes(session('info')) !!}',
+            confirmButtonColor: '#6777ef',
+            background: isDark ? '#1f2430' : '#fff',
+            color: isDark ? '#d6d9df' : '#545454',
+        });
+        @endif
+        @if(session('warning'))
+        Swal.fire({
+            icon: 'warning', title: 'Perhatian!',
+            text: '{!! addslashes(session('warning')) !!}',
+            confirmButtonColor: '#6777ef',
+            background: isDark ? '#1f2430' : '#fff',
+            color: isDark ? '#d6d9df' : '#545454',
+        });
+        @endif
+    })();
+    </script>
+    @endif
+
     <!-- Additional JS (if any) -->
     @stack('scripts')
 </body>

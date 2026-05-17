@@ -5,54 +5,32 @@ namespace App\Http\Controllers;
 use App\Models\Fakultas;
 use App\Models\Gelombang;
 use App\Models\KelompokKkn;
-use App\Models\KelompokKuota;
-use App\Models\KuotaFakultasDesa;
+use App\Models\PesertaKkn;
 use App\Models\WarFaculty;
+use App\Models\WarLog;
 use App\Models\WarSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class WarAdminController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | DASHBOARD WAR
-    |--------------------------------------------------------------------------
-    */
     public function index()
     {
-        $wars = WarSession::with([
-                'gelombang',
-                'faculties.fakultas',
-            ])
+        $wars = WarSession::with(['gelombang', 'faculties.fakultas'])
             ->withCount('participants')
             ->latest()
             ->get();
 
         $activeWar = WarSession::where('status', 'active')
-            ->with([
-                'gelombang',
-                'faculties.fakultas',
-            ])
+            ->with(['gelombang', 'faculties.fakultas'])
             ->first();
 
         $gelombangs = Gelombang::latest()->get();
-
         $fakultas = Fakultas::orderBy('nama_fakultas')->get();
 
-        return view('war-admin.index', compact(
-            'wars',
-            'activeWar',
-            'gelombangs',
-            'fakultas',
-        ));
+        return view('war-admin.index', compact('wars', 'activeWar', 'gelombangs', 'fakultas'));
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | DETAIL WAR SESSION
-    |--------------------------------------------------------------------------
-    */
     public function show(WarSession $war)
     {
         $war->load([
@@ -66,22 +44,15 @@ class WarAdminController extends Controller
 
         $fakultas = Fakultas::orderBy('nama_fakultas')->get();
 
-        $kelompoks = KelompokKkn::with([
-                'desaGelombang.desa',
-                'pesertaKkn',
-            ])
-            ->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $war->gelombang_id))
-            ->orderBy('nama_kelompok')
-            ->get();
-
-        return view('war-admin.show', compact('war', 'fakultas', 'kelompoks'));
+        return view('war-admin.show', compact('war', 'fakultas'));
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | CREATE WAR SESSION
-    |--------------------------------------------------------------------------
-    */
+    public function create()
+    {
+        $gelombangs = Gelombang::latest()->get();
+        return view('war-admin.create', compact('gelombangs'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -99,55 +70,40 @@ class WarAdminController extends Controller
             'status'       => 'scheduled',
         ]);
 
-        return back()->with('success', 'Sesi WAR berhasil dibuat.');
+        return redirect()->route('admin.war.index')->with('success', 'Sesi WAR berhasil dibuat.');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | UPDATE WAR SESSION
-    |--------------------------------------------------------------------------
-    */
     public function update(Request $request, WarSession $war)
     {
-        abort_if($war->status === 'active', 422, 'Tidak bisa edit WAR yang sedang aktif.');
+        if ($war->status === 'active') {
+            return back()->with('error', 'Tidak dapat mengedit sesi WAR yang sedang aktif.');
+        }
 
         $request->validate([
-            'name'         => 'required|string|max:255',
-            'start_at'     => 'required|date',
-            'end_at'       => 'required|date|after:start_at',
+            'name'     => 'required|string|max:255',
+            'start_at' => 'required|date',
+            'end_at'   => 'required|date|after:start_at',
         ]);
 
-        $war->update([
-            'name'     => $request->name,
-            'start_at' => $request->start_at,
-            'end_at'   => $request->end_at,
-        ]);
+        $war->update($request->only(['name', 'start_at', 'end_at']));
 
         return back()->with('success', 'Sesi WAR berhasil diperbarui.');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | DELETE WAR SESSION
-    |--------------------------------------------------------------------------
-    */
     public function destroy(WarSession $war)
     {
-        abort_if($war->status === 'active', 422, 'Tidak bisa hapus WAR yang sedang aktif.');
-        abort_if($war->participants()->exists(), 422, 'Tidak bisa hapus WAR yang sudah ada peserta.');
+        if ($war->status === 'active') {
+            return back()->with('error', 'Tidak dapat menghapus sesi WAR yang sedang aktif.');
+        }
+        if ($war->participants()->exists()) {
+            return back()->with('error', 'Tidak dapat menghapus sesi WAR yang sudah memiliki peserta.');
+        }
 
         $war->delete();
 
-        return back()->with('success', 'Sesi WAR berhasil dihapus.');
+        return redirect()->route('admin.war.index')->with('success', 'Sesi WAR berhasil dihapus.');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | SET FAKULTAS KUOTA WAR
-    |--------------------------------------------------------------------------
-    | Menentukan fakultas mana yang ikut war dan berapa total kuotanya.
-    | Kuota dihitung otomatis dari kelompok_kuota di gelombang tersebut.
-    */
     public function setFacultyQuota(Request $request, WarSession $war)
     {
         $request->validate([
@@ -157,50 +113,41 @@ class WarAdminController extends Controller
 
         DB::transaction(function () use ($request, $war) {
             foreach ($request->faculties as $fakultasId) {
+                // Hitung kuota berdasarkan jumlah peserta KKN di gelombang ini untuk fakultas tersebut
+                $quota = \App\Models\PesertaKkn::where('gelombang_id', $war->gelombang_id)
+                    ->whereHas('mahasiswa.prodi', function ($query) use ($fakultasId) {
+                        $query->where('fakultas_id', $fakultasId);
+                    })
+                    ->count();
 
-                /*
-                |--------------------------------------------------------------------------
-                | HITUNG TOTAL KUOTA DARI SEMUA KELOMPOK GELOMBANG INI
-                |--------------------------------------------------------------------------
-                */
-                $totalQuota = KelompokKuota::where('fakultas_id', $fakultasId)
-                    ->whereHas('kelompokKkn.desaGelombang', fn ($q) =>
-                        $q->where('gelombang_id', $war->gelombang_id)
-                    )
-                    ->sum(DB::raw('kuota_laki + kuota_perempuan'));
+                $warFaculty = WarFaculty::firstOrNew([
+                    'war_session_id' => $war->id,
+                    'fakultas_id'    => $fakultasId,
+                ]);
 
-                WarFaculty::updateOrCreate(
-                    [
-                        'war_session_id' => $war->id,
-                        'fakultas_id'    => $fakultasId,
-                    ],
-                    [
-                        'quota'    => $totalQuota,
-                        'filled'   => 0,
-                        'start_at' => null,
-                        'end_at'   => null,
-                    ]
-                );
+                $warFaculty->quota = $quota;
+                
+                // Jika data baru, inisialisasi filled dan jadwal
+                if (!$warFaculty->exists) {
+                    $warFaculty->filled = 0;
+                    $warFaculty->start_at = null;
+                    $warFaculty->end_at = null;
+                }
+                
+                $warFaculty->save();
             }
         });
 
-        return back()->with('success', 'Kuota fakultas WAR berhasil diatur.');
+        return back()->with('success', 'Fakultas berhasil ditambahkan dan kuota dihitung otomatis.');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | SET JADWAL PER FAKULTAS
-    |--------------------------------------------------------------------------
-    | Setiap fakultas bisa punya jadwal giliran berbeda.
-    | Digunakan untuk sistem gelombang per-fakultas.
-    */
     public function setFacultySchedule(Request $request, WarSession $war)
     {
         $request->validate([
-            'schedules'                => 'required|array',
-            'schedules.*.fakultas_id'  => 'required|exists:fakultas,id',
-            'schedules.*.start_at'     => 'required|date',
-            'schedules.*.end_at'       => 'required|date|after:schedules.*.start_at',
+            'schedules'               => 'required|array',
+            'schedules.*.fakultas_id' => 'required|exists:fakultas,id',
+            'schedules.*.start_at'    => 'required|date',
+            'schedules.*.end_at'      => 'required|date|after:schedules.*.start_at',
         ]);
 
         DB::transaction(function () use ($request, $war) {
@@ -214,25 +161,16 @@ class WarAdminController extends Controller
             }
         });
 
-        return back()->with('success', 'Jadwal per-fakultas berhasil diatur.');
+        return back()->with('success', 'Jadwal per fakultas berhasil diatur.');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | ACTIVATE WAR
-    |--------------------------------------------------------------------------
-    */
     public function activate(WarSession $war)
     {
-        abort_if($war->status === 'active', 422, 'WAR sudah aktif.');
+        if ($war->status === 'active') {
+            return back()->with('error', 'Sesi WAR sudah aktif.');
+        }
 
         DB::transaction(function () use ($war) {
-
-            /*
-            |--------------------------------------------------------------------------
-            | NONAKTIFKAN WAR LAIN (hanya 1 WAR boleh aktif)
-            |--------------------------------------------------------------------------
-            */
             WarSession::query()->update(['status' => 'scheduled']);
 
             $war->update([
@@ -244,14 +182,15 @@ class WarAdminController extends Controller
         return back()->with('success', 'Sesi WAR berhasil diaktifkan.');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | STOP WAR
-    |--------------------------------------------------------------------------
-    */
     public function stop(WarSession $war)
     {
-        abort_if($war->status !== 'active', 422, 'WAR tidak sedang aktif.');
+        if ($war->status !== 'active') {
+            return back()->with('error', 'Sesi WAR belum diaktifkan.');
+        }
+
+        if ($war->status === 'closed') {
+            return back()->with('success', 'Sesi WAR sudah dalam status selesai.');
+        }
 
         $war->update([
             'status' => 'closed',
@@ -261,83 +200,166 @@ class WarAdminController extends Controller
         return back()->with('success', 'Sesi WAR berhasil dihentikan.');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | RESET WAR
-    |--------------------------------------------------------------------------
-    | Mengembalikan WAR ke status scheduled.
-    | Hanya bisa jika WAR belum ada peserta, atau admin ingin force reset.
-    */
     public function reset(WarSession $war)
     {
-        abort_if($war->status === 'active', 422, 'Hentikan WAR terlebih dahulu sebelum reset.');
+        if ($war->status === 'active') {
+            return back()->with('error', 'Hentikan sesi WAR terlebih dahulu sebelum melakukan reset.');
+        }
 
         DB::transaction(function () use ($war) {
 
-            $war->update(['status' => 'scheduled']);
+            // Kumpulkan ID peserta_kkn yang terdaftar di sesi ini
+            $pesertaIds = \App\Models\WarParticipant::where('war_session_id', $war->id)
+                ->pluck('peserta_kkn_id');
 
-            /*
-            |--------------------------------------------------------------------------
-            | RESET TAKEN COUNT DI FAKULTAS
-            |--------------------------------------------------------------------------
-            */
-            WarFaculty::where('war_session_id', $war->id)
-                ->update(['filled' => 0]);
+            // Hapus semua catatan WarParticipant untuk sesi ini
+            \App\Models\WarParticipant::where('war_session_id', $war->id)->delete();
+
+            // Null-kan kelompok_kkn_id untuk peserta yang terdaftar di sesi ini
+            if ($pesertaIds->isNotEmpty()) {
+                PesertaKkn::whereIn('id', $pesertaIds)
+                    ->update(['kelompok_kkn_id' => null]);
+
+                KelompokKkn::whereHas('pesertaKkn', function ($q) use ($pesertaIds) {
+                    $q->whereIn('id', $pesertaIds);
+                })->update(['ketua_peserta_id' => null]);
+            }
+
+            // Reset filled count di WarFaculty
+            WarFaculty::where('war_session_id', $war->id)->update(['filled' => 0]);
+
+            // Reset sesi ke scheduled
+            $war->update(['status' => 'scheduled']);
         });
 
-        return back()->with('success', 'Sesi WAR berhasil direset ke scheduled.');
+        return back()->with('success', 'Sesi WAR berhasil direset. Semua data peserta telah dihapus.');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | LIVE MONITORING PAGE — view
-    |--------------------------------------------------------------------------
-    */
     public function monitor(WarSession $war)
     {
-        $war->load([
-            'gelombang',
-            'faculties.fakultas',
-        ]);
-
+        $war->load(['gelombang', 'faculties.fakultas']);
         $war->loadCount('participants');
 
-        /*
-        |--------------------------------------------------------------------------
-        | DATA KELOMPOK (untuk initial render)
-        |--------------------------------------------------------------------------
-        */
         $kelompoks = KelompokKkn::with([
-                'desaGelombang.desa.kecamatan',
-                'dosenPembimbingLapangan.user',
-                'pesertaKkn.mahasiswa.prodi.fakultas',
-                'kuotaFakultas.fakultas',
-            ])
-            ->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $war->gelombang_id))
-            ->get();
-
-        /*
-        |--------------------------------------------------------------------------
-        | KUOTA DESA
-        |--------------------------------------------------------------------------
-        */
-        $kuotaDesa = KuotaFakultasDesa::with([
                 'desaGelombang.desa',
-                'fakultas',
+                'pesertaKkn.mahasiswa.prodi.fakultas',
             ])
-            ->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $war->gelombang_id))
+            ->whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $war->gelombang_id))
             ->get();
 
-        return view('war-admin.monitor', compact('war', 'kelompoks', 'kuotaDesa'));
+        $totalPesertaGelombang = PesertaKkn::where('gelombang_id', $war->gelombang_id)->count();
+
+        $fakultasStats = PesertaKkn::where('gelombang_id', $war->gelombang_id)
+            ->with('mahasiswa.prodi.fakultas')
+            ->get()
+            ->groupBy(fn($p) => $p->mahasiswa->prodi->fakultas_id)
+            ->map(function ($pesertas, $fakultasId) {
+                $fakultas = $pesertas->first()->mahasiswa->prodi->fakultas;
+                $total = $pesertas->count();
+                $filled = $pesertas->filter(fn($p) => $p->kelompok_kkn_id !== null)->count();
+                return [
+                    'fakultas_id' => $fakultasId,
+                    'nama'        => $fakultas->nama_fakultas ?? 'N/A',
+                    'total'       => $total,
+                    'filled'      => $filled,
+                    'persen'      => $total > 0 ? round(($filled / $total) * 100) : 0,
+                ];
+            })
+            ->values();
+
+        $kelompokData = KelompokKkn::whereHas('desaGelombang', fn($q) =>
+                $q->where('gelombang_id', $war->gelombang_id)
+            )
+            ->selectRaw('COUNT(*) as total, SUM(CASE WHEN status = "penuh" THEN 1 ELSE 0 END) as penuh')
+            ->first();
+
+        $kelompokTersedia = ($kelompokData->total ?? 0) - ($kelompokData->penuh ?? 0);
+        $kelompokPenuh    = $kelompokData->penuh ?? 0;
+
+        return view('war-admin.monitor', compact(
+            'war', 'kelompoks', 'fakultasStats', 'totalPesertaGelombang',
+            'kelompokTersedia', 'kelompokPenuh',
+        ));
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | AUTO CLOSE — dipanggil oleh scheduler
-    |--------------------------------------------------------------------------
-    | Menutup war session yang sudah melewati end_at.
-    | Dipanggil dari: App\Console\Commands\WarAutoClose atau Scheduler.
-    */
+    public function monitorStats(WarSession $war)
+    {
+        $totalPeserta = $war->participants()->count();
+        $totalPesertaGelombang = PesertaKkn::where('gelombang_id', $war->gelombang_id)->count();
+
+        $kelompokData = KelompokKkn::whereHas('desaGelombang', fn($q) => 
+                $q->where('gelombang_id', $war->gelombang_id)
+            )
+            ->selectRaw('COUNT(*) as total, SUM(CASE WHEN status = "penuh" THEN 1 ELSE 0 END) as penuh')
+            ->first();
+
+        $fakultasStats = PesertaKkn::where('gelombang_id', $war->gelombang_id)
+            ->with('mahasiswa.prodi.fakultas')
+            ->get()
+            ->groupBy(fn($p) => $p->mahasiswa->prodi->fakultas_id)
+            ->map(function ($pesertas, $fakultasId) {
+                $fakultas = $pesertas->first()->mahasiswa->prodi->fakultas;
+                $total = $pesertas->count();
+                $filled = $pesertas->filter(fn($p) => $p->kelompok_kkn_id !== null)->count();
+                return [
+                    'fakultas_id' => $fakultasId,
+                    'nama'        => $fakultas->nama_fakultas ?? 'N/A',
+                    'quota'       => $total,
+                    'filled'      => $filled,
+                    'persen'      => $total > 0 ? round(($filled / $total) * 100) : 0,
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'total_peserta'           => $totalPeserta,
+            'total_peserta_gelombang' => $totalPesertaGelombang,
+            'kelompok'                => [
+                'total'   => $kelompokData->total ?? 0,
+                'penuh'   => $kelompokData->penuh ?? 0,
+                'tersisa' => ($kelompokData->total ?? 0) - ($kelompokData->penuh ?? 0),
+            ],
+            'fakultas' => $fakultasStats,
+        ]);
+    }
+
+    public function monitorLogs(Request $request, WarSession $war)
+    {
+        $limit = $request->input('limit', 20);
+
+        $logs = WarLog::where('war_session_id', $war->id)
+            ->with('pesertaKkn.mahasiswa')
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get()
+            ->map(fn($log) => [
+                'id'      => $log->id,
+                'peserta' => $log->pesertaKkn->mahasiswa->name ?? 'Unknown',
+                'action'  => $log->action,
+                'meta'    => json_decode($log->meta),
+                'human'   => $log->created_at->diffForHumans(),
+            ]);
+
+        return response()->json(['logs' => $logs]);
+    }
+
+    public function monitorKelompoks(WarSession $war)
+    {
+        $kelompoks = KelompokKkn::whereHas('desaGelombang', fn($q) => 
+                $q->where('gelombang_id', $war->gelombang_id)
+            )
+            ->withCount('pesertaKkn')
+            ->get()
+            ->map(fn($k) => [
+                'id'     => $k->id,
+                'terisi' => $k->peserta_kkn_count,
+                'kuota'  => $k->kuota,
+                'status' => $k->status,
+            ]);
+
+        return response()->json(['kelompoks' => $kelompoks]);
+    }
+
     public function autoClose(): bool
     {
         $expired = WarSession::where('status', 'active')
@@ -348,9 +370,9 @@ class WarAdminController extends Controller
             $war->update(['status' => 'closed']);
 
             logger()->info('WAR auto-closed', [
-                'war_id'  => $war->id,
-                'name'    => $war->name,
-                'end_at'  => $war->end_at,
+                'war_id' => $war->id,
+                'name'   => $war->name,
+                'end_at' => $war->end_at,
             ]);
         }
 

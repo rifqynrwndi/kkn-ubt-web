@@ -8,12 +8,12 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\{
     ActivityLogController,
     BiodataController,
-    ExampleController,
     FakultasProdiController,
     FileManagerController,
     GelombangController,
     HakaksesController,
     HomeController,
+    ImportMahasiswaController,
     MahasiswaManagementController,
     NotificationController,
     DosenPembimbingLapanganController,
@@ -69,6 +69,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/store', [PendaftaranKknController::class, 'store'])->name('store');
         Route::get('/plotting', [PendaftaranKknController::class, 'plotting'])->name('plotting');
         Route::post('/plotting/{kelompok}', [PendaftaranKknController::class, 'ambilKelompok'])->name('ambil-kelompok');
+        Route::get('/kelompok', [PendaftaranKknController::class, 'kelompokSaya'])->name('kelompok');
     });
 
     Route::prefix('dokumen-pendaftaran')->group(function () {
@@ -129,8 +130,6 @@ Route::middleware(['auth','biodata.complete', 'email.verified.except.superadmin'
     */
 
     Route::get('/home', [HomeController::class, 'index'])->name('home');
-    Route::get('/blank-page', [HomeController::class, 'blank'])->name('blank');
-    Route::view('/quick-tour', 'layouts.quick-tour')->name('quick-tour');
 
     /*
     |--------------------------------------------------------------------------
@@ -255,6 +254,7 @@ Route::middleware(['auth','biodata.complete', 'email.verified.except.superadmin'
         Route::delete('kelompok-kkn/{kelompok_kkn}/anggota/{peserta}',[KelompokKknController::class, 'hapusAnggota'])->name('kelompok-kkn.anggota.destroy');
         Route::put('kelompok-kkn/{kelompok_kkn}/buka',[KelompokKknController::class, 'buka'])->name('kelompok-kkn.buka');
         Route::put('kelompok-kkn/{kelompok_kkn}/tutup',[KelompokKknController::class, 'tutup'])->name('kelompok-kkn.tutup');
+        Route::put('kelompok-kkn/{kelompok_kkn}/ketua/{peserta}',[KelompokKknController::class, 'setKetua'])->name('kelompok-kkn.ketua');
 
         /*
         |--------------------------------------------------------------------------
@@ -295,6 +295,7 @@ Route::middleware(['auth','biodata.complete', 'email.verified.except.superadmin'
             Route::get('/', [WarAdminController::class, 'index'])->name('index');
 
             // CRUD Session
+            Route::get('/create', [WarAdminController::class, 'create'])->name('create');
             Route::post('/', [WarAdminController::class, 'store'])->name('store');
             Route::get('/{war}', [WarAdminController::class, 'show'])->name('show');
             Route::put('/{war}', [WarAdminController::class, 'update'])->name('update');
@@ -401,6 +402,17 @@ Route::middleware(['auth','biodata.complete', 'email.verified.except.superadmin'
             Route::put('/', [SettingController::class, 'update'])->name('update');
             Route::post('/', [SettingController::class, 'store'])->name('store');
             Route::post('/reset', [SettingController::class, 'reset'])->name('reset');
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Import Mahasiswa
+        |--------------------------------------------------------------------------
+        */
+        Route::prefix('import-mahasiswa')->name('import-mahasiswa.')->group(function () {
+            Route::get('/', [ImportMahasiswaController::class, 'index'])->name('index');
+            Route::post('/preview', [ImportMahasiswaController::class, 'preview'])->name('preview');
+            Route::post('/import', [ImportMahasiswaController::class, 'import'])->name('import');
         });
     });
 });

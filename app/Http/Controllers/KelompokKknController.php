@@ -439,6 +439,12 @@ class KelompokKknController extends Controller
             'kelompok_kkn_id' => null,
         ]);
 
+        if ($kelompok_kkn->ketua_peserta_id === $peserta->id) {
+            $kelompok_kkn->update(['ketua_peserta_id' => null]);
+        }
+
+        \App\Models\WarParticipant::where('peserta_kkn_id', $peserta->id)->delete();
+
         /*
         |--------------------------------------------------------------------------
         | Reopen Group If Needed
@@ -456,6 +462,24 @@ class KelompokKknController extends Controller
         return back()->with(
             'success',
             'Anggota berhasil dihapus.'
+        );
+    }
+
+    public function setKetua(KelompokKkn $kelompok_kkn, PesertaKkn $peserta): RedirectResponse
+    {
+        abort_if(
+            $peserta->kelompok_kkn_id !== $kelompok_kkn->id,
+            403,
+            'Peserta ini bukan anggota kelompok ini.'
+        );
+
+        $kelompok_kkn->update([
+            'ketua_peserta_id' => $peserta->id,
+        ]);
+
+        return back()->with(
+            'success',
+            'Ketua kelompok berhasil diubah menjadi ' . ($peserta->mahasiswa?->user?->name ?? 'Unknown') . '.'
         );
     }
 }

@@ -4,92 +4,258 @@
 
 @push('css')
 <style>
-.monitor-header {
-    background: linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);
-    border-radius:16px; padding:28px 32px; color:#fff; margin-bottom:24px;
-    position:relative; overflow:hidden;
+/* ── HEADER ──────────────────────────────── */
+.mon-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border-radius: 20px;
+    padding: 28px 32px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 32px rgba(15, 52, 96, .35);
 }
-.monitor-header::after {
-    content:''; position:absolute; top:-40px; right:-40px;
-    width:160px; height:160px;
-    background:rgba(103,119,239,.12); border-radius:50%; pointer-events:none;
+.mon-header::before {
+    content: '';
+    position: absolute;
+    top: -70px; right: -70px;
+    width: 260px; height: 260px;
+    background: rgba(255,255,255,.04);
+    border-radius: 50%;
 }
-.monitor-header h1 { font-size:1.7rem; font-weight:800; margin:0 0 4px; }
-.monitor-header p  { font-size:.875rem; opacity:.7; margin:0; }
-
-.live-dot {
-    display:inline-block;
-    width:9px; height:9px;
-    background:#47c363;
-    border-radius:50%;
-    animation:blink-dot 1.2s infinite;
-    margin-right:6px;
+.mon-header::after {
+    content: '';
+    position: absolute;
+    bottom: -50px; left: 20%;
+    width: 180px; height: 180px;
+    background: rgba(103,119,239,.08);
+    border-radius: 50%;
 }
-@keyframes blink-dot { 0%,100%{opacity:1}50%{opacity:0} }
-
-/* Stats Cards */
-.mstat { border:none; border-radius:14px; padding:20px 22px; overflow:hidden; }
-.mstat .ms-icon { font-size:28px; margin-bottom:10px; }
-.mstat .ms-val  { font-size:2rem; font-weight:800; line-height:1; margin-bottom:4px; }
-.mstat .ms-lbl  { font-size:12px; opacity:.75; }
-.ms-blue   { background:linear-gradient(135deg,#6777ef,#4f5ece); color:#fff; }
-.ms-green  { background:linear-gradient(135deg,#47c363,#2f9e44); color:#fff; }
-.ms-red    { background:linear-gradient(135deg,#fc544b,#c92a2a); color:#fff; }
-.ms-orange { background:linear-gradient(135deg,#ffa426,#d08800); color:#fff; }
-
-/* Fakultas progress */
-.fak-row { margin-bottom:12px; }
-.fak-row .fak-name { font-size:13px; font-weight:600; margin-bottom:4px; }
-.fak-row .fak-bar  { height:8px; border-radius:6px; background:#e9ecef; overflow:hidden; }
-.fak-row .fak-fill { height:100%; border-radius:6px; transition:width .5s; background:linear-gradient(90deg,#6777ef,#4f5ece); }
-.fak-row .fak-meta { display:flex; justify-content:space-between; font-size:11px; color:#adb5bd; margin-top:3px; }
-
-/* Kelompok Grid */
-.k-card {
-    border:2px solid #e9ecef; border-radius:12px; padding:14px;
-    height:100%; transition:border-color .2s;
+.mh-content { position: relative; z-index: 1; }
+.mh-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    background: rgba(255,255,255,.12);
+    padding: 4px 14px;
+    border-radius: 50px;
 }
-.k-card.is-full { border-color:#ffd6d6; background:#fff8f8; }
-.k-card .k-nama { font-weight:700; font-size:14px; margin-bottom:2px; }
-.k-card .k-desa { font-size:11px; color:#adb5bd; margin-bottom:8px; }
-.k-card .k-bar  { height:5px; border-radius:4px; background:#e9ecef; overflow:hidden; margin:6px 0; }
-.k-card .k-fill { height:100%; border-radius:4px; transition:width .4s; }
-.k-fill.f-ok    { background:linear-gradient(90deg,#47c363,#2f9e44); }
-.k-fill.f-warn  { background:linear-gradient(90deg,#ffa426,#e67700); }
-.k-fill.f-full  { background:linear-gradient(90deg,#fc544b,#c92a2a); }
-.k-card .k-count{ font-size:11px; color:#6c757d; }
+.mh-live-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #47c363;
+    animation: pulse-dot 1.3s infinite;
+}
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(71,195,99,.6); }
+    50%      { opacity: .4; box-shadow: 0 0 0 8px rgba(71,195,99,0); }
+}
+.mh-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -.5px;
+}
+.mh-meta {
+    font-size: .85rem;
+    opacity: .75;
+    margin-top: 4px;
+}
+.mh-countdown {
+    font-family: 'Courier New', monospace;
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+.mh-status {
+    display: inline-block;
+    padding: 5px 16px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+.mh-status.active   { background: #47c363; color: #fff; }
+.mh-status.scheduled{ background: rgba(255,255,255,.2); }
+.mh-status.closed   { background: #fc544b; color: #fff; }
+.mh-status.stopped  { background: #6c757d; color: #fff; }
 
-/* Log Feed */
-.log-feed { max-height:360px; overflow-y:auto; }
+/* ── STAT CARDS ──────────────────────────── */
+.stat-card {
+    border-radius: 18px;
+    padding: 22px 24px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+.stat-card::after {
+    content: '';
+    position: absolute;
+    right: -24px; bottom: -24px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.06);
+}
+.sc-icon  { font-size: 22px; opacity: .85; margin-bottom: 12px; }
+.sc-value { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+.sc-label { margin-top: 5px; font-size: 12px; opacity: .75; }
+.sc-blue   { background: linear-gradient(135deg, #6777ef, #4f5ece); }
+.sc-green  { background: linear-gradient(135deg, #47c363, #2f9e44); }
+.sc-purple { background: linear-gradient(135deg, #8860d0, #6c3bb3); }
+.sc-orange { background: linear-gradient(135deg, #ffa426, #e67700); }
+
+/* ── SECTION CARDS ───────────────────────── */
+.sec-card {
+    border: none;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(0,0,0,.05);
+    background: var(--bs-body-bg, #fff);
+    margin-bottom: 24px;
+}
+.sec-card .card-header {
+    background: transparent;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    padding: 16px 22px;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* ── KELOMPOK TABLE ──────────────────────── */
+.kl-table { width: 100%; }
+.kl-row {
+    display: flex;
+    align-items: center;
+    padding: 13px 22px;
+    border-bottom: 1px solid rgba(0,0,0,.05);
+    gap: 16px;
+    transition: background .15s;
+}
+.kl-row:last-child { border-bottom: none; }
+.kl-row:hover { background: rgba(103,119,239,.03); }
+.kl-row.is-full { opacity: .7; }
+.kl-num {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    background: #eef0ff;
+    color: #6777ef;
+    font-weight: 800;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.kl-info { flex: 1; min-width: 0; }
+.kl-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a2e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.kl-loc {
+    font-size: 12px;
+    color: #6c757d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+}
+.kl-bar-col { width: 130px; flex-shrink: 0; }
+.kl-bar {
+    height: 7px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #e9ecef;
+}
+.kl-bar-fill { height: 100%; border-radius: 999px; transition: width .4s; }
+.kl-bar-fill.ok   { background: linear-gradient(90deg, #47c363, #2f9e44); }
+.kl-bar-fill.warn { background: linear-gradient(90deg, #ffa426, #e67700); }
+.kl-bar-fill.full { background: linear-gradient(90deg, #fc544b, #c92a2a); }
+.kl-count {
+    font-size: 11px;
+    color: #6c757d;
+    text-align: center;
+    margin-top: 3px;
+    white-space: nowrap;
+}
+.kl-badge {
+    flex-shrink: 0;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    min-width: 70px;
+    text-align: center;
+}
+.kl-badge.available { background: #e8f5e9; color: #2f9e44; }
+.kl-badge.full      { background: #ffebee; color: #c92a2a; }
+.kl-badge.near      { background: #fff8e1; color: #e67700; }
+
+/* ── FAKULTAS ROW ────────────────────────── */
+.fak-row { margin-bottom: 16px; }
+.fak-row:last-child { margin-bottom: 0; }
+.fak-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+.fak-name { font-size: 13px; font-weight: 700; }
+.fak-count { font-size: 12px; color: var(--bs-secondary-color, #6c757d); }
+.fak-bar {
+    height: 8px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(0,0,0,.06);
+    margin-bottom: 4px;
+}
+.fak-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width .4s;
+    background: linear-gradient(90deg, #6777ef, #4f5ece);
+}
+.fak-pct { font-size: 11px; color: var(--bs-secondary-color, #6c757d); text-align: right; }
+.fak-empty { padding: 24px; text-align: center; font-size: 13px; color: #adb5bd; }
+
+/* ── LOG ─────────────────────────────────── */
+.log-feed { max-height: 400px; overflow-y: auto; }
 .log-item {
-    padding:8px 12px; border-left:3px solid #e9ecef;
-    margin-bottom:6px; border-radius:0 8px 8px 0;
-    font-size:13px; background:#fafafa;
-    transition:background .3s;
+    padding: 10px 14px;
+    margin: 0 3px 8px;
+    border-radius: 10px;
+    background: rgba(0,0,0,.02);
+    border-left: 3px solid transparent;
+    transition: background .15s;
 }
-.log-item.join_success  { border-left-color:#47c363; }
-.log-item.join_failed   { border-left-color:#fc544b; }
-.log-item .log-time     { font-size:11px; color:#adb5bd; margin-top:2px; }
-.log-item.new           { background:#f0fff4; animation:fadeLog .8s; }
-@keyframes fadeLog { from{background:#d3f9df} to{background:#f0fff4} }
+.log-item.join_success { border-left-color: #47c363; }
+.log-item.join_failed  { border-left-color: #fc544b; }
+.log-name  { font-size: 13px; font-weight: 600; }
+.log-dest  { font-size: 12px; margin-top: 1px; }
+.log-time  { font-size: 11px; color: #adb5bd; margin-top: 3px; }
+.log-empty { padding: 32px; text-align: center; font-size: 13px; color: #adb5bd; }
 
-/* Countdown */
-#mon-countdown { font-family:'Courier New',monospace; font-weight:800; font-size:1.4rem; color:#ff6b6b; }
-
-/* Pulse on refresh */
-.refreshing { opacity:.6; transition:opacity .2s; }
 </style>
 @endpush
 
 @section('content')
-
 <section class="section">
-
     <div class="section-header">
-        <h1><span class="live-dot"></span> Monitor WAR Live</h1>
+        <h1>Live WAR Monitoring</h1>
         <div class="section-header-breadcrumb">
             <div class="breadcrumb-item"><a href="{{ route('home') }}">Dashboard</a></div>
-            <div class="breadcrumb-item"><a href="{{ route('admin.war.index') }}">WAR Admin</a></div>
+            <div class="breadcrumb-item"><a href="{{ route('admin.war.index') }}">Plotting Kelompok</a></div>
             <div class="breadcrumb-item">Monitor</div>
         </div>
     </div>
@@ -97,159 +263,174 @@
     <div class="section-body">
 
         {{-- ── HEADER ──────────────────────────────── --}}
-        <div class="monitor-header">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <div style="font-size:12px;opacity:.6;margin-bottom:8px;">
-                        <span class="live-dot"></span> LIVE MONITORING
+        <div class="mon-header">
+            <div class="mh-content">
+                <div class="row align-items-center">
+                    <div class="col-md-7">
+                        <div class="mh-live">
+                            <span class="mh-live-dot"></span> Live Monitoring
+                        </div>
+                        <div class="mh-title">{{ $war->name }}</div>
+                        <div class="mh-meta">
+                            Gelombang: <strong>{{ $war->gelombang->nama_gelombang ?? '-' }}</strong>
+                            &nbsp;&middot;&nbsp;
+                            Berakhir: <strong>{{ \Carbon\Carbon::parse($war->end_at)->format('d M Y, H:i') }}</strong>
+                            &nbsp;&middot;&nbsp;
+                            <span class="mh-status {{ $war->status }}">{{ $war->status }}</span>
+                        </div>
                     </div>
-                    <h1>{{ $war->name }}</h1>
-                    <p>
-                        Gelombang: <strong>{{ $war->gelombang->nama_gelombang ?? '-' }}</strong>
-                        &nbsp;·&nbsp;
-                        Berakhir: <strong>{{ $war->end_at?->format('d M Y, H:i') }}</strong>
-                    </p>
-                </div>
-                <div class="col-md-4 text-md-right mt-3 mt-md-0">
-                    <div style="font-size:12px;opacity:.6;margin-bottom:4px;">Waktu Tersisa</div>
-                    <div id="mon-countdown">–</div>
-                    <div class="mt-3 d-flex gap-2 justify-content-md-end">
-                        <a href="{{ route('admin.war.monitor.exportLog', $war) }}"
-                           class="btn btn-sm btn-outline-light">
-                            <i class="fas fa-download mr-1"></i> Export Log
-                        </a>
-                        <form action="{{ route('admin.war.stop', $war) }}" method="POST">
-                            @csrf
-                            <button class="btn btn-sm btn-danger"
-                                    onclick="return confirm('Hentikan WAR sekarang?')">
-                                <i class="fas fa-stop mr-1"></i> Stop WAR
-                            </button>
-                        </form>
+                    <div class="col-md-5 text-md-right mt-3 mt-md-0">
+                        <div style="font-size:11px;opacity:.55;margin-bottom:2px;text-transform:uppercase;letter-spacing:.5px;">Waktu Tersisa</div>
+                        <div class="mh-countdown" id="mon-countdown">--:--:--</div>
+                        <div class="mt-3 d-flex gap-2 justify-content-md-end">
+                            <a href="{{ route('admin.war.monitor.exportLog', $war) }}" class="btn btn-sm btn-outline-light">
+                                <i class="fas fa-download mr-1"></i> Export Log
+                            </a>
+                            @if($war->status === 'active')
+                            <form action="{{ route('admin.war.stop', $war) }}" method="POST" class="m-0">
+                                @csrf
+                                <button class="btn btn-sm btn-danger" onclick="return confirm('Hentikan WAR sekarang?')">
+                                    <i class="fas fa-stop mr-1"></i> Stop WAR
+                                </button>
+                            </form>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- ── STATS CARDS ─────────────────────────── --}}
+        {{-- ── STATS ────────────────────────────────── --}}
         <div class="row mb-4">
-            <div class="col-6 col-md-3 mb-3">
-                <div class="mstat ms-blue">
-                    <div class="ms-icon"><i class="fas fa-users"></i></div>
-                    <div class="ms-val" id="ms-peserta">{{ $war->participants_count }}</div>
-                    <div class="ms-lbl">Total Peserta Bergabung</div>
+            <div class="col-6 col-xl-3 mb-3">
+                <div class="stat-card sc-blue">
+                    <div class="sc-icon"><i class="fas fa-user-check"></i></div>
+                    <div class="sc-value" id="ms-joined">{{ $war->participants_count }}</div>
+                    <div class="sc-label">Peserta Bergabung</div>
                 </div>
             </div>
-            <div class="col-6 col-md-3 mb-3">
-                <div class="mstat ms-green">
-                    <div class="ms-icon"><i class="fas fa-home"></i></div>
-                    <div class="ms-val" id="ms-sisa">–</div>
-                    <div class="ms-lbl">Kelompok Tersisa</div>
+            <div class="col-6 col-xl-3 mb-3">
+                <div class="stat-card sc-purple">
+                    <div class="sc-icon"><i class="fas fa-users"></i></div>
+                    <div class="sc-value" id="ms-total-peserta">{{ $totalPesertaGelombang }}</div>
+                    <div class="sc-label">Total Peserta Gelombang</div>
                 </div>
             </div>
-            <div class="col-6 col-md-3 mb-3">
-                <div class="mstat ms-red">
-                    <div class="ms-icon"><i class="fas fa-lock"></i></div>
-                    <div class="ms-val" id="ms-penuh">–</div>
-                    <div class="ms-lbl">Kelompok Penuh</div>
+            <div class="col-6 col-xl-3 mb-3">
+                <div class="stat-card sc-green">
+                    <div class="sc-icon"><i class="fas fa-home"></i></div>
+                    <div class="sc-value" id="ms-available">{{ $kelompokTersedia }}</div>
+                    <div class="sc-label">Kelompok Tersedia</div>
                 </div>
             </div>
-            <div class="col-6 col-md-3 mb-3">
-                <div class="mstat ms-orange">
-                    <div class="ms-icon"><i class="fas fa-chart-bar"></i></div>
-                    <div class="ms-val" id="ms-total">{{ $kelompoks->count() }}</div>
-                    <div class="ms-lbl">Total Kelompok</div>
+            <div class="col-6 col-xl-3 mb-3">
+                <div class="stat-card sc-orange">
+                    <div class="sc-icon"><i class="fas fa-lock"></i></div>
+                    <div class="sc-value" id="ms-full">{{ $kelompokPenuh }}</div>
+                    <div class="sc-label">Kelompok Penuh</div>
                 </div>
             </div>
         </div>
 
+        {{-- ── MAIN CONTENT ────────────────────────── --}}
         <div class="row">
 
-            {{-- ── KUOTA FAKULTAS ───────────────────── --}}
-            <div class="col-md-4 mb-4">
-                <div class="card" style="border-radius:14px;border:none;box-shadow:0 4px 20px rgba(0,0,0,.06);">
-                    <div class="card-header bg-transparent border-bottom" style="padding:16px 20px;font-weight:700;">
-                        <i class="fas fa-clipboard-list text-primary mr-1"></i> Kuota per Fakultas
+            {{-- DAFTAR KELOMPOK ─────────────────────── --}}
+            <div class="col-lg-7 mb-4">
+                <div class="sec-card">
+                    <div class="card-header">
+                        <span><i class="fas fa-layer-group text-primary mr-2"></i> Daftar Kelompok</span>
+                        <span class="badge badge-light" style="font-size:12px;border-radius:20px;padding:5px 14px;" id="kl-total-badge">{{ $kelompoks->count() }} kelompok</span>
                     </div>
-                    <div class="card-body" id="fak-container" style="padding:20px;">
-                        @foreach($war->faculties as $wf)
-                        <div class="fak-row" id="fak-{{ $wf->fakultas_id }}">
-                            <div class="fak-name">{{ $wf->fakultas?->nama_fakultas ?? 'N/A' }}</div>
-                            <div class="fak-bar">
-                                <div class="fak-fill"
-                                     id="fak-bar-{{ $wf->fakultas_id }}"
-                                     style="width:{{ $wf->quota > 0 ? round(($wf->filled/$wf->quota)*100) : 0 }}%">
-                                </div>
-                            </div>
-                            <div class="fak-meta">
-                                <span id="fak-taken-{{ $wf->fakultas_id }}">{{ $wf->filled }}/{{ $wf->quota }}</span>
-                                <span id="fak-pct-{{ $wf->fakultas_id }}">
-                                    {{ $wf->quota > 0 ? round(($wf->filled/$wf->quota)*100) : 0 }}%
-                                </span>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-
-            {{-- ── ACTIVITY LOG ─────────────────────── --}}
-            <div class="col-md-4 mb-4">
-                <div class="card" style="border-radius:14px;border:none;box-shadow:0 4px 20px rgba(0,0,0,.06);">
-                    <div class="card-header bg-transparent border-bottom d-flex align-items-center justify-content-between" style="padding:16px 20px;font-weight:700;">
-                        <span><i class="fas fa-bolt text-warning mr-1"></i> Aktivitas Terbaru</span>
-                        <small class="text-muted font-weight-normal" id="log-updated"></small>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="log-feed p-3" id="log-feed">
-                            <p class="text-muted text-center py-4" style="font-size:13px;">Memuat log...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- ── KELOMPOK GRID ────────────────────── --}}
-            <div class="col-md-4 mb-4">
-                <div class="card" style="border-radius:14px;border:none;box-shadow:0 4px 20px rgba(0,0,0,.06);">
-                    <div class="card-header bg-transparent border-bottom" style="padding:16px 20px;font-weight:700;">
-                        🏘️ Status Kelompok
-                    </div>
-                    <div class="card-body p-2" style="max-height:460px;overflow-y:auto;">
-                        <div class="row" id="kelompok-mini-grid">
-                            @foreach($kelompoks as $k)
+                    <div class="card-body p-0" id="kelompok-list">
+                        @forelse($kelompoks as $index => $k)
                             @php
                                 $t = $k->pesertaKkn->count();
                                 $q = $k->kuota;
                                 $p = $q > 0 ? round(($t/$q)*100) : 0;
-                                $fc = $p >= 100 ? 'f-full' : ($p >= 70 ? 'f-warn' : 'f-ok');
+                                $barClass = $p >= 100 ? 'full' : ($p >= 70 ? 'warn' : 'ok');
+                                $badgeClass = $p >= 100 ? 'full' : ($p >= 70 ? 'near' : 'available');
+                                $badgeText = $p >= 100 ? 'Penuh' : ($p >= 70 ? 'Hampir Penuh' : 'Tersedia');
                             @endphp
-                            <div class="col-6 mb-2">
-                                <div class="k-card {{ $k->is_full ? 'is-full' : '' }}"
-                                     id="kcard-{{ $k->id }}">
-                                    <div class="k-nama">{{ Str::limit($k->nama_kelompok, 18) }}</div>
-                                    <div class="k-desa">📍 {{ Str::limit($k->desaGelombang?->desa?->nama_desa ?? '-', 16) }}</div>
-                                    <div class="k-bar">
-                                        <div class="k-fill {{ $fc }}"
-                                             id="kfill-{{ $k->id }}"
-                                             style="width:{{ $p }}%">
-                                        </div>
-                                    </div>
-                                    <div class="k-count" id="kcount-{{ $k->id }}">
-                                        {{ $t }}/{{ $q }} anggota
+                            <div class="kl-row {{ $p >= 100 ? 'is-full' : '' }}" id="krow-{{ $k->id }}">
+                                <div class="kl-num">{{ $index + 1 }}</div>
+                                <div class="kl-info">
+                                    <div class="kl-name">{{ $k->nama_kelompok }}</div>
+                                    <div class="kl-loc">
+                                        <i class="fas fa-map-marker-alt text-danger mr-1" style="font-size:10px;"></i>
+                                        {{ $k->desaGelombang->desa->nama_desa ?? '-' }},
+                                        {{ $k->desaGelombang->desa->kecamatan->nama_kecamatan ?? '-' }}
+                                        @if(isset($k->desaGelombang->desa->kecamatan->kabupaten))
+                                            , {{ $k->desaGelombang->desa->kecamatan->kabupaten }}
+                                        @endif
                                     </div>
                                 </div>
+                                <div class="kl-bar-col">
+                                    <div class="kl-bar">
+                                        <div class="kl-bar-fill {{ $barClass }}" id="kfill-{{ $k->id }}" style="width:{{ $p }}%"></div>
+                                    </div>
+                                    <div class="kl-count" id="kcount-{{ $k->id }}">{{ $t }}/{{ $q }}</div>
+                                </div>
+                                <div class="kl-badge {{ $badgeClass }}" id="kbadge-{{ $k->id }}">{{ $badgeText }}</div>
                             </div>
-                            @endforeach
-                        </div>
+                        @empty
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                Tidak ada kelompok tersedia.
+                            </div>
+                        @endforelse
                     </div>
                 </div>
             </div>
 
+            {{-- SIDEBAR: FAKULTAS + LOG ─────────────── --}}
+            <div class="col-lg-5 mb-4">
+
+                {{-- KUOTA PER FAKULTAS ──────────────── --}}
+                <div class="sec-card">
+                    <div class="card-header">
+                        <span><i class="fas fa-building text-primary mr-2"></i> Progress per Fakultas</span>
+                        <small class="text-muted font-weight-normal" id="fak-updated"></small>
+                    </div>
+                    <div class="card-body" id="fak-container">
+                        @forelse($fakultasStats as $fs)
+                        <div class="fak-row" id="fak-{{ $fs['fakultas_id'] }}">
+                            <div class="fak-head">
+                                <span class="fak-name">{{ $fs['nama'] }}</span>
+                                <span class="fak-count" id="fak-taken-{{ $fs['fakultas_id'] }}">{{ $fs['filled'] }}/{{ $fs['total'] }}</span>
+                            </div>
+                            <div class="fak-bar">
+                                <div class="fak-fill" id="fak-bar-{{ $fs['fakultas_id'] }}" style="width:{{ $fs['persen'] }}%"></div>
+                            </div>
+                            <div class="fak-pct" id="fak-pct-{{ $fs['fakultas_id'] }}">{{ $fs['persen'] }}%</div>
+                        </div>
+                        @empty
+                        <div class="fak-empty">
+                            <i class="fas fa-info-circle mb-1 d-block"></i>
+                            Belum ada data peserta di gelombang ini.
+                        </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                {{-- AKTIVITAS TERBARU ────────────────── --}}
+                <div class="sec-card">
+                    <div class="card-header">
+                        <span><i class="fas fa-bolt text-warning mr-2"></i> Aktivitas Terbaru</span>
+                        <small class="text-muted font-weight-normal" id="log-updated"></small>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="log-feed p-3" id="log-feed">
+                            <div class="log-empty" id="log-empty-state">Memuat log...</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
     </div>
-
 </section>
-
 @endsection
 
 @push('scripts')
@@ -259,11 +440,11 @@
     const STATS_URL  = "{{ route('admin.war.monitor.stats', $war) }}";
     const LOGS_URL   = "{{ route('admin.war.monitor.logs', $war) }}";
     const KK_URL     = "{{ route('admin.war.monitor.kelompoks', $war) }}";
-    const END_AT     = new Date("{{ $war->end_at?->toISOString() }}");
+    const END_AT     = new Date("{{ \Carbon\Carbon::parse($war->end_at)->toISOString() }}");
 
     let lastLogId = 0;
 
-    /* ── COUNTDOWN ──────────────────────────────────── */
+    /* ── COUNTDOWN ───────────────────────── */
     const cdEl = document.getElementById('mon-countdown');
     function tick() {
         const diff = END_AT - new Date();
@@ -275,87 +456,117 @@
     }
     setInterval(tick, 1000); tick();
 
-    /* ── FETCH STATS ────────────────────────────────── */
+    /* ── FETCH STATS ─────────────────────── */
     function fetchStats() {
         fetch(STATS_URL, { headers: { Accept: 'application/json' } })
             .then(r => r.json())
             .then(d => {
-                document.getElementById('ms-peserta').textContent = d.total_peserta ?? '–';
-                document.getElementById('ms-sisa').textContent    = d.kelompok?.tersisa ?? '–';
-                document.getElementById('ms-penuh').textContent   = d.kelompok?.penuh   ?? '–';
+                document.getElementById('ms-joined').textContent        = d.total_peserta ?? '–';
+                document.getElementById('ms-total-peserta').textContent = d.total_peserta_gelombang ?? '–';
+                document.getElementById('ms-available').textContent     = d.kelompok?.tersisa ?? '–';
+                document.getElementById('ms-full').textContent          = d.kelompok?.penuh ?? '–';
 
-                // Update fakultas bars
-                (d.fakultas || []).forEach(f => {
-                    const bar    = document.getElementById(`fak-bar-${f.fakultas_id ?? ''}`);
-                    const taken  = document.getElementById(`fak-taken-${f.fakultas_id ?? ''}`);
-                    const pct    = document.getElementById(`fak-pct-${f.fakultas_id ?? ''}`);
-                    if (bar)   bar.style.width     = f.persen + '%';
-                    if (taken) taken.textContent    = `${f.filled}/${f.quota}`;
-                    if (pct)   pct.textContent      = f.persen + '%';
-                });
+                var fakContainer = document.getElementById('fak-container');
+                var fakultas = d.fakultas || [];
+
+                if (fakultas.length === 0) {
+                    fakContainer.innerHTML = '<div class="fak-empty"><i class="fas fa-info-circle mb-1 d-block"></i>Belum ada data peserta di gelombang ini.</div>';
+                } else {
+                    fakContainer.innerHTML = fakultas.map(function(f) {
+                        return `
+                        <div class="fak-row" id="fak-${f.fakultas_id}">
+                            <div class="fak-head">
+                                <span class="fak-name">${f.nama}</span>
+                                <span class="fak-count" id="fak-taken-${f.fakultas_id}">${f.filled}/${f.quota}</span>
+                            </div>
+                            <div class="fak-bar">
+                                <div class="fak-fill" id="fak-bar-${f.fakultas_id}" style="width:${f.persen}%"></div>
+                            </div>
+                            <div class="fak-pct" id="fak-pct-${f.fakultas_id}">${f.persen}%</div>
+                        </div>`;
+                    }).join('');
+                }
+
+                document.getElementById('fak-updated').textContent = 'diperbarui ' + new Date().toLocaleTimeString('id-ID');
             })
-            .catch(() => {});
+            .catch(function() {});
     }
 
-    /* ── FETCH LOGS ─────────────────────────────────── */
+    /* ── FETCH LOGS ──────────────────────── */
     function fetchLogs() {
         fetch(LOGS_URL + '?limit=20', { headers: { Accept: 'application/json' } })
             .then(r => r.json())
             .then(d => {
-                const feed = document.getElementById('log-feed');
+                var feed = document.getElementById('log-feed');
                 if (!d.logs.length) {
-                    feed.innerHTML = '<p class="text-muted text-center py-4" style="font-size:13px;">Belum ada aktivitas</p>';
+                    feed.innerHTML = '<div class="log-empty">Belum ada aktivitas.</div>';
                     return;
                 }
 
-                // Prepend new logs
-                const newLogs = d.logs.filter(l => l.id > lastLogId);
-                if (newLogs.length) {
-                    lastLogId = Math.max(...d.logs.map(l => l.id));
+                var newLogs = d.logs.filter(function(l) { return l.id > lastLogId; });
+                if (newLogs.length && d.logs.length) {
+                    lastLogId = Math.max.apply(null, d.logs.map(function(l) { return l.id; }));
                 }
 
-                feed.innerHTML = d.logs.map(l => `
-                    <div class="log-item ${l.action} ${l.id > (lastLogId - newLogs.length) && newLogs.length ? 'new' : ''}">
-                        <strong>${l.peserta}</strong>
-                        ${l.action === 'join_success'
-                            ? `→ bergabung ke <strong>${l.meta?.kelompok_nama ?? '-'}</strong>`
-                            : `<span class="text-danger">${l.action}</span>`
-                        }
+                feed.innerHTML = d.logs.map(function(l) {
+                    var isNew = l.id > (lastLogId - newLogs.length) && newLogs.length ? 'new' : '';
+                    var dest = l.meta && l.meta.kelompok_nama ? l.meta.kelompok_nama : '-';
+                    var icon = l.action === 'join_success' ? '<i class="fas fa-check-circle text-success mr-1"></i>' : '<i class="fas fa-times-circle text-danger mr-1"></i>';
+                    return `
+                    <div class="log-item ${l.action} ${isNew ? 'new' : ''}">
+                        <div class="log-name">${icon} ${l.peserta}</div>
+                        <div class="log-dest">&#10132; ${dest}</div>
                         <div class="log-time">${l.human}</div>
-                    </div>
-                `).join('');
+                    </div>`;
+                }).join('');
 
                 document.getElementById('log-updated').textContent = 'diperbarui ' + new Date().toLocaleTimeString('id-ID');
             })
-            .catch(() => {});
+            .catch(function() {});
     }
 
-    /* ── FETCH KELOMPOKS ─────────────────────────────── */
+    /* ── FETCH KELOMPOKS ─────────────────── */
     function fetchKelompoks() {
         fetch(KK_URL, { headers: { Accept: 'application/json' } })
             .then(r => r.json())
             .then(d => {
-                d.kelompoks.forEach(k => {
-                    const fill  = document.getElementById(`kfill-${k.id}`);
-                    const count = document.getElementById(`kcount-${k.id}`);
-                    const card  = document.getElementById(`kcard-${k.id}`);
+                d.kelompoks.forEach(function(k) {
+                    var fill  = document.getElementById('kfill-' + k.id);
+                    var count = document.getElementById('kcount-' + k.id);
+                    var badge = document.getElementById('kbadge-' + k.id);
+                    var row   = document.getElementById('krow-' + k.id);
                     if (!fill || !count) return;
 
-                    const pct = k.kuota > 0 ? Math.round((k.terisi / k.kuota) * 100) : 0;
+                    var pct = k.kuota > 0 ? Math.round((k.terisi / k.kuota) * 100) : 0;
                     fill.style.width = pct + '%';
-                    fill.className   = 'k-fill ' + (pct >= 100 ? 'f-full' : pct >= 70 ? 'f-warn' : 'f-ok');
-                    count.textContent = `${k.terisi}/${k.kuota} anggota`;
+                    fill.className   = 'kl-bar-fill ' + (pct >= 100 ? 'full' : pct >= 70 ? 'warn' : 'ok');
+                    count.textContent = k.terisi + '/' + k.kuota;
 
-                    if (k.is_full) card?.classList.add('is-full');
+                    if (badge) {
+                        if (pct >= 100) {
+                            badge.className = 'kl-badge full';
+                            badge.textContent = 'Penuh';
+                        } else if (pct >= 70) {
+                            badge.className = 'kl-badge near';
+                            badge.textContent = 'Hampir Penuh';
+                        } else {
+                            badge.className = 'kl-badge available';
+                            badge.textContent = 'Tersedia';
+                        }
+                    }
+
+                    if (row) {
+                        if (pct >= 100) row.classList.add('is-full');
+                        else row.classList.remove('is-full');
+                    }
                 });
             })
-            .catch(() => {});
+            .catch(function() {});
     }
 
-    // Initial + intervals
-    fetchStats();    setInterval(fetchStats,    8000);
-    fetchLogs();     setInterval(fetchLogs,     5000);
-    fetchKelompoks();setInterval(fetchKelompoks,7000);
+    fetchStats();     setInterval(fetchStats,     8000);
+    fetchLogs();      setInterval(fetchLogs,      5000);
+    fetchKelompoks(); setInterval(fetchKelompoks, 7000);
 
 })();
 </script>

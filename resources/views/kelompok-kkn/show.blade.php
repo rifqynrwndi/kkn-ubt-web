@@ -278,7 +278,7 @@
                                 <th>NPM</th>
                                 <th>Fakultas</th>
                                 <th>Program Studi</th>
-                                <th width="120">Aksi</th>
+                                <th width="170">Aksi</th>
                             </tr>
                         </thead>
 
@@ -290,6 +290,9 @@
 
                                     <td>
                                         {{ $item->mahasiswa?->user?->name ?? '-' }}
+                                        @if($item->id === $kelompok_kkn->ketua_peserta_id)
+                                            <span class="badge badge-warning ml-1" style="font-size:10px;border-radius:8px;">Ketua</span>
+                                        @endif
                                     </td>
 
                                     <td>
@@ -305,18 +308,32 @@
                                     </td>
 
                                     <td>
+                                    <div class="d-flex gap-1">
+                                    @if($item->id !== $kelompok_kkn->ketua_peserta_id)
+                                    <form action="{{ route('kelompok-kkn.ketua', ['kelompok_kkn' => $kelompok_kkn->id, 'peserta' => $item->id]) }}"
+                                        method="POST"
+                                        onsubmit="return confirm('Jadikan anggota ini sebagai ketua kelompok?')">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit"
+                                                class="btn btn-warning btn-sm"
+                                                title="Jadikan Ketua">
+                                            <i class="fas fa-crown"></i>
+                                        </button>
+                                    </form>
+                                    @endif
                                     <form action="{{ route('kelompok-kkn.anggota.destroy', ['kelompok_kkn' => $kelompok_kkn->id,'peserta' => $item->id]) }}"
                                         method="POST"
                                         onsubmit="return confirm('Keluarkan anggota dari kelompok?')">
-
                                         @csrf
                                         @method('DELETE')
-
                                         <button type="submit"
-                                                class="btn btn-danger btn-sm">
+                                                class="btn btn-danger btn-sm"
+                                                title="Hapus Anggota">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
+                                    </div>
                                 </td>
                                 </tr>
 

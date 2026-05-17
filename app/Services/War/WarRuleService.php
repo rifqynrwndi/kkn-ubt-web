@@ -11,7 +11,7 @@ class WarRuleService
     public const MAX_KELOMPOK_SIZE = 12;
     public const MAX_LAKI          = 4;
     public const MAX_PEREMPUAN     = 9;
-    public const MAX_SAME_PRODI    = 2;
+    public const MAX_SAME_PRODI    = 1;
 
     public function checkAllRules(
         KelompokKkn   $kelompok,
@@ -75,7 +75,7 @@ class WarRuleService
 
         if ($countSameProdi >= self::MAX_SAME_PRODI) {
             $nama = $peserta->mahasiswa->prodi->nama_prodi ?? 'Program studi kamu';
-            return "{$nama} sudah ada di kelompok ini (maks 1 orang per prodi).";
+            return "{$nama} sudah ada di kelompok ini (maks " . self::MAX_SAME_PRODI . " orang per prodi).";
         }
 
         return null;
