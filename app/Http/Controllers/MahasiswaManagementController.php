@@ -13,7 +13,8 @@ class MahasiswaManagementController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::with('mahasiswa.pesertaKkn.gelombang');
+        $query = User::with('mahasiswa.pesertaKkn.gelombang')
+            ->role('mahasiswa');
 
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%')
