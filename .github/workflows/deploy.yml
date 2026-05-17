@@ -40,17 +40,25 @@ jobs:
           npm ci
           npm run build
 
-      - name: Deploy via SSH (rsync)
-        uses: easingthemes/ssh-deploy@v5
+      - name: Rsync files to server
+        uses: burnett01/rsync-deployments@7.0.1
         with:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: "-rlgoDzvc -i --delete --exclude=.env --exclude=storage --exclude=.git --exclude=node_modules"
-          SOURCE: "./"
-          REMOTE_HOST: ${{ secrets.SSH_HOST }}
-          REMOTE_USER: ${{ secrets.SSH_USERNAME }}
-          REMOTE_PORT: ${{ secrets.SSH_PORT || '22' }}
-          TARGET: ${{ secrets.DEPLOY_PATH }}
-          SCRIPT_AFTER: |
+          switches: -avzr --delete --exclude=.env --exclude=storage --exclude=.git --exclude=node_modules
+          path: ./
+          remote_path: ${{ secrets.DEPLOY_PATH }}
+          remote_host: ${{ secrets.SSH_HOST }}
+          remote_user: ${{ secrets.SSH_USERNAME }}
+          remote_port: ${{ secrets.SSH_PORT || '22' }}
+          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Post-deploy commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          port: ${{ secrets.SSH_PORT || '22' }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
             cd ${{ secrets.DEPLOY_PATH }}
             php artisan migrate --force
             php artisan config:cache
