@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Mahasiswa;
+use App\Models\PesertaKkn;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -22,5 +24,8 @@ class SuperAdminSeeder extends Seeder
         );
 
         $admin->assignRole('superadmin');
+
+        Mahasiswa::where('user_id', $admin->id)->delete();
+        PesertaKkn::where('mahasiswa_id', $admin->id)->delete();
     }
 }
