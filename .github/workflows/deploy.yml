@@ -43,28 +43,42 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          echo -e "Host server\n  HostName ${{ secrets.SSH_HOST }}\n  Port ${{ secrets.SSH_PORT || '22' }}\n  User ${{ secrets.SSH_USERNAME }}\n  IdentityFile ~/.ssh/deploy_key\n  StrictHostKeyChecking no" > ~/.ssh/config
+          cat >> ~/.ssh/config << SSHCONFIG
+          Host server
+            HostName ${{ secrets.SSH_HOST }}
+            Port ${{ secrets.SSH_PORT || '22' }}
+            User ${{ secrets.SSH_USERNAME }}
+            IdentityFile ~/.ssh/deploy_key
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+          SSHCONFIG
+          chmod 600 ~/.ssh/config
+          ssh server "echo 'SSH connection OK'"
 
       - name: Rsync to server
         run: |
+          ssh server "mkdir -p ${{ secrets.DEPLOY_PATH }}"
           rsync -avzr --delete \
             --exclude=.env \
             --exclude=storage \
             --exclude=.git \
             --exclude=node_modules \
+            --exclude=.github \
             ./ server:${{ secrets.DEPLOY_PATH }}
 
       - name: Post-deploy commands
         run: |
-          ssh server << 'EOF'
-            cd ${{ secrets.DEPLOY_PATH }}
-            php artisan migrate --force
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-            php artisan storage:link --force
-            php artisan optimize
-            sudo systemctl reload nginx
-          EOF
+          ssh -T server bash << 'REMOTE'
+          set -e
+          cd ${{ secrets.DEPLOY_PATH }}
+          php artisan migrate --force
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          php artisan storage:link --force 2>/dev/null || true
+          php artisan optimize
+          sudo systemctl reload nginx 2>/dev/null || true
+          echo "Deploy completed successfully"
+          REMOTE
