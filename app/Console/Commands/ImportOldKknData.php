@@ -66,7 +66,10 @@ class ImportOldKknData extends Command
         $createdUser = 0;
         $createdMahasiswa = 0;
         $createdPeserta = 0;
-        $skipped = 0;
+        $skippedNoEmail = 0;
+        $skippedAdmin = 0;
+        $skippedExists = 0;
+        $skippedNoMhs = 0;
 
         $prodiCache = ProgramStudi::all()->keyBy('id');
 
@@ -93,13 +96,11 @@ class ImportOldKknData extends Command
                     $bar->advance();
 
                     $email = $old->email ?? null;
-                    if (! $email) { $skipped++; continue; }
+                    if (! $email) { $skippedNoEmail++; continue; }
 
-                    // Skip admin
-                    if (($old->role ?? null) == 4) { $skipped++; continue; }
+                    if (($old->role ?? null) == 4) { $skippedAdmin++; continue; }
 
-                    // Already exists
-                    if (isset($existingEmails[$email])) { $skipped++; continue; }
+                    if (isset($existingEmails[$email])) { $skippedExists++; continue; }
 
                     $user = User::create([
                         'name'              => $old->nama ?? $old->name ?? 'Unknown',
@@ -169,7 +170,11 @@ class ImportOldKknData extends Command
         $this->info("User:      {$createdUser} created");
         $this->info("Mahasiswa: {$createdMahasiswa} created");
         $this->info("Peserta:   {$createdPeserta} created");
-        $this->info("Skipped:   {$skipped}");
+        $this->warn("Skipped:   " . ($skippedNoEmail + $skippedAdmin + $skippedExists + $skippedNoMhs) . " total");
+        $this->line("  - No email: {$skippedNoEmail}");
+        $this->line("  - Admin: {$skippedAdmin}");
+        $this->line("  - Already exists: {$skippedExists}");
+        $this->line("  - No mahasiswa data: {$skippedNoMhs}");
     }
 
     private function canConnect(): bool

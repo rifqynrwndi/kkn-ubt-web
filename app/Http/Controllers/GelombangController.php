@@ -9,7 +9,16 @@ class GelombangController extends Controller
 {
     public function index(Request $request)
     {
-        $gelombang = Gelombang::when($request->search, function ($q) use ($request) {
+        $gelombang = Gelombang::withCount([
+                'pesertaKkn as total_peserta',
+            ])
+            ->withCount([
+                'pesertaKkn as total_pria' => fn($q) => $q->whereHas('mahasiswa', fn($q) => $q->where('jenis_kelamin', 'L')),
+            ])
+            ->withCount([
+                'pesertaKkn as total_wanita' => fn($q) => $q->whereHas('mahasiswa', fn($q) => $q->where('jenis_kelamin', 'P')),
+            ])
+            ->when($request->search, function ($q) use ($request) {
                 $q->where('nama_gelombang', 'like', '%' . $request->search . '%')
                   ->orWhere('tahun', 'like', '%' . $request->search . '%');
             })

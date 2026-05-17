@@ -47,7 +47,7 @@
                                 <th>Tahun</th>
                                 <th>Tanggal Mulai</th>
                                 <th>Tanggal Akhir</th>
-                                <th>Kuota</th>
+                                <th>Jumlah Peserta</th>
                                 <th>Status</th>
                                 <th width="120">Aksi</th>
                             </tr>
@@ -62,9 +62,11 @@
                                     <td>{{ \Carbon\Carbon::parse($item->tgl_mulai)->format('d M Y') }}</td>
                                     <td>{{ \Carbon\Carbon::parse($item->tgl_akhir)->format('d M Y') }}</td>
                                     <td>
-                                        L: {{ $item->kuota_laki }} <br>
-                                        P: {{ $item->kuota_perempuan }} <br>
-                                        <b>Total: {{ $item->kuota_total }}</b>
+                                        <i class="fas fa-male text-primary mr-1"></i> {{ $item->total_pria }}
+                                        <br>
+                                        <i class="fas fa-female text-danger mr-1"></i> {{ $item->total_wanita }}
+                                        <br>
+                                        <b>Total: {{ $item->total_peserta }}</b>
                                     </td>
 
                                     <td>
