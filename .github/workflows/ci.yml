@@ -46,6 +46,17 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Build frontend assets
+        run: |
+          npm ci
+          npm run build
+
       - name: Copy .env
         run: cp .env.example .env
 
@@ -67,10 +78,3 @@ jobs:
 
       - name: Run tests
         run: php artisan test --stop-on-failure
-        env:
-          DB_CONNECTION: mysql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_DATABASE: kkn_test
-          DB_USERNAME: root
-          DB_PASSWORD: password
