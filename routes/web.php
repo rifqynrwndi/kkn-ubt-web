@@ -404,5 +404,4 @@ Route::middleware(['auth','biodata.complete', 'email.verified.except.superadmin'
         });
 
     });
-    });
 });
