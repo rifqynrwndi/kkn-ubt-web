@@ -32,7 +32,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install & build frontend
@@ -40,25 +40,25 @@ jobs:
           npm ci
           npm run build
 
-      - name: Rsync files to server
-        uses: burnett01/rsync-deployments@7.0.1
-        with:
-          switches: -avzr --delete --exclude=.env --exclude=storage --exclude=.git --exclude=node_modules
-          path: ./
-          remote_path: ${{ secrets.DEPLOY_PATH }}
-          remote_host: ${{ secrets.SSH_HOST }}
-          remote_user: ${{ secrets.SSH_USERNAME }}
-          remote_port: ${{ secrets.SSH_PORT || '22' }}
-          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo -e "Host server\n  HostName ${{ secrets.SSH_HOST }}\n  Port ${{ secrets.SSH_PORT || '22' }}\n  User ${{ secrets.SSH_USERNAME }}\n  IdentityFile ~/.ssh/deploy_key\n  StrictHostKeyChecking no" > ~/.ssh/config
+
+      - name: Rsync to server
+        run: |
+          rsync -avzr --delete \
+            --exclude=.env \
+            --exclude=storage \
+            --exclude=.git \
+            --exclude=node_modules \
+            ./ server:${{ secrets.DEPLOY_PATH }}
 
       - name: Post-deploy commands
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          port: ${{ secrets.SSH_PORT || '22' }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
+        run: |
+          ssh server << 'EOF'
             cd ${{ secrets.DEPLOY_PATH }}
             php artisan migrate --force
             php artisan config:cache
@@ -67,3 +67,4 @@ jobs:
             php artisan storage:link --force
             php artisan optimize
             sudo systemctl reload nginx
+          EOF
