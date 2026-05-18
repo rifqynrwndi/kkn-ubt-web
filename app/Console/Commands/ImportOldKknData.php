@@ -50,13 +50,13 @@ class ImportOldKknData extends Command
             ->join('mahasiswa as m', 'p.mahasiswa_id', '=', 'm.id')
             ->join('users as u', 'm.user_id', '=', 'u.id')
             ->where('p.status', '1')
-            ->where('u.role', '!=', '4')
             ->whereNotNull('u.email')
             ->select(
                 'p.id as peminatan_id',
                 'p.gelombang_id as old_gelombang_id',
                 'u.id as old_user_id',
                 'u.name',
+                'u.role',
                 'u.username as npm',
                 'u.email',
                 'u.password as old_password',
@@ -93,15 +93,18 @@ class ImportOldKknData extends Command
         $bar->start();
 
         $createdUser      = 0;
+        $createdAdminUser = 0;
         $createdMahasiswa = 0;
         $createdPeserta   = 0;
         $skippedExists    = 0;
+        $skippedSuperAdmin = 0;
 
         $prodiCache = ProgramStudi::all()->keyBy('id');
 
         $query->orderBy('p.id')
             ->chunk($chunk, function ($rows) use (
-                &$createdUser, &$createdMahasiswa, &$createdPeserta, &$skippedExists,
+                &$createdUser, &$createdAdminUser, &$createdMahasiswa, &$createdPeserta,
+                &$skippedExists, &$skippedSuperAdmin,
                 $newGelombangId, $skipPeserta, $prodiCache, $bar
             ) {
                 $emails = [];
@@ -122,6 +125,14 @@ class ImportOldKknData extends Command
                         continue;
                     }
 
+                    $isAdmin = ((string) $row->role) === '4';
+
+                    // Skip old superadmin
+                    if ($isAdmin && $email === 'ubt.tarakan@gmail.com') {
+                        $skippedSuperAdmin++;
+                        continue;
+                    }
+
                     // Create User
                     $user = User::create([
                         'name'              => $row->name,
@@ -130,6 +141,13 @@ class ImportOldKknData extends Command
                         'email_verified_at' => $row->email_verified_at ?? now(),
                         'remember_token'    => $row->remember_token ?? Str::random(10),
                     ]);
+
+                    if ($isAdmin) {
+                        $user->assignRole('mahasiswa');
+                        $createdAdminUser++;
+                        continue; // Admin: no Mahasiswa, no PesertaKkn
+                    }
+
                     $user->assignRole('mahasiswa');
                     $createdUser++;
 
@@ -177,10 +195,11 @@ class ImportOldKknData extends Command
         $bar->finish();
         $this->newLine(2);
         $this->info('Import selesai!');
-        $this->info("User:      {$createdUser} created");
-        $this->info("Mahasiswa: {$createdMahasiswa} created");
+        $this->info("Mahasiswa: {$createdUser} created");
+        $this->info("Admin (no Mahasiswa): {$createdAdminUser} created");
         $this->info("Peserta:   {$createdPeserta} created");
         $this->info("Skipped (exists): {$skippedExists}");
+        $this->info("Skipped (superadmin lama): {$skippedSuperAdmin}");
     }
 
     private function canConnect(): bool
