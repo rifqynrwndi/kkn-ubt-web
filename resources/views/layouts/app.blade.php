@@ -9,7 +9,8 @@
     <!-- Title -->
     <title>@yield('title') &mdash; KKN Universitas Borneo Tarakan</title>
 
-    <!-- Fonts -->
+    <link rel="icon" type="image/png" href="{{ asset('images/logo-ubt.png') }}">
+
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
 
