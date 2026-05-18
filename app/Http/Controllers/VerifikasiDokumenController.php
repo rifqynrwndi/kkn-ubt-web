@@ -11,26 +11,36 @@ use App\Notifications\BulkDokumenVerifiedNotification;
 
 class VerifikasiDokumenController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $pesertaList = PesertaKkn::with([
-            'mahasiswa.user',
-            'gelombang',
-            'dokumenPendaftaran'
-        ])
-        ->whereIn('status_pendaftaran', [
-            'draft',
-            'pending_documents',
-            'pending_verification',
-            'revision',
-            'approved',
-            'rejected',
-            'expired'
-        ])
-        ->latest()
-        ->paginate(20);
+        $gelombangId = $request->get('gelombang_id');
 
-        return view('verifikasi-dokumen.index', compact('pesertaList'));
+        $gelombangs = \App\Models\Gelombang::orderBy('tahun', 'desc')
+            ->orderBy('nama_gelombang')
+            ->get();
+
+        $pesertaList = collect();
+
+        if ($gelombangId) {
+            $statusFilter = $request->get('status');
+
+            $pesertaList = PesertaKkn::with([
+                'mahasiswa.user',
+                'gelombang',
+                'dokumenPendaftaran'
+            ])
+            ->where('gelombang_id', $gelombangId)
+            ->when($statusFilter, fn($q) => $q->where('status_pendaftaran', $statusFilter))
+            ->when(!$statusFilter, fn($q) => $q->whereIn('status_pendaftaran', [
+                'draft', 'pending_documents', 'pending_verification',
+                'revision', 'approved', 'rejected', 'expired'
+            ]))
+            ->latest()
+            ->paginate(20)
+            ->appends(['gelombang_id' => $gelombangId, 'status' => $statusFilter]);
+        }
+
+        return view('verifikasi-dokumen.index', compact('pesertaList', 'gelombangs', 'gelombangId'));
     }
 
     public function show($id)

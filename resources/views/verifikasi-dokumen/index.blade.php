@@ -10,6 +10,49 @@
 
     <div class="section-body">
 
+        {{-- Gelombang Selector --}}
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <form method="GET" action="{{ route('verifikasi-dokumen.index') }}" class="row align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label font-weight-bold">Pilih Gelombang</label>
+                        <select name="gelombang_id" class="form-control" onchange="this.form.submit()">
+                            <option value="">-- Pilih Gelombang --</option>
+                            @foreach($gelombangs as $g)
+                                <option value="{{ $g->id }}" {{ $gelombangId == $g->id ? 'selected' : '' }}>
+                                    {{ $g->nama_gelombang }} ({{ $g->tahun }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label font-weight-bold">Status</label>
+                        <select name="status" class="form-control" onchange="this.form.submit()">
+                            <option value="">Semua Status</option>
+                            <option value="pending_verification" {{ request('status') == 'pending_verification' ? 'selected' : '' }}>Pending Verification</option>
+                            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+                            <option value="revision" {{ request('status') == 'revision' ? 'selected' : '' }}>Revision</option>
+                            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-filter mr-1"></i> Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @if(!$gelombangId)
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <span style="font-size:48px;display:block;margin-bottom:16px;">📋</span>
+                <h5 class="font-weight-bold mb-2">Pilih Gelombang Terlebih Dahulu</h5>
+                <p class="text-muted mb-0">Silakan pilih gelombang KKN untuk melihat daftar peserta yang perlu diverifikasi.</p>
+            </div>
+        </div>
+        @else
         <form action="{{ route('verifikasi-dokumen.bulk-approve') }}" method="POST">
             @csrf
 
@@ -132,6 +175,8 @@
 
             </div>
         </form>
+
+        @endif
 
     </div>
 </section>
