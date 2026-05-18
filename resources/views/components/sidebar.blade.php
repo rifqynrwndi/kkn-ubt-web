@@ -7,10 +7,21 @@
 <div class="main-sidebar sidebar-style-2">
     <aside id="sidebar-wrapper">
         <div class="sidebar-brand">
-        <a href="{{ url('home') }}"> KKN UBT</a>
+            <a href="{{ url('home') }}">
+                <img src="{{ asset('images/logo-ubt.png') }}"
+                     alt="UBT"
+                     style="height:32px;margin-right:8px;vertical-align:middle;"
+                     onerror="this.style.display='none'">
+                KKN UBT
+            </a>
         </div>
         <div class="sidebar-brand sidebar-brand-sm">
-        <a href="{{ url('home') }}">UBT</a>
+            <a href="{{ url('home') }}">
+                <img src="{{ asset('images/logo-ubt.png') }}"
+                     alt="UBT"
+                     style="height:28px;"
+                     onerror="this.style.display='none'">
+            </a>
         </div>
         <ul class="sidebar-menu">
             <li class="menu-header">Dashboard</li>
