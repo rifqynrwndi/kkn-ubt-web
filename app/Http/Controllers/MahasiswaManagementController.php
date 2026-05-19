@@ -14,11 +14,18 @@ class MahasiswaManagementController extends Controller
     public function index(Request $request)
     {
         $query = User::with('mahasiswa.pesertaKkn.gelombang')
-            ->role('mahasiswa');
+            ->role('mahasiswa')
+            ->whereHas('mahasiswa');
 
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                ->orWhere('email', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhereHas('mahasiswa', fn($mq) =>
+                      $mq->where('npm', 'like', "%{$search}%")
+                  );
+            });
         }
 
         if ($request->filled('status')) {
