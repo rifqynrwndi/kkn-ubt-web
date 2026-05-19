@@ -79,12 +79,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [DokumenPendaftaranController::class, 'destroy'])->name('dokumen-pendaftaran.destroy');
     });
 
-    Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-        $request->fulfill();
-
-        return redirect()->route('biodata.edit')->with('success', 'Email berhasil diverifikasi.');
-    })->middleware(['signed'])->name('verification.verify');
-
     Route::post('/email/verification-notification', function (Request $request) {
         try {
             $request->user()->sendEmailVerificationNotification();
@@ -107,11 +101,15 @@ Route::middleware('auth')->group(function () {
         }
     })->middleware(['throttle:10,1'])->name('verification.send');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Notifications (All Authenticated Users)
-    |--------------------------------------------------------------------------
-    */
+}); // end auth group
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+
+    return redirect()->route('biodata.edit')->with('success', 'Email berhasil diverifikasi. Silakan lengkapi biodata Anda.');
+})->middleware(['signed'])->name('verification.verify');
+
+Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin'])->group(function () {
 
     Route::prefix('notifications')->name('notifications.')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('index');
@@ -124,15 +122,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
         Route::delete('/', [NotificationController::class, 'destroyAll'])->name('destroy-all');
     });
-});
-
-/*
-|--------------------------------------------------------------------------
-| Auth + Biodata Complete
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware(['auth','biodata.complete', 'email.verified.except.superadmin'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
