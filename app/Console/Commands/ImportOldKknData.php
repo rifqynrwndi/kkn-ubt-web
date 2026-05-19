@@ -200,6 +200,40 @@ class ImportOldKknData extends Command
         $this->info("Peserta:   {$createdPeserta} created");
         $this->info("Skipped (exists): {$skippedExists}");
         $this->info("Skipped (superadmin lama): {$skippedSuperAdmin}");
+
+        // ── IMPORT LPPM ADMINS (role=4, bukan dari peminatan) ──
+        $this->info("\nImporting LPPM admins...");
+
+        $adminCount = 0;
+        $adminSkipped = 0;
+
+        DB::connection('old_mysql')
+            ->table('users')
+            ->where('role', '4')
+            ->whereNotNull('email')
+            ->where('email', '!=', 'ubt.tarakan@gmail.com')
+            ->orderBy('id')
+            ->chunk($chunk, function ($adminUsers) use (&$adminCount, &$adminSkipped) {
+                $emails = $adminUsers->pluck('email')->filter()->toArray();
+                $existing = User::whereIn('email', $emails)->pluck('id', 'email');
+
+                foreach ($adminUsers as $u) {
+                    if (! $u->email) continue;
+                    if (isset($existing[$u->email])) { $adminSkipped++; continue; }
+
+                    User::create([
+                        'name'              => $u->name,
+                        'email'             => $u->email,
+                        'password'          => $u->password ?? Hash::make(Str::random(16)),
+                        'email_verified_at' => $u->email_verified_at ?? now(),
+                        'remember_token'    => $u->remember_token ?? Str::random(10),
+                    ]);
+                    $adminCount++;
+                }
+            });
+
+        $this->info("LPPM Admin: {$adminCount} created, {$adminSkipped} skipped (exists)");
+        $this->info('Import complete.');
     }
 
     private function canConnect(): bool
