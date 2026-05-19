@@ -12,8 +12,6 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable, HasRoles;
 
-    public bool $skipVerificationEmail = false;
-
     protected $fillable = [
         'name',
         'email',
@@ -92,10 +90,6 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function sendEmailVerificationNotification(): void
     {
-        if ($this->skipVerificationEmail) {
-            return;
-        }
-
-        parent::sendEmailVerificationNotification();
+        $this->notify(new \App\Notifications\CustomVerifyEmail);
     }
 }

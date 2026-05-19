@@ -18,13 +18,12 @@ class ResendTransport extends AbstractTransport
     protected function doSend(SentMessage $message): void
     {
         $email = MessageConverter::toEmail($message->getOriginalMessage());
-
         $from = $email->getFrom()[0];
 
         Http::withToken($this->apiKey)
             ->acceptJson()
             ->post('https://api.resend.com/emails', [
-                'from'    => $from->getAddress(),
+                'from'    => config('mail.from.name') . ' <' . config('mail.from.address') . '>',
                 'to'      => array_map(fn($a) => $a->getAddress(), $email->getTo()),
                 'subject' => $email->getSubject(),
                 'html'    => $email->getHtmlBody() ?? $email->getTextBody(),
