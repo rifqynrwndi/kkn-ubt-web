@@ -18,8 +18,19 @@ class DesaSeeder extends Seeder
         // 1. Ambil data gelombang yang paling terbaru (berdasarkan ID terakhir)
         $gelombangTerbaru = Gelombang::latest('id')->first();
 
-        if (!$gelombangTerbaru) {
-            $this->command->warn('Data Gelombang kosong! Desa akan dibuat, tetapi tabel desa_gelombang tidak akan terisi.');
+        if (! $gelombangTerbaru) {
+            $gelombangTerbaru = Gelombang::firstOrCreate(
+                [
+                    'nama_gelombang' => 'KKN Default Periode ' . now()->year,
+                    'tahun'          => now()->year,
+                ],
+                [
+                    'tgl_mulai'      => now(),
+                    'tgl_akhir'      => now()->addMonths(3),
+                    'status'         => 'persiapan',
+                ]
+            );
+            $this->command->info('Gelombang default dibuat: ' . $gelombangTerbaru->nama_gelombang);
         }
 
         // Struktur Data: ['Nama Kabupaten' => ['Nama Kecamatan' => ['Desa 1', 'Desa 2']]]
@@ -157,17 +168,14 @@ class DesaSeeder extends Seeder
                         'aktif' => 1
                     ]);
 
-                    // Jika gelombang terbaru ada, langsung buatkan relasinya ke desa_gelombang
-                    if ($gelombangTerbaru) {
-                        DesaGelombang::firstOrCreate([
-                            'gelombang_id' => $gelombangTerbaru->id,
-                            'desa_id'      => $desa->id,
-                        ], [
-                            'kuota_total'                  => 12,
-                            'status'                       => 'dibuka',
-                            'dosen_pembimbing_lapangan_id' => null,
-                        ]);
-                    }
+                    DesaGelombang::firstOrCreate([
+                        'gelombang_id' => $gelombangTerbaru->id,
+                        'desa_id'      => $desa->id,
+                    ], [
+                        'kuota_total'                  => 12,
+                        'status'                       => 'dibuka',
+                        'dosen_pembimbing_lapangan_id' => null,
+                    ]);
                 }
             }
         }

@@ -9,20 +9,14 @@ class GelombangSeeder extends Seeder
 {
     public function run(): void
     {
-        if (app()->environment('production')) {
-            $this->command?->info('GelombangSeeder: skipped in production. Gunakan admin UI untuk membuat gelombang.');
-
-            return;
-        }
-
         Gelombang::firstOrCreate(
             [
-                'nama_gelombang' => 'KKN XIX PERIODE 1',
-                'tahun' => now()->year,
+                'nama_gelombang' => 'KKN XXII PERIODE 2',
+                'tahun' => 2025,
             ],
             [
-                'tgl_mulai' => now()->startOfMonth(),
-                'tgl_akhir' => now()->addMonths(2),
+                'tgl_mulai' => '2026-04-24',
+                'tgl_akhir' => '2026-07-23',
                 'status' => 'pendaftaran',
             ]
         );
