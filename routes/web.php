@@ -86,10 +86,26 @@ Route::middleware('auth')->group(function () {
     })->middleware(['signed'])->name('verification.verify');
 
     Route::post('/email/verification-notification', function (Request $request) {
-        $request->user()->sendEmailVerificationNotification();
+        try {
+            $request->user()->sendEmailVerificationNotification();
 
-        return back()->with('success', 'Link verifikasi telah dikirim ke email Anda.');
-    })->middleware(['throttle:6,1'])->name('verification.send');
+            return response()->json([
+                'success' => true,
+                'message' => 'Link verifikasi telah dikirim ke email Anda.',
+            ]);
+        } catch (\Throwable $e) {
+            logger()->error('Verification email failed', [
+                'user_id' => $request->user()->id,
+                'email'   => $request->user()->email,
+                'error'   => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengirim verifikasi. ' . $e->getMessage(),
+            ], 500);
+        }
+    })->middleware(['throttle:10,1'])->name('verification.send');
 
     /*
     |--------------------------------------------------------------------------
