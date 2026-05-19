@@ -68,8 +68,6 @@ class RegisterController extends Controller
             'password' => Hash::make($data['password']),
         ]);
 
-        $user->skipVerificationEmail = true;
-
         $user->assignRole('mahasiswa');
 
         // auto create data mahasiswa
