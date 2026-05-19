@@ -12,6 +12,8 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable, HasRoles;
 
+    public bool $skipVerificationEmail = false;
+
     protected $fillable = [
         'name',
         'email',
@@ -86,5 +88,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function hasCompletedBiodata(): bool
     {
         return $this->mahasiswa?->is_biodata_complete ?? false;
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        if ($this->skipVerificationEmail) {
+            return;
+        }
+
+        parent::sendEmailVerificationNotification();
     }
 }
