@@ -16,9 +16,9 @@ class EnsureEmailVerifiedExceptSuperadmin
             return $next($request);
         }
 
-        // default Laravel behavior
+        // belum verifikasi → arahkan ke biodata (verifikasi lewat biodata edit)
         if (! $user || ! $user->hasVerifiedEmail()) {
-            return redirect()->route('verification.notice');
+            return redirect()->route('biodata.edit');
         }
 
         return $next($request);

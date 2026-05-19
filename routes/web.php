@@ -36,7 +36,7 @@ use App\Http\Controllers\{
 
 Route::get('/', fn () => view('auth.login'));
 
-Auth::routes(['verify' => true]);
+Auth::routes();
 
 /*
 |--------------------------------------------------------------------------
@@ -79,20 +79,16 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [DokumenPendaftaranController::class, 'destroy'])->name('dokumen-pendaftaran.destroy');
     });
 
-    Route::get('/email/verify', function () {
-        return view('auth.verify');
-    })->name('verification.notice');
-
     Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
         $request->fulfill();
 
-        return redirect('/home');
+        return redirect()->route('biodata.edit')->with('success', 'Email berhasil diverifikasi.');
     })->middleware(['signed'])->name('verification.verify');
 
     Route::post('/email/verification-notification', function (Request $request) {
         $request->user()->sendEmailVerificationNotification();
 
-        return back()->with('status', 'verification-link-sent');
+        return back()->with('success', 'Link verifikasi telah dikirim ke email Anda.');
     })->middleware(['throttle:6,1'])->name('verification.send');
 
     /*
