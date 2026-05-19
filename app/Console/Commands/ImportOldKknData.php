@@ -227,7 +227,7 @@ class ImportOldKknData extends Command
                         'password'          => $u->password ?? Hash::make(Str::random(16)),
                         'email_verified_at' => $u->email_verified_at ?? now(),
                         'remember_token'    => $u->remember_token ?? Str::random(10),
-                    ]);
+                    ])->assignRole('superadmin');
                     $adminCount++;
                 }
             });
