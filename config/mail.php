@@ -70,6 +70,11 @@ return [
             'channel' => env('MAIL_LOG_CHANNEL'),
         ],
 
+        'resend' => [
+            'transport' => 'resend',
+            'api_key' => env('RESEND_API_KEY'),
+        ],
+
         'array' => [
             'transport' => 'array',
         ],
