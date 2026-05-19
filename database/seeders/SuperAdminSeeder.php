@@ -23,7 +23,7 @@ class SuperAdminSeeder extends Seeder
             ]
         );
 
-        $admin->assignRole('superadmin');
+        $admin->syncRoles(['superadmin']);
 
         Mahasiswa::where('user_id', $admin->id)->delete();
         PesertaKkn::where('mahasiswa_id', $admin->id)->delete();

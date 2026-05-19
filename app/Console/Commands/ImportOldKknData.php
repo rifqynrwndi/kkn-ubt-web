@@ -125,10 +125,10 @@ class ImportOldKknData extends Command
                         continue;
                     }
 
-                    $isAdmin = ((string) $row->role) === '4';
+                    $isAdmin = in_array((string) $row->role, ['4', 4]);
 
                     // Skip old superadmin
-                    if ($isAdmin && $email === 'ubt.tarakan@gmail.com') {
+                    if ($email === 'ubt.tarakan@gmail.com') {
                         $skippedSuperAdmin++;
                         continue;
                     }
@@ -143,9 +143,9 @@ class ImportOldKknData extends Command
                     ]);
 
                     if ($isAdmin) {
-                        $user->assignRole('mahasiswa');
+                        // LPPM admin: no role, no Mahasiswa, no PesertaKkn
                         $createdAdminUser++;
-                        continue; // Admin: no Mahasiswa, no PesertaKkn
+                        continue;
                     }
 
                     $user->assignRole('mahasiswa');
