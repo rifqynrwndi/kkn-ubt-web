@@ -18,7 +18,7 @@ class CustomVerifyEmail extends VerifyEmail
     {
         $verificationUrl = $this->verificationUrl($notifiable);
 
-        return $this->buildMailMessage()
+        return (new \Illuminate\Notifications\Messages\MailMessage)
             ->subject('Verifikasi Email — KKN Universitas Borneo Tarakan')
             ->greeting('Halo!')
             ->line('Terima kasih telah mendaftar di Sistem Informasi KKN Universitas Borneo Tarakan.')
