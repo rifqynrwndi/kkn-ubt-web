@@ -120,50 +120,82 @@ class WarStressTest extends Command
             }
         }
 
-        $this->info("Ditemukan {$pesertas->count()} peserta. Memulai MEGA SERANGAN...");
-
-        $processes = [];
-        $php = PHP_BINARY;
-        $artisan = base_path('artisan');
-
-        foreach ($pesertas as $peserta) {
-            // Pilih satu kelompok acak dari target kelompok untuk bot ini
-            $targetKelompok = $targetKelompoks->random();
-
-            $process = new SymfonyProcess([$php, $artisan, 'war:join-worker', $session->id, $targetKelompok->id, $peserta->mahasiswa_id]);
-            $process->setTimeout($timeout);
-            $process->start();
-            $processes[] = [
-                'process' => $process,
-                'peserta' => $peserta->mahasiswa_id,
-                'kelompok_id' => $targetKelompok->id,
-                'kelompok_nama' => $targetKelompok->nama_kelompok
-            ];
-        }
-
-        $this->info('Menunggu semua proses selesai... (ini mungkin butuh beberapa detik)');
+        $this->info("Ditemukan {$pesertas->count()} peserta. Memulai serangan berurutan...");
+        $this->info("Strategy: isi penuh 1 kelompok dulu, lalu pindah ke kelompok berikutnya");
 
         $successCount = 0;
         $failCount = 0;
         $failsByReason = [];
+        $batchSize = 20; // hindari "Too many connections"
+        $php = PHP_BINARY;
+        $artisan = base_path('artisan');
 
-        foreach ($processes as $p) {
-            $process = $p['process'];
-            $process->wait();
+        $groupIndex = 0;
+        $totalGroups = $targetKelompoks->count();
+        $currentGroup = $targetKelompoks[$groupIndex];
 
-            $output = trim($process->getOutput());
-            $error = trim($process->getErrorOutput());
+        $chunks = $pesertas->chunk($batchSize);
 
-            if ($process->isSuccessful()) {
-                $this->line("<info>✓ [User {$p['peserta']} -> {$p['kelompok_nama']}]</info> {$output}");
-                $successCount++;
-            } else {
-                $this->line("<error>✗ [User {$p['peserta']} -> {$p['kelompok_nama']}]</error> {$output}");
-                $failCount++;
-                
-                // Kumpulkan alasan kegagalan
-                $reason = str_replace('FAILED: ', '', $output);
-                $failsByReason[$reason] = ($failsByReason[$reason] ?? 0) + 1;
+        foreach ($chunks as $batchNum => $chunk) {
+            $processes = [];
+
+            foreach ($chunk as $peserta) {
+                // Cek apakah kelompok sekarang penuh
+                if ($currentGroup->fresh()->status === 'penuh') {
+                    $groupIndex++;
+                    if ($groupIndex >= $totalGroups) {
+                        break 2; // semua kelompok penuh
+                    }
+                    $currentGroup = $targetKelompoks[$groupIndex];
+                }
+
+                $process = new SymfonyProcess([$php, $artisan, 'war:join-worker', $session->id, $currentGroup->id, $peserta->mahasiswa_id]);
+                $process->setTimeout($timeout);
+                $process->start();
+                $processes[] = [
+                    'process' => $process,
+                    'peserta' => $peserta->mahasiswa_id,
+                    'kelompok_id' => $currentGroup->id,
+                    'kelompok_nama' => $currentGroup->nama_kelompok
+                ];
+            }
+
+            $this->info("Batch #" . ($batchNum + 1) . ": " . count($processes) . " bots → {$currentGroup->nama_kelompok}");
+
+            foreach ($processes as $p) {
+                $process = $p['process'];
+                $process->wait();
+
+                $output = trim($process->getOutput());
+                $error = trim($process->getErrorOutput());
+
+                if ($process->isSuccessful()) {
+                    $this->line("<info>✓ [User {$p['peserta']} -> {$p['kelompok_nama']}]</info> {$output}");
+                    $successCount++;
+                } else {
+                    $reason = str_replace('FAILED: ', '', $output);
+                    // Re-try dengan kelompok berikutnya kalau penuh
+                    if (str_contains($reason, 'penuh') && $groupIndex + 1 < $totalGroups) {
+                        $groupIndex++;
+                        $currentGroup = $targetKelompoks[$groupIndex];
+
+                        $retry = new SymfonyProcess([$php, $artisan, 'war:join-worker', $session->id, $currentGroup->id, $p['peserta']]);
+                        $retry->setTimeout($timeout);
+                        $retry->run();
+
+                        $retryOutput = trim($retry->getOutput());
+                        if ($retry->isSuccessful()) {
+                            $this->line("<info>↻ [User {$p['peserta']} -> {$currentGroup->nama_kelompok}]</info> {$retryOutput}");
+                            $successCount++;
+                            continue;
+                        }
+                        $reason = str_replace('FAILED: ', '', $retryOutput);
+                    }
+
+                    $this->line("<error>✗ [User {$p['peserta']} -> {$p['kelompok_nama']}]</error> {$reason}");
+                    $failCount++;
+                    $failsByReason[$reason] = ($failsByReason[$reason] ?? 0) + 1;
+                }
             }
         }
 
