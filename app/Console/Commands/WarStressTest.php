@@ -48,21 +48,25 @@ class WarStressTest extends Command
             ->get();
 
         if ($pesertas->count() < $userCount) {
-            $this->info("Hanya ada {$pesertas->count()} peserta. Membuat " . ($userCount - $pesertas->count()) . " peserta palsu sementara...");
-            
+            $this->info("Hanya ada {$pesertas->count()} peserta. Membuat " . ($userCount - $pesertas->count()) . " peserta palsu...");
+
+            $prodiIds = \App\Models\ProgramStudi::pluck('id')->toArray();
+
             for ($i = $pesertas->count(); $i < $userCount; $i++) {
+                $ts = time();
                 $fakeUser = \App\Models\User::create([
-                    'name' => "Bot Stress Test {$i}",
-                    'email' => "bot{$i}_" . time() . "@test.com",
+                    'name' => "Bot {$i}",
+                    'email' => "bot{$i}_{$ts}@wartest.local",
                     'password' => bcrypt('password'),
-                    'role' => 'mahasiswa',
+                    'email_verified_at' => now(),
                 ]);
+                $fakeUser->assignRole('mahasiswa');
 
                 $fakeMhs = \App\Models\Mahasiswa::create([
                     'user_id' => $fakeUser->id,
-                    'npm' => "BOT" . str_pad($i, 5, '0', STR_PAD_LEFT),
-                    'jenis_kelamin' => rand(1, 10) <= 3 ? 'L' : 'P', // 30% cowok, 70% cewek
-                    'prodi_id' => rand(1, 21), // ACAK DARI SEMUA FAKULTAS AGAR TERSEBAR
+                    'npm' => "BOT" . $ts . str_pad($i, 3, '0', STR_PAD_LEFT),
+                    'jenis_kelamin' => rand(1, 10) <= 3 ? 'L' : 'P',
+                    'prodi_id' => $prodiIds[array_rand($prodiIds)],
                 ]);
 
                 $fakePeserta = PesertaKkn::create([
