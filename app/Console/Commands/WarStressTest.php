@@ -10,7 +10,12 @@ use Symfony\Component\Process\Process as SymfonyProcess;
 
 class WarStressTest extends Command
 {
-    protected $signature = 'war:stress-test {session_id} {--users=100 : Jumlah user simulasi} {--kelompoks=5 : Jumlah kelompok target}';
+    protected $signature = 'war:stress-test
+                            {session_id : WAR session ID}
+                            {--users=100 : Jumlah user simulasi}
+                            {--kelompoks=5 : Jumlah kelompok target}
+                            {--cleanup : Reset peserta & kelompok sebelum test}
+                            {--timeout=300 : Process timeout per worker (detik)}';
     protected $description = 'Simulasi banyak user mengambil banyak kelompok secara bersamaan untuk menguji Concurrency/Locking berskala besar.';
 
     public function handle()
@@ -18,8 +23,44 @@ class WarStressTest extends Command
         $sessionId = $this->argument('session_id');
         $userCount = (int) $this->option('users');
         $kelompokCount = (int) $this->option('kelompoks');
+        $timeout = (int) $this->option('timeout');
 
         $session = WarSession::findOrFail($sessionId);
+
+        if ($this->option('cleanup')) {
+            $this->info('Cleaning up...');
+            \App\Models\WarParticipant::where('war_session_id', $sessionId)->delete();
+            $this->info('  - WarParticipant: cleared');
+
+            PesertaKkn::where('gelombang_id', $session->gelombang_id)
+                ->update(['kelompok_kkn_id' => null]);
+            $this->info('  - PesertaKkn.kelompok_kkn_id: reset');
+
+            KelompokKkn::whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $session->gelombang_id))
+                ->update(['status' => 'dibuka', 'ketua_peserta_id' => null]);
+            $this->info('  - KelompokKkn: reset');
+
+            \App\Models\WarFaculty::where('war_session_id', $sessionId)
+                ->update(['filled' => 0, 'quota' => 500]);
+            $this->info('  - WarFaculty: reset');
+
+            // Pastikan WAR active
+            $session->update([
+                'status'   => 'active',
+                'start_at' => now(),
+                'end_at'   => now()->addHours(4),
+            ]);
+            $this->info('  - WarSession: active (4 jam)');
+
+            \App\Models\WarFaculty::where('war_session_id', $sessionId)
+                ->update([
+                    'start_at' => now()->subHour(),
+                    'end_at'   => now()->addHours(4),
+                ]);
+            $this->info('  - WarFaculty schedules: reset');
+
+            $this->newLine();
+        }
         
         // Ambil beberapa kelompok secara acak dari gelombang yang sama
         $targetKelompoks = KelompokKkn::whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $session->gelombang_id))
@@ -38,7 +79,7 @@ class WarStressTest extends Command
         $this->info("Attackers: {$userCount} User menembak secara bersamaan!");
         $this->newLine();
 
-        if (!$this->confirm('Lanjutkan eksekusi brutal ini?', true)) {
+        if (!$this->option('no-interaction') && !$this->confirm('Lanjutkan eksekusi brutal ini?', true)) {
             return;
         }
 
@@ -90,6 +131,7 @@ class WarStressTest extends Command
             $targetKelompok = $targetKelompoks->random();
 
             $process = new SymfonyProcess([$php, $artisan, 'war:join-worker', $session->id, $targetKelompok->id, $peserta->mahasiswa_id]);
+            $process->setTimeout($timeout);
             $process->start();
             $processes[] = [
                 'process' => $process,
