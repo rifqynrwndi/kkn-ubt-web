@@ -111,7 +111,7 @@ class DplSeeder extends Seeder
             ['nama' => 'Ismail, M.H.', 'fakultas' => 'Hukum', 'nidn' => '199506022024061001'],
             ['nama' => 'Avinda Sari Kanthi Rahayu, S.Pd., M.Biomed', 'fakultas' => 'Kedokteran', 'nidn' => '199307302025062004'],
             ['nama' => 'Eka Nurul Hidayah Puspa Seruni, S.KM., M.Kes', 'fakultas' => 'Kedokteran', 'nidn' => '199609242025062013'],
-            ['nama' => 'Ni'mah Hidayatul Laili, S.S.T.Keb,. M.Biomed', 'fakultas' => 'Kedokteran', 'nidn' => '199609242025062013'],
+            ['nama' => "Ni'mah Hidayatul Laili, S.S.T.Keb,. M.Biomed", 'fakultas' => 'Kedokteran', 'nidn' => '199609242025062013'],
             ['nama' => 'Dr. dr. Tri Astuti Sugiyatmi, MPH', 'fakultas' => 'Kedokteran', 'nidn' => '0031107204'],
             ['nama' => 'Adipura Atmadja Egok, S.Si., M.Biomed.', 'fakultas' => 'Kedokteran', 'nidn' => '199402092025061004'],
             ['nama' => 'Dr. Ratno Achyani, S.Pi., M.Si.', 'fakultas' => '', 'nidn' => '1129078101'],
