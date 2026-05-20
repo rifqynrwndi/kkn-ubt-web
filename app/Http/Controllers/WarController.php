@@ -157,8 +157,8 @@ class WarController extends Controller
             })
             ->sortBy(function ($k) {
                 $kab = $k->desaGelombang->desa->kecamatan->kabupaten ?? 'Z';
-                if ($k->is_full) return $kab . '-2';
-                if (!$k->can_join) return $kab . '-1';
+                if ($k->is_full) return 'Z-2-' . $kab;
+                if (!$k->can_join) return 'Z-1-' . $kab;
                 return $kab . '-0';
             })
             ->values();

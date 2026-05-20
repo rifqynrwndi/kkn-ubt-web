@@ -237,6 +237,8 @@
             <div class="card-body p-0" id="kelompok-container">
                 @php
                     $currentKabupaten = '';
+                    $hasFakPenuh = false;
+                    $hasFull = false;
                 @endphp
                 @forelse($kelompoks as $index => $k)
                     @php
@@ -250,8 +252,8 @@
                         $kab = $k->desaGelombang->desa->kecamatan->kabupaten ?? '-';
                     @endphp
 
-                    {{-- Kabupaten divider --}}
-                    @if($kab !== $currentKabupaten)
+                    {{-- Kabupaten divider (hanya untuk kelompok tersedia) --}}
+                    @if(!$isFull && $kab !== $currentKabupaten)
                         <div class="kl-section-divider" style="font-weight:800;color:#1a1a2e;padding:12px 18px;font-size:13px;">
                             <i class="fas fa-map-marker-alt text-danger mr-2"></i> {{ $kab }}
                         </div>
@@ -259,17 +261,19 @@
                     @endif
 
                     {{-- Section divider: Kuota Fakultas/Prodi Penuh --}}
-                    @if(!$canJoin && !$isFull)
+                    @if(!$canJoin && !$isFull && !$hasFakPenuh)
                         <div class="kl-section-divider">
                             <i class="fas fa-ban mr-1"></i> Kuota Fakultas/Prodi Anda Penuh di Kelompok Ini
                         </div>
+                        @php $hasFakPenuh = true; @endphp
                     @endif
 
                     {{-- Section divider: Kelompok Penuh --}}
-                    @if($isFull)
+                    @if($isFull && !$hasFull)
                         <div class="kl-section-divider">
                             <i class="fas fa-lock mr-1"></i> Kelompok Penuh / Tidak Tersedia
                         </div>
+                        @php $hasFull = true; @endphp
                     @endif
 
                     <div class="kelompok-list-item {{ !$canJoin || $isFull ? 'is-disabled' : '' }}" id="kl-item-{{ $k->id }}">
