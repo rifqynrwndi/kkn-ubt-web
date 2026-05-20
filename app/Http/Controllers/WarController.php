@@ -91,7 +91,7 @@ class WarController extends Controller
     |--------------------------------------------------------------------------
     | Hanya bisa diakses kalau war aktif dan peserta eligible.
     */
-    public function arena(WarSession $session): \Illuminate\View\View
+    public function arena(WarSession $session): \Illuminate\View\View|\Illuminate\Http\RedirectResponse
     {
         /*
         |--------------------------------------------------------------------------
@@ -156,9 +156,10 @@ class WarController extends Controller
                 $k->can_join = !$k->is_full && !$fakOver && !$prodiOver;
             })
             ->sortBy(function ($k) {
-                if ($k->is_full) return 2;
-                if (!$k->can_join) return 1;
-                return 0;
+                $kab = $k->desaGelombang->desa->kecamatan->kabupaten ?? 'Z';
+                if ($k->is_full) return $kab . '-2';
+                if (!$k->can_join) return $kab . '-1';
+                return $kab . '-0';
             })
             ->values();
 
