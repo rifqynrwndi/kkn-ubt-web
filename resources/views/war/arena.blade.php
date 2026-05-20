@@ -236,9 +236,7 @@
             </div>
             <div class="card-body p-0" id="kelompok-container">
                 @php
-                    $hasAvailable = false;
-                    $hasFakPenuh = false;
-                    $hasFull = false;
+                    $currentKabupaten = '';
                 @endphp
                 @forelse($kelompoks as $index => $k)
                     @php
@@ -249,22 +247,29 @@
                         $barClass = $pct >= 100 ? 'full' : ($pct >= 70 ? 'warn' : 'ok');
                         $isFull = $pct >= 100 || $k->status === 'penuh';
                         $canJoin = $k->can_join ?? !$isFull;
+                        $kab = $k->desaGelombang->desa->kecamatan->kabupaten ?? '-';
                     @endphp
 
-                    {{-- Section divider: Fakultas Penuh --}}
-                    @if(!$hasFakPenuh && !$canJoin && !$isFull)
+                    {{-- Kabupaten divider --}}
+                    @if($kab !== $currentKabupaten)
+                        <div class="kl-section-divider" style="font-weight:800;color:#1a1a2e;padding:12px 18px;font-size:13px;">
+                            <i class="fas fa-map-marker-alt text-danger mr-2"></i> {{ $kab }}
+                        </div>
+                        @php $currentKabupaten = $kab; @endphp
+                    @endif
+
+                    {{-- Section divider: Kuota Fakultas/Prodi Penuh --}}
+                    @if(!$canJoin && !$isFull)
                         <div class="kl-section-divider">
                             <i class="fas fa-ban mr-1"></i> Kuota Fakultas/Prodi Anda Penuh di Kelompok Ini
                         </div>
-                        @php $hasFakPenuh = true; @endphp
                     @endif
 
                     {{-- Section divider: Kelompok Penuh --}}
-                    @if(!$hasFull && $isFull)
+                    @if($isFull)
                         <div class="kl-section-divider">
                             <i class="fas fa-lock mr-1"></i> Kelompok Penuh / Tidak Tersedia
                         </div>
-                        @php $hasFull = true; @endphp
                     @endif
 
                     <div class="kelompok-list-item {{ !$canJoin || $isFull ? 'is-disabled' : '' }}" id="kl-item-{{ $k->id }}">

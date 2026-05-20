@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -20,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'biodata.complete' => \App\Http\Middleware\EnsureBiodataComplete::class,
             'email.verified.except.superadmin' => \App\Http\Middleware\EnsureEmailVerifiedExceptSuperadmin::class,
         ]);
+
+        $middleware->throttleWithRedis();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

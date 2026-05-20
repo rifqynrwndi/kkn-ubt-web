@@ -15,7 +15,7 @@ class KelompokKknController extends Controller
     public function index(Request $request): View
     {
         $query = KelompokKkn::with([
-            'desaGelombang.desa',
+            'desaGelombang.desa.kecamatan',
             'desaGelombang.gelombang',
             'dosenPembimbingLapangan.user',
             'pesertaKkn',
@@ -48,6 +48,30 @@ class KelompokKknController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | Filter Kabupaten
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('kabupaten')) {
+            $query->whereHas('desaGelombang.desa.kecamatan', function ($q) use ($request) {
+                $q->where('kabupaten', $request->kabupaten);
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Filter Kecamatan
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('kecamatan_id')) {
+            $query->whereHas('desaGelombang.desa.kecamatan', function ($q) use ($request) {
+                $q->where('id', $request->kecamatan_id);
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
         | Filter Status
         |--------------------------------------------------------------------------
         */
@@ -61,6 +85,16 @@ class KelompokKknController extends Controller
 
         }
 
+        $kabupatens = \App\Models\Kecamatan::select('kabupaten')->distinct()->orderBy('kabupaten')->pluck('kabupaten');
+        $kecamatans = collect();
+        $selectedKabupaten = $request->get('kabupaten');
+
+        if ($selectedKabupaten) {
+            $kecamatans = \App\Models\Kecamatan::where('kabupaten', $selectedKabupaten)
+                ->orderBy('nama_kecamatan')
+                ->get();
+        }
+
         $kelompok = $query
             ->latest()
             ->paginate(10)
@@ -68,7 +102,7 @@ class KelompokKknController extends Controller
 
         return view(
             'kelompok-kkn.index',
-            compact('kelompok')
+            compact('kelompok', 'kabupatens', 'kecamatans', 'selectedKabupaten')
         );
     }
 

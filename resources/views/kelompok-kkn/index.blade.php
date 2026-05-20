@@ -40,6 +40,34 @@
 
                         <div class="col-md-3">
                             <div class="form-group mb-md-0">
+                                <label>Kabupaten</label>
+                                <select name="kabupaten" class="form-control" onchange="this.form.submit()">
+                                    <option value="">Semua Kabupaten</option>
+                                    @foreach($kabupatens as $kab)
+                                        <option value="{{ $kab }}" {{ request('kabupaten') == $kab ? 'selected' : '' }}>
+                                            {{ $kab }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group mb-md-0">
+                                <label>Kecamatan</label>
+                                <select name="kecamatan_id" class="form-control" onchange="this.form.submit()">
+                                    <option value="">Semua Kecamatan</option>
+                                    @foreach($kecamatans as $kec)
+                                        <option value="{{ $kec->id }}" {{ request('kecamatan_id') == $kec->id ? 'selected' : '' }}>
+                                            {{ $kec->nama_kecamatan }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group mb-md-0">
                                 <label>Status</label>
 
                                 <select name="status"
@@ -104,7 +132,7 @@
                         <thead class="thead-light">
                             <tr>
                                 <th>Kelompok</th>
-                                <th>Lokasi</th>
+                                <th>Kabupaten / Kecamatan</th>
                                 <th>DPL</th>
                                 <th>Kuota</th>
                                 <th>Status</th>
@@ -143,17 +171,14 @@
 
                                     </td>
 
-                                    {{-- LOKASI --}}
+                                    {{-- KABUPATEN / KECAMATAN --}}
                                     <td style="min-width: 220px;">
-
                                         <strong class="d-block">
-                                            {{ $item->desaGelombang->desa->nama_desa }}
+                                            {{ $item->desaGelombang->desa->kecamatan->kabupaten ?? '-' }}
                                         </strong>
-
                                         <small class="text-muted">
-                                            {{ $item->desaGelombang->gelombang->nama_gelombang }}
+                                            {{ $item->desaGelombang->desa->kecamatan->nama_kecamatan ?? '-' }}
                                         </small>
-
                                     </td>
 
                                     {{-- DPL --}}
