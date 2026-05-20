@@ -25,7 +25,20 @@ class WarAllocationService
         }
 
         try {
-            return $this->executeTransaction($session, $peserta, $kelompok);
+            $maxRetries = 3;
+            $attempt = 0;
+
+            while ($attempt < $maxRetries) {
+                try {
+                    return $this->executeTransaction($session, $peserta, $kelompok);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    $attempt++;
+                    if ($attempt >= $maxRetries || ! str_contains($e->getMessage(), 'Deadlock')) {
+                        throw $e;
+                    }
+                    usleep(rand(10000, 50000)); // 10-50ms delay before retry
+                }
+            }
         } finally {
             $this->lockService->releaseUserLock($session->id, $peserta->id);
         }
@@ -47,11 +60,13 @@ class WarAllocationService
 
             $kelompokKuota = KelompokKuota::where('kelompok_kkn_id', $kelompokLocked->id)
                 ->where('fakultas_id', $fakultasId)
+                ->orderBy('id')
                 ->lockForUpdate()
                 ->firstOrFail();
 
             $currentMembers = PesertaKkn::where('kelompok_kkn_id', $kelompokLocked->id)
                 ->with(['mahasiswa.prodi'])
+                ->orderBy('id')
                 ->lockForUpdate()
                 ->get()
                 ->toArray();
