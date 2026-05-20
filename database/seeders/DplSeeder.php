@@ -126,10 +126,16 @@ class DplSeeder extends Seeder
         ];
 
         foreach ($dpls as $data) {
-            $fakultas = \App\Models\Fakultas::where('nama_fakultas', $data['fakultas'])->first();
-            if (! $fakultas) {
-                $this->command?->warn('Fakultas tidak ditemukan: ' . $data['fakultas']);
-                continue;
+            $fakultas = null;
+            $fakultas_id = null;
+
+            if (! empty($data['fakultas'])) {
+                $fakultas = \App\Models\Fakultas::where('nama_fakultas', $data['fakultas'])->first();
+                if (! $fakultas) {
+                    $this->command?->warn('Fakultas tidak ditemukan: ' . $data['fakultas']);
+                    continue;
+                }
+                $fakultas_id = $fakultas->id;
             }
 
             $email = $data['nidn'] . '@ubt.ac.id';
@@ -149,7 +155,7 @@ class DplSeeder extends Seeder
                 ['user_id' => $user->id],
                 [
                     'nidn' => $data['nidn'],
-                    'fakultas_id' => $fakultas->id,
+                    'fakultas_id' => $fakultas_id,
                     'status' => 'aktif',
                 ]
             );
