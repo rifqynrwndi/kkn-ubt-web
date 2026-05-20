@@ -174,27 +174,32 @@ class WarStressTest extends Command
                     $successCount++;
                 } else {
                     $reason = str_replace('FAILED: ', '', $output);
-                    // Re-try dengan kelompok berikutnya kalau penuh
-                    if (str_contains($reason, 'penuh') && $groupIndex + 1 < $totalGroups) {
-                        $groupIndex++;
-                        $currentGroup = $targetKelompoks[$groupIndex];
+                    $retried = false;
 
-                        $retry = new SymfonyProcess([$php, $artisan, 'war:join-worker', $session->id, $currentGroup->id, $p['peserta']]);
+                    // Coba kelompok lain sampai berhasil atau semua dicoba
+                    for ($r = $groupIndex + 1; $r < $totalGroups; $r++) {
+                        $nextGroup = $targetKelompoks[$r];
+
+                        if ($nextGroup->fresh()->status === 'penuh') continue;
+
+                        $retry = new SymfonyProcess([$php, $artisan, 'war:join-worker', $session->id, $nextGroup->id, $p['peserta']]);
                         $retry->setTimeout($timeout);
                         $retry->run();
 
                         $retryOutput = trim($retry->getOutput());
                         if ($retry->isSuccessful()) {
-                            $this->line("<info>↻ [User {$p['peserta']} -> {$currentGroup->nama_kelompok}]</info> {$retryOutput}");
+                            $this->line("<info>↻ [User {$p['peserta']} -> {$nextGroup->nama_kelompok}]</info> {$retryOutput}");
                             $successCount++;
-                            continue;
+                            $retried = true;
+                            break;
                         }
-                        $reason = str_replace('FAILED: ', '', $retryOutput);
                     }
 
-                    $this->line("<error>✗ [User {$p['peserta']} -> {$p['kelompok_nama']}]</error> {$reason}");
-                    $failCount++;
-                    $failsByReason[$reason] = ($failsByReason[$reason] ?? 0) + 1;
+                    if (! $retried) {
+                        $this->line("<error>✗ [User {$p['peserta']}]</error> {$reason}");
+                        $failCount++;
+                        $failsByReason[$reason] = ($failsByReason[$reason] ?? 0) + 1;
+                    }
                 }
             }
         }
