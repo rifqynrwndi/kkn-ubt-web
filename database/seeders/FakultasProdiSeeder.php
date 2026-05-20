@@ -52,6 +52,10 @@ class FakultasProdiSeeder extends Seeder
                 'Keperawatan',
                 'Kebidanan',
             ],
+
+            'Kedokteran' => [
+                'Kedokteran',
+            ],
         ];
 
         foreach ($data as $namaFakultas => $prodis) {

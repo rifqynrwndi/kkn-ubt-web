@@ -17,6 +17,9 @@ class DatabaseSeeder extends Seeder
             // ── Data master UBT (fakultas & prodi asli) ──
             FakultasProdiSeeder::class,
 
+            // ── DPL (dosen pembimbing lapangan) ──
+            DplSeeder::class,
+
             // ── Gelombang: hanya dev/staging, production via admin UI ──
             GelombangSeeder::class,
 
