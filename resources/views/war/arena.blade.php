@@ -184,6 +184,18 @@
         background: #fafafa;
         border-bottom: 1px solid #f1f1f1;
     }
+    .kl-kabupaten-divider {
+        font-weight: 800;
+        font-size: 13px;
+        padding: 12px 18px;
+        color: #1a1a2e;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    [data-bs-theme="dark"] .kl-kabupaten-divider {
+        color: #f1f3f8;
+        border-bottom-color: rgba(255,255,255,.08);
+        background: rgba(255,255,255,.03);
+    }
 </style>
 @endpush
 
@@ -254,7 +266,7 @@
 
                     {{-- Kabupaten divider (hanya untuk kelompok tersedia) --}}
                     @if(!$isFull && $kab !== $currentKabupaten)
-                        <div class="kl-section-divider" style="font-weight:800;color:#1a1a2e;padding:12px 18px;font-size:13px;">
+                        <div class="kl-section-divider kl-kabupaten-divider">
                             <i class="fas fa-map-marker-alt text-danger mr-2"></i> {{ $kab }}
                         </div>
                         @php $currentKabupaten = $kab; @endphp
