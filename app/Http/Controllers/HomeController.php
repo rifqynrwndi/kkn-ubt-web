@@ -14,7 +14,25 @@ class HomeController extends Controller
             return $this->adminDashboard();
         }
 
+        if (auth()->user()->hasRole('pembimbing')) {
+            return $this->dplDashboard();
+        }
+
         return $this->userDashboard();
+    }
+
+    private function dplDashboard(): View
+    {
+        $dpl = auth()->user()->dosenPembimbingLapangan;
+
+        if ($dpl) {
+            $dpl->load(['kelompokKkn' => function ($q) {
+                $q->withCount('pesertaKkn')
+                  ->with(['desaGelombang.desa.kecamatan']);
+            }]);
+        }
+
+        return view('home-dpl', compact('dpl'));
     }
 
     private function adminDashboard(): View

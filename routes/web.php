@@ -19,6 +19,7 @@ use App\Http\Controllers\{
     DesaController,
     PendaftaranKknController,
     DokumenPendaftaranController,
+    DplController,
     VerifikasiDokumenController,
     KelompokKknController,
     WarAdminController,
@@ -130,6 +131,12 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
     */
 
     Route::get('/home', [HomeController::class, 'index'])->name('home');
+
+    Route::prefix('dpl')->name('dpl.')->middleware('role:pembimbing')->group(function () {
+        Route::get('/kelompok', [DplController::class, 'kelompokIndex'])->name('kelompok.index');
+        Route::get('/kelompok/{kelompok}', [DplController::class, 'kelompokShow'])->name('kelompok.show');
+        Route::get('/mahasiswa/{peserta}', [DplController::class, 'mahasiswaShow'])->name('mahasiswa.show');
+    });
 
     /*
     |--------------------------------------------------------------------------
