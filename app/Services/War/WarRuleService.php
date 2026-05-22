@@ -70,6 +70,12 @@ class WarRuleService
 
     public function checkProdiQuota(PesertaKkn $peserta, array $members): ?string
     {
+        $fakultas = $peserta->mahasiswa->prodi->fakultas;
+
+        if ($fakultas && $fakultas->programStudi()->count() <= 1) {
+            return null;
+        }
+
         $prodiId        = $peserta->mahasiswa->prodi_id;
         $countSameProdi = collect($members)->where('mahasiswa.prodi_id', $prodiId)->count();
 

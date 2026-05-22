@@ -36,7 +36,7 @@ class DosenPembimbingLapangan extends Model
 
     public function kelompokKkn()
     {
-        return $this->hasMany(KelompokKkn::class, 'dosen_pembimbing_id');
+        return $this->hasMany(KelompokKkn::class, 'dosen_pembimbing_lapangan_id');
     }
 
     /*

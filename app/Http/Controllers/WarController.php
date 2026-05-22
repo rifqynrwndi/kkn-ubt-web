@@ -151,7 +151,8 @@ class WarController extends Controller
                 )->count();
 
                 $fakOver = $kuotaFakultas && $fakCount >= $kuotaFakultas->kuota;
-                $prodiOver = $prodiCount >= \App\Services\War\WarRuleService::MAX_SAME_PRODI;
+                $fakProdiCount = $peserta->mahasiswa->prodi->fakultas->programStudi()->count();
+                $prodiOver = $fakProdiCount <= 1 ? false : ($prodiCount >= \App\Services\War\WarRuleService::MAX_SAME_PRODI);
 
                 $k->can_join = !$k->is_full && !$fakOver && !$prodiOver;
             })
@@ -306,7 +307,8 @@ class WarController extends Controller
                 $prodiCount = $k->pesertaKkn->filter(fn($p) => $p->mahasiswa?->prodi_id === $prodiId)->count();
 
                 $fakOver = $kuotaFakultas && $fakCount >= $kuotaFakultas->kuota;
-                $prodiOver = $prodiCount >= \App\Services\War\WarRuleService::MAX_SAME_PRODI;
+                $fakProdiCount = \App\Models\ProgramStudi::where('fakultas_id', $fakultasId)->count();
+                $prodiOver = $fakProdiCount <= 1 ? false : ($prodiCount >= \App\Services\War\WarRuleService::MAX_SAME_PRODI);
 
                 return [
                     'id'          => $k->id,
