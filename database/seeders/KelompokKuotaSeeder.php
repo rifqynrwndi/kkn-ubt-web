@@ -30,8 +30,8 @@ class KelompokKuotaSeeder extends Seeder
                     ],
                     [
                         'kuota'           => $kuota,
-                        'kuota_laki'      => 1,
-                        'kuota_perempuan' => $kuota === 3 ? 2 : 1,
+                        'kuota_laki'      => $kuota >= 5 ? 2 : 1,
+                        'kuota_perempuan' => $kuota >= 5 ? 3 : ($kuota === 3 ? 2 : 1),
                     ]
                 );
             }
@@ -44,6 +44,10 @@ class KelompokKuotaSeeder extends Seeder
     private function resolveKuota(string $namaFakultas): int
     {
         if (str_contains($namaFakultas, 'Keguruan')) {
+            return 5;
+        }
+
+        if (str_contains($namaFakultas, 'Ekonomi')) {
             return 3;
         }
 

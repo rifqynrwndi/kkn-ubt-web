@@ -113,15 +113,19 @@ class DesaTambahSeeder extends Seeder
 
                     if ($desaGelombang->wasRecentlyCreated) {
                         foreach ($fakultasList as $fakultas) {
-                            $kuota = str_contains($fakultas->nama_fakultas, 'Keguruan') ? 3 : 2;
+                            $kuota = match (true) {
+                                str_contains($fakultas->nama_fakultas, 'Keguruan') => 5,
+                                str_contains($fakultas->nama_fakultas, 'Ekonomi') => 3,
+                                default => 2,
+                            };
 
                             KelompokKuota::firstOrCreate([
                                 'kelompok_kkn_id' => $desaGelombang->kelompokKkn->first()?->id,
                                 'fakultas_id'     => $fakultas->id,
                             ], [
                                 'kuota'           => $kuota,
-                                'kuota_laki'      => 1,
-                                'kuota_perempuan' => $kuota === 3 ? 2 : 1,
+                                'kuota_laki'      => $kuota >= 5 ? 2 : 1,
+                                'kuota_perempuan' => $kuota >= 5 ? 3 : ($kuota === 3 ? 2 : 1),
                             ]);
                         }
                     }
