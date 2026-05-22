@@ -95,6 +95,10 @@ class GelombangController extends Controller
 
     public function destroy(Gelombang $gelombang)
     {
+        if ($gelombang->pesertaKkn()->exists()) {
+            return back()->with('error', 'Gelombang tidak dapat dihapus karena sudah memiliki peserta.');
+        }
+
         $gelombang->delete();
 
         return back()->with('success', 'Gelombang berhasil dihapus.');

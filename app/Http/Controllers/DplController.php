@@ -85,7 +85,8 @@ class DplController extends Controller
 
         // Pastikan mahasiswa ini di kelompok binaan DPL
         abort_if(
-            $peserta->kelompokKkn->dosen_pembimbing_lapangan_id !== optional($dpl)->id,
+            ! $peserta->kelompokKkn
+            || $peserta->kelompokKkn->dosen_pembimbing_lapangan_id !== optional($dpl)->id,
             403
         );
 

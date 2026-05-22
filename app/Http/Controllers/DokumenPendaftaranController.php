@@ -91,7 +91,7 @@ class DokumenPendaftaranController extends Controller
             ! auth()->user()->hasRole('superadmin')
         ) {
 
-            abort(403);
+            abort(404);
         }
 
         /*
@@ -99,20 +99,18 @@ class DokumenPendaftaranController extends Controller
         | File Not Found
         |--------------------------------------------------------------------------
         */
-        if (
-            ! $dokumen->file ||
-            ! Storage::disk('local')->exists(
-                $dokumen->file->path
-            )
-        ) {
-
+        if (! $dokumen->file) {
             abort(404, 'File tidak ditemukan.');
         }
 
-        return Storage::disk('local')->response(
-            $dokumen->file->path,
-            $dokumen->file->original_name
-        );
+        try {
+            return Storage::disk('local')->response(
+                $dokumen->file->path,
+                $dokumen->file->original_name
+            );
+        } catch (\Throwable) {
+            abort(404, 'File tidak ditemukan.');
+        }
     }
 
     public function create(): View|RedirectResponse

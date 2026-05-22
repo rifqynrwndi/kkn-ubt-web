@@ -94,8 +94,10 @@ class NotificationController extends Controller
 
         $notification->markAsRead();
 
-        return isset($notification->data['action_url'])
-            ? redirect($notification->data['action_url'])
+        $url = $notification->data['action_url'] ?? null;
+
+        return ($url && ! parse_url($url, PHP_URL_HOST))
+            ? redirect($url)
             : redirect()->route('notifications.index');
     }
 
@@ -137,6 +139,15 @@ class NotificationController extends Controller
             'success',
             'Riwayat notifikasi dan notifikasi penerima berhasil dihapus.'
         );
+    }
+
+    public function history()
+    {
+        $logs = NotificationLog::with('sentBy')
+            ->latest()
+            ->paginate(20);
+
+        return view('notifications.history', compact('logs'));
     }
 
     public function clearHistory(): RedirectResponse

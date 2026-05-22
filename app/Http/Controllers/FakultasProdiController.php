@@ -61,8 +61,12 @@ class FakultasProdiController extends Controller
 
     public function deleteFakultas(Fakultas $fakultas)
     {
+        if ($fakultas->programStudi()->exists()) {
+            return back()->with('error', 'Fakultas tidak dapat dihapus karena masih memiliki program studi.');
+        }
+
         $fakultas->delete();
-        return back();
+        return back()->with('success', 'Fakultas berhasil dihapus.');
     }
 
     // PRODI
@@ -111,7 +115,11 @@ class FakultasProdiController extends Controller
 
     public function deleteProdi(ProgramStudi $prodi)
     {
+        if (\App\Models\Mahasiswa::where('prodi_id', $prodi->id)->exists()) {
+            return back()->with('error', 'Prodi tidak dapat dihapus karena masih memiliki mahasiswa.');
+        }
+
         $prodi->delete();
-        return back();
+        return back()->with('success', 'Prodi berhasil dihapus.');
     }
 }

@@ -166,6 +166,15 @@ class MahasiswaManagementController extends Controller
         $user = User::with('mahasiswa')->findOrFail($id);
 
         if ($user->mahasiswa) {
+            $pesertaKkn = \App\Models\PesertaKkn::where('mahasiswa_id', $user->id)->first();
+
+            if ($pesertaKkn?->kelompok_kkn_id) {
+                return back()->with('error', 'Mahasiswa tidak dapat dihapus karena masih terdaftar di kelompok KKN.');
+            }
+
+            \App\Models\PesertaKkn::where('mahasiswa_id', $user->id)->delete();
+            \App\Models\WarParticipant::where('peserta_kkn_id', $pesertaKkn?->id)->delete();
+
             $user->mahasiswa->delete();
         }
 

@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Fakultas;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
 use App\Models\DosenPembimbingLapangan;
@@ -54,12 +56,12 @@ class DosenPembimbingLapanganController extends Controller
 
         DB::transaction(function () use ($request) {
 
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-
-                'password' => Hash::make('password'),
-            ]);
+        $user = User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make(Str::random(20)),
+            'email_verified_at' => now(),
+        ]);
 
             $user->assignRole('pembimbing');
 
@@ -148,6 +150,10 @@ class DosenPembimbingLapanganController extends Controller
     {
         $dpl = DosenPembimbingLapangan::with('user')
             ->findOrFail($id);
+
+        if ($dpl->kelompokKkn()->exists()) {
+            return back()->with('error', 'DPL tidak dapat dihapus karena masih membimbing kelompok.');
+        }
 
         $dpl->user->delete();
 
