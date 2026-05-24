@@ -63,8 +63,14 @@
 
                     </a>
                 </li>
-                {{-- @role('mahasiswa')
-                @if(auth()->user()->mahasiswa && auth()->user()->mahasiswa->is_biodata_complete)
+                {{-- Dokumen Pendaftaran (hanya jika belum approved) --}}
+                @php
+                    $pesertaAktif = \App\Models\PesertaKkn::where('mahasiswa_id', auth()->id())
+                        ->whereHas('gelombang', fn($q) => $q->whereIn('status', ['pendaftaran', 'berjalan']))
+                        ->first();
+                    $showDokumen = $pesertaAktif && in_array($pesertaAktif->status_pendaftaran, ['draft', 'pending_documents', 'pending_verification', 'revision']);
+                @endphp
+                @if($showDokumen)
                     <li class="{{ Request::is('dokumen-pendaftaran*') ? 'active' : '' }}">
                         <a class="nav-link"
                            href="{{ route('dokumen-pendaftaran.index') }}">
@@ -75,7 +81,6 @@
                     </a>
                 </li>
                 @endif
-                @endrole --}}
 
                 {{-- nanti tampil kalau sudah masuk kelompok --}}
                 {{--
