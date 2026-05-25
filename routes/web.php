@@ -39,6 +39,9 @@ Route::get('/', fn () => view('auth.login'));
 
 Auth::routes();
 
+// Custom error pages
+Route::get('/errors/413', fn () => view('errors.413'))->name('error.413');
+
 /*
 |--------------------------------------------------------------------------
 | Authenticated Users
