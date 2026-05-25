@@ -111,6 +111,14 @@
                             @php
                                 $recipients = $item->recipients ?? [];
 
+                                // Support both old (flat array) and new format (mode + count + preview)
+                                $displayCount = count($recipients);
+                                if (isset($recipients['mode'])) {
+                                    $displayCount = $recipients['count'];
+                                    $recipients = $recipients['preview'] ?? [];
+                                }
+                                $totalRecipients = count($recipients);
+
                                 $unreadCount = DB::table('notifications')
                                     ->whereNull('read_at')
                                     ->where('data->notification_log_id', $item->id)
@@ -133,11 +141,11 @@
 
                                 <td class="recipient-column">
 
-                                    @if(count($recipients) == 0)
+                                    @if($totalRecipients == 0)
 
-                                        <span class="text-muted">-</span>
+                                        <span class="text-muted">{{ $displayCount }} penerima</span>
 
-                                    @elseif(count($recipients) <= 3)
+                                    @elseif($totalRecipients <= 3)
 
                                         <div class="recipient-wrap">
                                             @foreach($recipients as $r)
@@ -161,7 +169,7 @@
 
                                         <details>
                                             <summary style="cursor:pointer;">
-                                                +{{ count($recipients) - 2 }} lainnya
+                                                +{{ $totalRecipients - 2 }} dari {{ $displayCount }} penerima
                                             </summary>
 
                                             <div class="recipient-wrap mt-2">
