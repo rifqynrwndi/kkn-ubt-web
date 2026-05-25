@@ -1,10 +1,9 @@
+@auth
 @php
     $isMahasiswa = auth()->user()->hasRole('mahasiswa');
     $isPembimbing = auth()->user()->hasRole('pembimbing');
     $biodataIncomplete = $isMahasiswa && !auth()->user()->mahasiswa?->is_biodata_complete;
 @endphp
-
-@auth
 <div class="main-sidebar sidebar-style-2">
     <aside id="sidebar-wrapper">
         <div class="sidebar-brand">
