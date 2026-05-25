@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use App\Models\Fakultas;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
