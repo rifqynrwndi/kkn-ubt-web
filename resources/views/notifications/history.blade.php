@@ -17,7 +17,15 @@
                                 <td>{{ $log->title }}</td>
                                 <td>{{ Str::limit($log->message, 60) }}</td>
                                 <td><span class="badge badge-{{ $log->type == 'warning' ? 'warning' : ($log->type == 'danger' ? 'danger' : 'info') }}">{{ $log->type }}</span></td>
-                                <td>{{ count(json_decode($log->recipients, true) ?? []) }} orang</td>
+                                <td>
+                                    @php
+                                        $recipients = $log->recipients;
+                                        $count = is_array($recipients)
+                                            ? ($recipients['count'] ?? count($recipients))
+                                            : 0;
+                                    @endphp
+                                    {{ $count }} orang
+                                </td>
                                 <td>{{ $log->created_at->diffForHumans() }}</td>
                                 <td>
                                     <form action="{{ route('notifications.admin.history.destroy', $log->id) }}" method="POST" onsubmit="return confirm('Hapus?')">

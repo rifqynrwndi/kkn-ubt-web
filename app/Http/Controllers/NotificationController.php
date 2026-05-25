@@ -64,7 +64,11 @@ class NotificationController extends Controller
             'title' => $request->title,
             'message' => $request->message,
             'type' => $request->type,
-            'recipients' => $users->pluck('name')->toArray(),
+            'recipients' => [
+                'mode' => $request->recipient_mode,
+                'count' => $users->count(),
+                'preview' => $users->take(5)->pluck('name')->toArray(),
+            ],
             'action_url' => $request->action_url,
             'action_text' => $request->action_text ?: 'View',
             'sent_by' => auth()->id(),
