@@ -72,7 +72,7 @@ class WarRuleService
     {
         $fakultas = $peserta->mahasiswa->prodi->fakultas;
 
-        if ($fakultas && $fakultas->programStudi()->count() <= 1) {
+        if ($fakultas && $fakultas->prodi()->count() <= 1) {
             return null;
         }
 

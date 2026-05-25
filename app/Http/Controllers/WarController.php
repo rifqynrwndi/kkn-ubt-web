@@ -151,7 +151,7 @@ class WarController extends Controller
                 )->count();
 
                 $fakOver = $kuotaFakultas && $fakCount >= $kuotaFakultas->kuota;
-                $fakProdiCount = $peserta->mahasiswa->prodi->fakultas->programStudi()->count();
+                $fakProdiCount = $peserta->mahasiswa->prodi->fakultas->prodi()->count();
                 $prodiOver = $fakProdiCount <= 1 ? false : ($prodiCount >= \App\Services\War\WarRuleService::MAX_SAME_PRODI);
 
                 $k->can_join = !$k->is_full && !$fakOver && !$prodiOver;
