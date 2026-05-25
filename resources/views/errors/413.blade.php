@@ -14,7 +14,7 @@
     Swal.fire({
         icon: 'error',
         title: 'File Terlalu Besar',
-        text: 'Ukuran file melebihi batas maksimal. Silakan kompres atau perkecil file Anda (maks 50MB untuk dokumen, 2MB untuk foto).',
+        text: 'Ukuran file melebihi batas maksimal. Silakan kompres atau perkecil file Anda.',
         confirmButtonColor: '#6777ef',
         background: isDark ? '#1f2430' : '#fff',
         color: isDark ? '#d6d9df' : '#545454',
