@@ -16,6 +16,8 @@ class KelompokKkn extends Model
         'kuota',
         'status',
         'ketua_peserta_id',
+        'foto_kelompok',
+        'status_tahap',
     ];
 
     public function desaGelombang()

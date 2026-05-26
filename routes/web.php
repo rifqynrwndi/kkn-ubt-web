@@ -22,6 +22,7 @@ use App\Http\Controllers\{
     DplController,
     VerifikasiDokumenController,
     KelompokKknController,
+    KelompokController,
     WarAdminController,
     WarController,
     WarMonitorController,
@@ -139,6 +140,11 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
         Route::get('/kelompok', [DplController::class, 'kelompokIndex'])->name('kelompok.index');
         Route::get('/kelompok/{kelompok}', [DplController::class, 'kelompokShow'])->name('kelompok.show');
         Route::get('/mahasiswa/{peserta}', [DplController::class, 'mahasiswaShow'])->name('mahasiswa.show');
+    });
+
+    Route::prefix('kelompok')->name('kelompok.')->group(function () {
+        Route::get('/', [KelompokController::class, 'index'])->name('index');
+        Route::post('/upload-photo', [KelompokController::class, 'uploadPhoto'])->name('upload-photo');
     });
 
     /*

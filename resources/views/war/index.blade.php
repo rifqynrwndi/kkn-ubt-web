@@ -217,7 +217,7 @@
                 <div>
                     Kamu sudah bergabung ke kelompok
                     <strong>{{ $peserta?->kelompokKkn?->nama_kelompok }}</strong>.
-                    <a href="{{ route('war.joined', $activeWar) }}" class="ml-2 font-weight-bold">
+                    <a href="{{ route('kelompok.index') }}" class="ml-2 font-weight-bold">
                         Lihat detail &rarr;
                     </a>
                 </div>
