@@ -300,7 +300,7 @@
     // Open proposal tab if there's an error or after submission
     @if($errors->any() || session('_tab') === 'proposal')
         document.querySelector('[data-tab="proposal"]').click();
-        @if($errors->any() || !$proposal || in_array($proposal->status ?? '', ['draft', 'ditolak']))
+        @if($errors->any())
             setTimeout(() => toggleProposalEdit(), 200);
         @endif
     @endif
