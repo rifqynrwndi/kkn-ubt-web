@@ -56,7 +56,7 @@
     .proposal-doc-header h3 { font-size: 1.1rem; font-weight: 700; color: #0f3460; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
     .proposal-doc-header h2 { font-size: 1.3rem; font-weight: 800; color: #1a1a2e; margin: 8px 0; }
     .proposal-doc-header .doc-meta { font-size: .85rem; color: #6c757d; }
-    .proposal-doc-body h4 { font-size: 1rem; font-weight: 700; color: #0f3460; margin:2px 0 10px; text-transform: uppercase; letter-spacing: .3px; }
+    .proposal-doc-body h4 { font-size: 1rem; font-weight: 700; color: #0f3460; margin: 24px 0 10px; text-transform: uppercase; text-align: center; letter-spacing: .3px; }
     .proposal-doc-body p { text-align: justify; line-height: 1.8; margin-bottom: 20px; font-size: .9rem; }
     [data-bs-theme="dark"] .proposal-doc { background: #1f2430; }
     [data-bs-theme="dark"] .proposal-doc-header { border-bottom-color: #374151; }
