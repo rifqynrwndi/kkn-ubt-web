@@ -58,6 +58,7 @@
     .proposal-doc-header .doc-meta { font-size: .85rem; color: #6c757d; text-align: center; }
     .proposal-doc-body h4 { font-size: 1rem; font-weight: 700; color: #0f3460; margin: 24px 0 10px; text-transform: uppercase; text-align: center; letter-spacing: .3px; }
     .proposal-doc-body p { text-align: justify; line-height: 1.8; margin-bottom: 20px; font-size: .9rem; }
+    .proposal-doc-body p.text-muted { text-align: center; }
     [data-bs-theme="dark"] .proposal-doc { background: #1f2430; }
     [data-bs-theme="dark"] .proposal-doc-header { border-bottom-color: #374151; }
     [data-bs-theme="dark"] .proposal-doc-header h3, [data-bs-theme="dark"] .proposal-doc-body h4 { color: #a4b0f5; }
@@ -212,7 +213,11 @@
                         $content = $proposal->$field ?? null;
                         $isEmpty = !$content || trim(strip_tags($content)) === '';
                     @endphp
-                    <p>{!! $isEmpty ? '<span class="text-muted">—</span>' : $content !!}</p>
+                    @if($isEmpty)
+                    <p class="text-muted text-center">Belum ada {{ $label }}</p>
+                    @else
+                    <p>{!! $content !!}</p>
+                    @endif
                     @endforeach
                 </div>
             </div>

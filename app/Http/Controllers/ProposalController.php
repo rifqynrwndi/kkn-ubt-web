@@ -52,13 +52,16 @@ class ProposalController extends Controller
         $kelompok = $this->getKelompok();
         abort_if(! $kelompok, 404);
 
+        $action = $request->input('action', 'draft');
+        $isSubmit = $action === 'submit';
+
         $request->validate([
-            'pendahuluan' => 'required|string|min:200',
-            'tujuan' => 'required|string|min:100',
-            'manfaat' => 'required|string|min:150',
-            'hasil_observasi' => 'nullable|string|min:200',
-            'rancangan_program' => 'required|string|min:300',
-            'solusi_ide' => 'required|string|min:200',
+            'pendahuluan' => $isSubmit ? 'required|string|min:200' : 'nullable|string',
+            'tujuan' => $isSubmit ? 'required|string|min:100' : 'nullable|string',
+            'manfaat' => $isSubmit ? 'required|string|min:150' : 'nullable|string',
+            'hasil_observasi' => 'nullable|string',
+            'rancangan_program' => $isSubmit ? 'required|string|min:300' : 'nullable|string',
+            'solusi_ide' => $isSubmit ? 'required|string|min:200' : 'nullable|string',
         ]);
 
         $proposal = $this->getProposal($kelompok->id);
@@ -66,8 +69,6 @@ class ProposalController extends Controller
         if ($proposal && ! in_array($proposal->status, ['draft', 'ditolak'])) {
             return back()->with('error', 'Tidak dapat menyimpan. Status proposal sudah diajukan.');
         }
-
-        $action = $request->input('action', 'draft');
 
         KelompokProposal::updateOrCreate(
             ['kelompok_kkn_id' => $kelompok->id],
