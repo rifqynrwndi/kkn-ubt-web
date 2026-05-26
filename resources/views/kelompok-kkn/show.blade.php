@@ -356,6 +356,79 @@
 
         </div>
 
+        {{-- ============================================ --}}
+        {{-- POST-WAR MODULES --}}
+        {{-- ============================================ --}}
+
+        {{-- STATUS STAGE --}}
+        <div class="card shadow-sm mt-3">
+            <div class="card-header"><h5><i class="fas fa-tasks mr-2"></i> Status Tahap KKN</h5></div>
+            <div class="card-body">
+                <div class="d-flex justify-content-center flex-wrap gap-1 mb-3">
+                    @foreach($statusStages as $i => $s)
+                    <div class="text-center px-2" style="min-width:85px;">
+                        <div style="width:30px;height:30px;border-radius:50%;margin:0 auto 3px;background:{{ $i <= (int)$kelompok_kkn->status_tahap ? '#6777ef' : '#e0e0e0' }};color:{{ $i <= (int)$kelompok_kkn->status_tahap ? '#fff' : '#999' }};font-weight:800;font-size:12px;line-height:30px;">{{ $i }}</div>
+                        <small style="font-size:9px;color:{{ $i === (int)$kelompok_kkn->status_tahap ? '#6777ef' : '#adb5bd' }};font-weight:{{ $i === (int)$kelompok_kkn->status_tahap ? '700' : '400' }};">{{ $s['nama'] }}</small>
+                    </div>
+                    @if($i < 7)<div style="width:20px;height:2px;background:{{ $i < (int)$kelompok_kkn->status_tahap ? '#6777ef' : '#e0e0e0' }};margin-top:14px;flex-shrink:0;"></div>@endif
+                    @endforeach
+                </div>
+                <div class="alert alert-primary text-center mb-0"><strong>Tahap Saat Ini: {{ $statusCurrent['nama'] }}</strong></div>
+            </div>
+        </div>
+
+        {{-- PROPOSAL --}}
+        @if($proposal)
+        <div class="card shadow-sm mt-3">
+            <div class="card-header"><h5><i class="fas fa-file-alt mr-2"></i> Proposal — <span class="badge badge-{{ $proposal->status==='disetujui'?'success':($proposal->status==='ditolak'?'danger':'info') }}">{{ $proposal->status }}</span></h5></div>
+            <div class="card-body">
+                @foreach(['pendahuluan'=>'Pendahuluan','tujuan'=>'Tujuan','manfaat'=>'Manfaat','hasil_observasi'=>'Hasil Observasi','rancangan_program'=>'Rancangan Program','solusi_ide'=>'Solusi & Ide'] as $f=>$l)
+                <h6 class="font-weight-bold text-primary">{{ $l }}</h6>
+                <p style="font-size:13px;text-align:justify;">{!! $proposal->$f ?: '<span class="text-muted">—</span>' !!}</p>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- TUGAS --}}
+        @if($tugasList->count())
+        <div class="card shadow-sm mt-3">
+            <div class="card-header"><h5><i class="fas fa-upload mr-2"></i> Pengumpulan Tugas</h5></div>
+            <div class="card-body p-0">
+                @foreach($tugasList as $kat => $items)
+                <div class="p-3 border-bottom"><strong>{{ ['tugas_kelompok'=>'Tugas Kelompok','luaran_wajib'=>'Luaran Wajib','luaran_lain'=>'Luaran Lain','laporan'=>'Laporan'][$kat] ?? $kat }}</strong></div>
+                @foreach($items as $t)
+                <div class="px-3"><strong class="small">{{ $t->nama_tugas }}</strong>
+                    @if($t->submissions->count())
+                    <table class="table table-sm"><tr><th>Judul</th><th>Oleh</th><th>Status</th></tr>
+                    @foreach($t->submissions as $s)
+                    <tr><td>{{ $s->judul }}</td><td>{{ $s->pesertaKkn->mahasiswa->user->name ?? '-' }}</td><td><span class="badge badge-{{ $s->status==='diterima'?'success':($s->status==='ditolak'?'danger':'info') }}">{{ $s->status }}</span></td></tr>
+                    @endforeach</table>
+                    @else <p class="text-muted small px-3 pb-2">Belum ada pengumpulan</p> @endif
+                </div>
+                @endforeach
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- PENILAIAN --}}
+        @if($komponenList->count())
+        <div class="card shadow-sm mt-3">
+            <div class="card-header"><h5><i class="fas fa-star mr-2"></i> Penilaian</h5></div>
+            <div class="card-body p-0"><table class="table table-sm mb-0"><tbody>
+                @foreach($komponenList as $k)
+                @php $nilai = $penilaianData[$k->id]->nilai ?? null; @endphp
+                <tr>
+                    <td width="50"><span class="badge badge-secondary">{{ $k->bobot }}%</span></td>
+                    <td>{{ $k->nama_komponen }} <small class="text-muted">({{ $k->kategori==='dpl'?'DPL':'LPPM' }})</small></td>
+                    <td width="80"><strong>{{ $nilai !== null ? number_format($nilai,2) : '-' }}</strong></td>
+                </tr>
+                @endforeach
+            </tbody></table></div>
+        </div>
+        @endif
+
     </div>
 
 </section>

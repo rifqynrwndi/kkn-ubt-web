@@ -28,6 +28,7 @@ use App\Http\Controllers\{
     TugasController,
     LogBookController,
     PenilaianController,
+    TugasAdminController,
     WarAdminController,
     WarController,
     WarMonitorController,
@@ -428,6 +429,12 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
             Route::put('/dokumen/{id}', [VerifikasiDokumenController::class, 'update'])->name('update');
             Route::post('/bulk-approve',[VerifikasiDokumenController::class, 'bulkApprove'])->name('bulk-approve');
             Route::put('/{peserta}/bulk-update',[VerifikasiDokumenController::class, 'bulkUpdate'])->name('bulk-update');
+        });
+
+        Route::prefix('admin/tugas')->name('admin.tugas.')->group(function () {
+            Route::get('/', [TugasAdminController::class, 'index'])->name('index');
+            Route::post('/', [TugasAdminController::class, 'store'])->name('store');
+            Route::delete('/{tugas}', [TugasAdminController::class, 'destroy'])->name('destroy');
         });
 
         /*

@@ -177,20 +177,27 @@ class KelompokKknController extends Controller
     ): View {
 
         $kelompok_kkn->load([
-
             'desaGelombang.desa',
             'desaGelombang.gelombang',
-
             'dosenPembimbingLapangan.user',
-
             'pesertaKkn.mahasiswa.user',
             'pesertaKkn.mahasiswa.prodi.fakultas',
-
+            'desaGelombang.desa.kecamatan',
         ]);
+
+        $proposal = \App\Models\KelompokProposal::where('kelompok_kkn_id', $kelompok_kkn->id)->first();
+        $statusService = app(\App\Services\StatusService::class);
+        $statusStages = \App\Services\StatusService::STAGES;
+        $statusCurrent = $statusService->getCurrentStage($kelompok_kkn);
+        $statusHistory = $statusService->getHistory($kelompok_kkn);
+        $tugasList = \App\Models\TugasKelompok::where('kelompok_kkn_id', $kelompok_kkn->id)->with(['submissions.pesertaKkn.mahasiswa.user'])->get()->groupBy('kategori');
+        $logbookData = \App\Models\LogBook::where('kelompok_kkn_id', $kelompok_kkn->id)->with(['pesertaKkn.mahasiswa.user'])->latest('tanggal')->get()->groupBy('peserta_kkn_id');
+        $komponenList = \App\Models\PenilaianKomponen::orderBy('urutan')->get();
+        $penilaianData = \App\Models\PenilaianKelompok::where('kelompok_kkn_id', $kelompok_kkn->id)->with('komponen')->get()->keyBy('komponen_id');
 
         return view(
             'kelompok-kkn.show',
-            compact('kelompok_kkn')
+            compact('kelompok_kkn', 'proposal', 'statusStages', 'statusCurrent', 'statusHistory', 'tugasList', 'logbookData', 'komponenList', 'penilaianData')
         );
     }
 

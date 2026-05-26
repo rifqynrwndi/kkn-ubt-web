@@ -63,7 +63,17 @@ class DplController extends Controller
             'ketua.mahasiswa.user',
         ]);
 
-        return view('dpl.kelompok-show', compact('kelompok'));
+        $proposal = \App\Models\KelompokProposal::where('kelompok_kkn_id', $kelompok->id)->first();
+        $statusService = app(\App\Services\StatusService::class);
+        $statusStages = \App\Services\StatusService::STAGES;
+        $statusCurrent = $statusService->getCurrentStage($kelompok);
+        $statusHistory = $statusService->getHistory($kelompok);
+        $tugasList = \App\Models\TugasKelompok::where('kelompok_kkn_id', $kelompok->id)->with(['submissions.pesertaKkn.mahasiswa.user'])->get()->groupBy('kategori');
+        $logbookData = \App\Models\LogBook::where('kelompok_kkn_id', $kelompok->id)->with(['pesertaKkn.mahasiswa.user'])->latest('tanggal')->get()->groupBy('peserta_kkn_id');
+        $komponenList = \App\Models\PenilaianKomponen::orderBy('urutan')->get();
+        $penilaianData = \App\Models\PenilaianKelompok::where('kelompok_kkn_id', $kelompok->id)->with('komponen')->get()->keyBy('komponen_id');
+
+        return view('dpl.kelompok-show', compact('kelompok', 'proposal', 'statusStages', 'statusCurrent', 'statusHistory', 'tugasList', 'logbookData', 'komponenList', 'penilaianData'));
     }
 
     /*
