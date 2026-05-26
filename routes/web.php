@@ -164,6 +164,7 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
             Route::post('/{kelompok}', [TugasController::class, 'store'])->name('store');
             Route::delete('/{tugas}', [TugasController::class, 'destroy'])->name('destroy');
             Route::post('/{tugas}/submit', [TugasController::class, 'submit'])->name('submit');
+            Route::get('/submit', [TugasController::class, 'create'])->name('create');
             Route::post('/submission/{submission}/review', [TugasController::class, 'review'])->name('review');
         });
     });

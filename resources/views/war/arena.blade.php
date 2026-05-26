@@ -392,32 +392,21 @@
         .then(response => response.json().then(data => ({status: response.status, body: data})))
         .then(res => {
             if (res.status === 200 && res.body.success) {
-                Swal.fire({
-                    icon: 'success',
+                iziToast.success({
                     title: 'Berhasil!',
-                    text: 'Kamu berhasil bergabung ke kelompok.',
-                    confirmButtonColor: '#6777ef'
-                }).then(() => {
-                    window.location.href = "{{ route('war.joined', $session->id) }}";
+                    message: 'Kamu berhasil bergabung ke kelompok.',
+                    position: 'topRight',
+                    timeout: 3000,
+                    onClosed: function() { window.location.href = "{{ route('war.joined', $session->id) }}"; }
                 });
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal!',
-                    text: res.body.message || 'Terjadi kesalahan. Coba lagi.',
-                    confirmButtonColor: '#6777ef'
-                });
+                iziToast.error({ title: 'Gagal!', message: res.body.message || 'Terjadi kesalahan. Coba lagi.', position: 'topRight', timeout: 8000 });
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-fist-raised mr-1"></i> Ambil';
             }
         })
         .catch(() => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Koneksi Bermasalah',
-                text: 'Tidak dapat terhubung ke server. Periksa koneksi Anda.',
-                confirmButtonColor: '#6777ef'
-            });
+            iziToast.error({ title: 'Koneksi Bermasalah', message: 'Tidak dapat terhubung ke server.', position: 'topRight', timeout: 8000 });
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-fist-raised mr-1"></i> Ambil';
         });

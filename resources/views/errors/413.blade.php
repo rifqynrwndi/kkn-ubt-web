@@ -4,23 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Terlalu Besar</title>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/izitoast/dist/css/iziToast.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
 </head>
 <body>
 <script>
-    const isDark = localStorage.getItem('theme') === 'dark' ||
-        (localStorage.getItem('theme') === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-    Swal.fire({
-        icon: 'error',
+    iziToast.error({
         title: 'File Terlalu Besar',
-        text: 'Ukuran file melebihi batas maksimal. Silakan kompres atau perkecil file Anda.',
-        confirmButtonColor: '#6777ef',
-        background: isDark ? '#1f2430' : '#fff',
-        color: isDark ? '#d6d9df' : '#545454',
-        confirmButtonText: 'Kembali'
-    }).then(() => {
-        history.back();
+        message: 'Ukuran file melebihi batas maksimal. Maks 50MB untuk dokumen, 2MB untuk foto.',
+        position: 'topRight',
+        timeout: 8000,
+        onClosed: function() { history.back(); }
     });
 </script>
 </body>

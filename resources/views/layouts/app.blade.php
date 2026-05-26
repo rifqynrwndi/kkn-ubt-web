@@ -106,52 +106,29 @@
     </script>
 
 
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- IziToast -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/izitoast/dist/css/iziToast.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
 
-    <!-- Flash Messages via SweetAlert2 -->
-    @if(session('success') || session('error') || session('info') || session('warning'))
+    <!-- Flash Messages via IziToast -->
+    @if(session('success'))
     <script>
-    (function () {
-        var theme = document.documentElement.getAttribute('data-bs-theme');
-        var isDark = theme === 'dark';
-        @if(session('success'))
-        Swal.fire({
-            icon: 'success', title: 'Berhasil!',
-            text: '{!! addslashes(session('success')) !!}',
-            confirmButtonColor: '#6777ef',
-            background: isDark ? '#1f2430' : '#fff',
-            color: isDark ? '#d6d9df' : '#545454',
-        });
-        @endif
-        @if(session('error'))
-        Swal.fire({
-            icon: 'error', title: 'Gagal!',
-            text: '{!! addslashes(session('error')) !!}',
-            confirmButtonColor: '#6777ef',
-            background: isDark ? '#1f2430' : '#fff',
-            color: isDark ? '#d6d9df' : '#545454',
-        });
-        @endif
-        @if(session('info'))
-        Swal.fire({
-            icon: 'info', title: 'Info',
-            text: '{!! addslashes(session('info')) !!}',
-            confirmButtonColor: '#6777ef',
-            background: isDark ? '#1f2430' : '#fff',
-            color: isDark ? '#d6d9df' : '#545454',
-        });
-        @endif
-        @if(session('warning'))
-        Swal.fire({
-            icon: 'warning', title: 'Perhatian!',
-            text: '{!! addslashes(session('warning')) !!}',
-            confirmButtonColor: '#6777ef',
-            background: isDark ? '#1f2430' : '#fff',
-            color: isDark ? '#d6d9df' : '#545454',
-        });
-        @endif
-    })();
+        iziToast.success({ title: 'Berhasil', message: '{!! addslashes(session('success')) !!}', position: 'topRight', timeout: 5000 });
+    </script>
+    @endif
+    @if(session('error'))
+    <script>
+        iziToast.error({ title: 'Gagal', message: '{!! addslashes(session('error')) !!}', position: 'topRight', timeout: 8000 });
+    </script>
+    @endif
+    @if(session('info'))
+    <script>
+        iziToast.info({ title: 'Info', message: '{!! addslashes(session('info')) !!}', position: 'topRight', timeout: 5000 });
+    </script>
+    @endif
+    @if(session('warning'))
+    <script>
+        iziToast.warning({ title: 'Perhatian', message: '{!! addslashes(session('warning')) !!}', position: 'topRight', timeout: 6000 });
     </script>
     @endif
 

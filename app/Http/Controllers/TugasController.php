@@ -7,9 +7,19 @@ use App\Models\TugasSubmission;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 class TugasController extends Controller
 {
+    public function create(): View
+    {
+        $mhs = auth()->user()->mahasiswa;
+        abort_if(!$mhs, 404);
+        $peserta = \App\Models\PesertaKkn::where('mahasiswa_id', $mhs->user_id)->whereNotNull('kelompok_kkn_id')->firstOrFail();
+        $tugasList = TugasKelompok::where('kelompok_kkn_id', $peserta->kelompok_kkn_id)->get()->groupBy('kategori');
+
+        return view('kelompok.tugas.submit', compact('tugasList'));
+    }
     public function store(Request $request, KelompokKkn $kelompok): RedirectResponse
     {
         TugasKelompok::create([
