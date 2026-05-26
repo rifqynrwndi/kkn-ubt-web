@@ -2,6 +2,28 @@
 
 @section('title', 'Detail Kelompok KKN')
 
+@push('css')
+<style>
+    .group-nav {
+        display: flex; justify-content: center; gap: 0; background: #fff;
+        border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        overflow: hidden; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .group-nav a {
+        padding: 14px 20px; text-align: center; font-size: 13px; font-weight: 600;
+        color: #6c757d; border-bottom: 3px solid transparent; transition: .2s;
+        text-decoration: none; white-space: nowrap; cursor: pointer;
+    }
+    .group-nav a:hover, .group-nav a.active { color: #6777ef; border-bottom-color: #6777ef; background: #f8f9ff; }
+    .group-nav a i { margin-right: 6px; }
+    [data-bs-theme="dark"] .group-nav { background: #1f2430; box-shadow: 0 2px 12px rgba(0,0,0,.2); }
+    [data-bs-theme="dark"] .group-nav a { color: #aab1c1; }
+    [data-bs-theme="dark"] .group-nav a:hover, [data-bs-theme="dark"] .group-nav a.active { background: rgba(103,119,239,.1); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+</style>
+@endpush
+
 @section('content')
 <section class="section">
 
