@@ -157,10 +157,10 @@
 
         {{-- NAVIGATION TABS --}}
         <div class="group-nav">
-            <a href="{{ route('kelompok.index') }}" class="active">
+            <a href="{{ route('kelompok.index') }}" class="{{ Request::is('kelompok') ? 'active' : '' }}">
                 <i class="fas fa-home"></i> Dashboard
             </a>
-            <a href="#proposal">
+            <a href="{{ route('kelompok.proposal.index') }}" class="{{ Request::is('kelompok/proposal*') ? 'active' : '' }}">
                 <i class="fas fa-file-alt"></i> Proposal
             </a>
             <a href="#status">

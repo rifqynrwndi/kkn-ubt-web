@@ -23,6 +23,7 @@ use App\Http\Controllers\{
     VerifikasiDokumenController,
     KelompokKknController,
     KelompokController,
+    ProposalController,
     WarAdminController,
     WarController,
     WarMonitorController,
@@ -145,6 +146,13 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
     Route::prefix('kelompok')->name('kelompok.')->group(function () {
         Route::get('/', [KelompokController::class, 'index'])->name('index');
         Route::post('/upload-photo', [KelompokController::class, 'uploadPhoto'])->name('upload-photo');
+
+        Route::prefix('proposal')->name('proposal.')->group(function () {
+            Route::get('/', [ProposalController::class, 'index'])->name('index');
+            Route::get('/create', [ProposalController::class, 'create'])->name('create');
+            Route::post('/', [ProposalController::class, 'store'])->name('store');
+            Route::post('/{proposal}/review', [ProposalController::class, 'review'])->name('review');
+        });
     });
 
     /*
