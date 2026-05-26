@@ -24,6 +24,11 @@ class WarController extends Controller
     */
     public function index(): \Illuminate\View\View
     {
+        // Auto-activate scheduled WARs that have reached their start time
+        WarSession::where('status', 'scheduled')
+            ->where('start_at', '<=', now())
+            ->update(['status' => 'active']);
+
         $activeWar = WarSession::where('status', 'active')
             ->with(['gelombang', 'faculties.fakultas'])
             ->first();
@@ -93,6 +98,12 @@ class WarController extends Controller
     */
     public function arena(WarSession $session): \Illuminate\View\View|\Illuminate\Http\RedirectResponse
     {
+        // Auto-activate if scheduled and start time reached
+        if ($session->status === 'scheduled' && $session->start_at <= now()) {
+            $session->update(['status' => 'active']);
+            $session->refresh();
+        }
+
         /*
         |--------------------------------------------------------------------------
         | VALIDASI SESSION AKTIF
