@@ -138,8 +138,12 @@
 
         {{-- TAB: PROPOSAL --}}
         <div class="tab-content" id="tab-proposal">
+            @php
+                $fields = ['pendahuluan' => 'Pendahuluan', 'tujuan' => 'Tujuan', 'manfaat' => 'Manfaat', 'hasil_observasi' => 'Hasil Observasi', 'rancangan_program' => 'Rancangan Program', 'solusi_ide' => 'Solusi & Ide'];
+            @endphp
+
             @if($proposal)
-                <div class="alert alert-{{ $proposal->status === 'disetujui' ? 'success' : ($proposal->status === 'ditolak' ? 'danger' : 'info') }}">
+                <div class="alert alert-{{ $proposal->status === 'disetujui' ? 'success' : ($proposal->status === 'ditolak' ? 'danger' : 'info') }} mb-3">
                     <strong>Status:</strong>
                     @if($proposal->status === 'draft') Draft
                     @elseif($proposal->status === 'diajukan') Diajukan — Menunggu review DPL
@@ -150,17 +154,16 @@
                         <br><small><strong>Komentar DPL:</strong> {{ $proposal->komentar_dpl }}</small>
                     @endif
                 </div>
-            @else
-                <div class="alert alert-warning">Belum ada proposal.</div>
             @endif
 
-            @if($isKetua && (!$proposal || in_array($proposal->status, ['draft', 'ditolak'])))
+            @if($isKetua && (!$proposal || in_array($proposal->status ?? '', ['draft', 'ditolak'])))
                 <button class="btn btn-primary mb-3" onclick="toggleProposalEdit()">
-                    <i class="fas fa-edit mr-1"></i> {{ $proposal ? 'Edit Proposal' : 'Buat Proposal' }}
+                    <i class="fas fa-edit mr-1"></i> {{ $proposal && $proposal->status !== 'ditolak' ? 'Edit Proposal' : 'Buat Proposal' }}
                 </button>
             @endif
 
             {{-- EDIT FORM --}}
+            @if($isKetua)
             <div id="proposal-form-wrap" style="display:none;">
                 <form action="{{ route('kelompok.proposal.store') }}" method="POST" id="proposal-form">
                     @csrf
@@ -183,9 +186,9 @@
                     </div>
                 </form>
             </div>
+            @endif
 
-            {{-- READ VIEW --}}
-            @if($proposal)
+            {{-- READ VIEW — always shown --}}
             <div id="proposal-read-view" class="proposal-doc">
                 <div class="proposal-doc-header">
                     <h3>Proposal Program Kerja KKN</h3>
@@ -203,13 +206,16 @@
                     </div>
                 </div>
                 <div class="proposal-doc-body">
-                    @foreach(['pendahuluan' => 'Pendahuluan', 'tujuan' => 'Tujuan', 'manfaat' => 'Manfaat', 'hasil_observasi' => 'Hasil Observasi', 'rancangan_program' => 'Rancangan Program', 'solusi_ide' => 'Solusi & Ide'] as $field => $label)
+                    @foreach($fields as $field => $label)
                     <h4>{{ $label }}</h4>
-                    <p>{!! $proposal->$field ?: '<span class="text-muted">Belum diisi</span>' !!}</p>
+                    @php
+                        $content = $proposal->$field ?? null;
+                        $isEmpty = !$content || trim(strip_tags($content)) === '';
+                    @endphp
+                    <p>{!! $isEmpty ? '<span class="text-muted">—</span>' : $content !!}</p>
                     @endforeach
                 </div>
             </div>
-            @endif
 
             {{-- DPL REVIEW --}}
             @if($isDpl && $proposal && $proposal->status === 'diajukan')
@@ -273,9 +279,12 @@
     function toggleProposalEdit() {
         const form = document.getElementById('proposal-form-wrap');
         const read = document.getElementById('proposal-read-view');
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-        if (read) read.style.display = form.style.display === 'block' ? 'none' : 'block';
-        if (form.style.display === 'block') initQuillEditors();
+        const btn = document.querySelector('[onclick="toggleProposalEdit()"]');
+        const isOpen = form.style.display === 'block';
+        form.style.display = isOpen ? 'none' : 'block';
+        if (read) read.style.display = isOpen ? 'block' : 'none';
+        if (btn) btn.innerHTML = isOpen ? '<i class="fas fa-edit mr-1"></i> Edit Proposal' : '<i class="fas fa-times mr-1"></i> Tutup Editor';
+        if (!isOpen) initQuillEditors();
     }
 
     // Quill editors
