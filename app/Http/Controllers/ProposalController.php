@@ -85,7 +85,7 @@ class ProposalController extends Controller
         );
 
         $msg = $action === 'submit' ? 'Proposal berhasil diajukan.' : 'Draft proposal disimpan.';
-        return redirect()->route('kelompok.index')->with('success', $msg)->with('_tab', 'proposal');
+        return redirect()->route('kelompok.index', ['tab' => 'proposal'])->with('success', $msg);
     }
 
     public function review(Request $request, KelompokProposal $proposal): RedirectResponse
@@ -105,6 +105,6 @@ class ProposalController extends Controller
             'reviewed_at' => now(),
         ]);
 
-        return redirect()->route('kelompok.index')->with('success', 'Proposal berhasil di-review.')->with('_tab', 'proposal');
+        return redirect()->route('kelompok.index', ['tab' => 'proposal'])->with('success', 'Proposal berhasil di-review.');
     }
 }
