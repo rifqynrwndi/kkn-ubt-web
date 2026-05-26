@@ -38,7 +38,16 @@ class KelompokController extends Controller
 
         $proposal = \App\Models\KelompokProposal::where('kelompok_kkn_id', $kelompok->id)->first();
 
-        return view('kelompok.index', compact('kelompok', 'peserta', 'isKetua', 'isDpl', 'proposal'));
+        $statusService = app(\App\Services\StatusService::class);
+        $statusCurrent = $statusService->getCurrentStage($kelompok);
+        $statusHistory = $statusService->getHistory($kelompok);
+        $statusStages  = \App\Services\StatusService::STAGES;
+        $isAdmin = auth()->user()->hasRole('superadmin');
+
+        return view('kelompok.index', compact(
+            'kelompok', 'peserta', 'isKetua', 'isDpl', 'proposal',
+            'statusCurrent', 'statusHistory', 'statusStages', 'isAdmin'
+        ));
     }
 
     public function uploadPhoto(Request $request): RedirectResponse

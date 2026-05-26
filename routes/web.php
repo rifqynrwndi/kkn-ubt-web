@@ -24,6 +24,7 @@ use App\Http\Controllers\{
     KelompokKknController,
     KelompokController,
     ProposalController,
+    StatusController,
     WarAdminController,
     WarController,
     WarMonitorController,
@@ -152,6 +153,10 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
             Route::get('/create', [ProposalController::class, 'create'])->name('create');
             Route::post('/', [ProposalController::class, 'store'])->name('store');
             Route::post('/{proposal}/review', [ProposalController::class, 'review'])->name('review');
+        });
+
+        Route::prefix('status')->name('status.')->group(function () {
+            Route::post('/{kelompok}/change', [StatusController::class, 'change'])->name('change');
         });
     });
 

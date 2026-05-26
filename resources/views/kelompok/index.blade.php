@@ -240,7 +240,88 @@
 
         {{-- TAB: STATUS --}}
         <div class="tab-content" id="tab-status">
-            <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">🚧</span><h5>Status — Segera Hadir</h5></div></div>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-center flex-wrap gap-1 mb-3">
+                        @foreach($statusStages as $i => $s)
+                        <div class="text-center px-2" style="min-width:85px;">
+                            <div style="width:30px;height:30px;border-radius:50%;margin:0 auto 3px;
+                                background:{{ $i <= (int)$kelompok->status_tahap ? '#6777ef' : '#e0e0e0' }};
+                                color:{{ $i <= (int)$kelompok->status_tahap ? '#fff' : '#999' }};
+                                font-weight:800;font-size:12px;line-height:30px;">{{ $i }}</div>
+                            <small style="font-size:9px;color:{{ $i === (int)$kelompok->status_tahap ? '#6777ef' : '#adb5bd' }};font-weight:{{ $i === (int)$kelompok->status_tahap ? '700' : '400' }};">{{ $s['nama'] }}</small>
+                        </div>
+                        @if($i < 7)<div style="width:20px;height:2px;background:{{ $i < (int)$kelompok->status_tahap ? '#6777ef' : '#e0e0e0' }};margin-top:14px;flex-shrink:0;"></div>@endif
+                        @endforeach
+                    </div>
+                    <div class="alert alert-primary text-center mb-0">
+                        <strong>Tahap Saat Ini: {{ $statusCurrent['nama'] }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            {{-- CHANGE STATUS (Admin/DPL only, not mahasiswa) --}}
+            @if(($isAdmin || $isDpl) && !auth()->user()->hasRole('mahasiswa') && $kelompok->status_tahap < 7)
+            <div class="card mb-3">
+                <div class="card-header"><h5>Ubah Status</h5></div>
+                <div class="card-body">
+                    <form action="{{ route('kelompok.status.change', $kelompok->id) }}" method="POST">
+                        @csrf
+                        <div class="row">
+                            <div class="col-md-6"><div class="form-group"><label>Status Baru</label>
+                                <select name="stage" class="form-control" required>
+                                    @foreach($statusStages as $i => $s)
+                                    <option value="{{ $i }}" {{ $i === (int)$kelompok->status_tahap ? 'disabled' : '' }}>{{ $i }} - {{ $s['nama'] }}</option>
+                                    @endforeach
+                                </select></div>
+                            </div>
+                            <div class="col-md-6"><div class="form-group"><label>Keterangan</label>
+                                <input name="keterangan" class="form-control" placeholder="Alasan perubahan status"></div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" onclick="return confirm('Ubah status?')"><i class="fas fa-check mr-1"></i> Simpan</button>
+                    </form>
+                </div>
+            </div>
+            @endif
+
+            {{-- PANDUAN PROSES STATUS --}}
+            <div class="card">
+                <div class="card-header"><h5>Panduan Proses Status</h5></div>
+                <div class="card-body">
+                    @foreach($statusStages as $i => $s)
+                    <div class="mb-3 pb-3 {{ $i < 7 ? 'border-bottom' : '' }}">
+                        <span class="badge badge-primary mr-2" style="font-size:12px;">{{ $i }}. {{ $s['nama'] }}</span>
+                        @if($i === (int)$kelompok->status_tahap)
+                        <span class="badge badge-pill badge-success" style="font-size:10px;">Saat Ini</span>
+                        @endif
+                        <p class="mb-0 mt-1 text-muted" style="font-size:13px;text-align:justify;">{{ $s['desc'] }}</p>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- HISTORY --}}
+            @if($statusHistory->count())
+            <div class="card mt-3">
+                <div class="card-header"><h5>Riwayat Perubahan</h5></div>
+                <div class="card-body p-0"><div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead><tr><th>Dari</th><th>Ke</th><th>Oleh</th><th>Waktu</th></tr></thead>
+                        <tbody>
+                            @foreach($statusHistory as $h)
+                            <tr>
+                                <td><span class="badge badge-light">{{ $statusStages[$h->status_lama]['nama'] ?? '?' }}</span></td>
+                                <td><span class="badge badge-primary">{{ $statusStages[$h->status_baru]['nama'] ?? '?' }}</span></td>
+                                <td><small>{{ $h->changedBy->name ?? '-' }}</small></td>
+                                <td><small>{{ $h->created_at->diffForHumans() }}</small></td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div></div>
+            </div>
+            @endif
         </div>
 
         {{-- TAB: PESERTA --}}
