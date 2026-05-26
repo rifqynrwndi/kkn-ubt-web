@@ -27,6 +27,7 @@ class KelompokController extends Controller
 
         $kelompok = $peserta->kelompokKkn;
         $isKetua = $kelompok->ketua_peserta_id === $peserta->id;
+        $isDpl = $kelompok->dosen_pembimbing_lapangan_id === auth()->user()->dosenPembimbingLapangan?->id;
 
         $kelompok->load([
             'pesertaKkn.mahasiswa.user',
@@ -35,7 +36,9 @@ class KelompokController extends Controller
             'ketua.mahasiswa.user',
         ]);
 
-        return view('kelompok.index', compact('kelompok', 'peserta', 'isKetua'));
+        $proposal = \App\Models\KelompokProposal::where('kelompok_kkn_id', $kelompok->id)->first();
+
+        return view('kelompok.index', compact('kelompok', 'peserta', 'isKetua', 'isDpl', 'proposal'));
     }
 
     public function uploadPhoto(Request $request): RedirectResponse
