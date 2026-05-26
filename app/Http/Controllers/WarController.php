@@ -29,6 +29,31 @@ class WarController extends Controller
             ->where('start_at', '<=', now())
             ->update(['status' => 'active']);
 
+        // Auto-stop active WARs that have passed their end time
+        $warService = app(\App\Services\War\WarService::class);
+        $expiredWars = WarSession::where('status', 'active')
+            ->where('end_at', '<=', now())
+            ->get();
+
+        foreach ($expiredWars as $expWar) {
+            $pesertas = PesertaKkn::where('gelombang_id', $expWar->gelombang_id)
+                ->where('status_pendaftaran', 'approved')
+                ->whereNull('kelompok_kkn_id')
+                ->with(['mahasiswa.prodi.fakultas'])
+                ->get();
+
+            foreach ($pesertas as $peserta) {
+                $kelompok = KelompokKkn::whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $expWar->gelombang_id))
+                    ->where('status', '!=', 'penuh')
+                    ->inRandomOrder()
+                    ->first();
+                if (!$kelompok) break;
+                try { $warService->joinKelompok($expWar, $kelompok->id, $peserta->mahasiswa_id); } catch (\Throwable) {}
+            }
+
+            $expWar->update(['status' => 'closed']);
+        }
+
         $activeWar = WarSession::where('status', 'active')
             ->with(['gelombang', 'faculties.fakultas'])
             ->first();
