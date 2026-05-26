@@ -7,4 +7,5 @@ class TugasKelompok extends Model
     protected $fillable = ['kelompok_kkn_id','kategori','nama_tugas','deskripsi','periode_mulai','periode_akhir','is_active','created_by'];
     protected $casts = ['periode_mulai'=>'date','periode_akhir'=>'date','is_active'=>'boolean'];
     public function submissions() { return $this->hasMany(TugasSubmission::class); }
+    public function kelompokKkn() { return $this->belongsTo(KelompokKkn::class); }
 }
