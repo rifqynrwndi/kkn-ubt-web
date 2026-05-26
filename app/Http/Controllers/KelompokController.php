@@ -48,9 +48,18 @@ class KelompokController extends Controller
             ->with(['submissions.pesertaKkn.mahasiswa.user'])->get()
             ->groupBy('kategori');
 
+        $logbookData = \App\Models\LogBook::where('kelompok_kkn_id', $kelompok->id)
+            ->with(['pesertaKkn.mahasiswa.user'])
+            ->latest('tanggal')
+            ->get()
+            ->groupBy('peserta_kkn_id');
+
+        $members = $kelompok->pesertaKkn->map(fn($p) => ['id'=>$p->id,'name'=>$p->mahasiswa->user->name]);
+
         return view('kelompok.index', compact(
             'kelompok', 'peserta', 'isKetua', 'isDpl', 'proposal',
-            'statusCurrent', 'statusHistory', 'statusStages', 'isAdmin', 'tugasList'
+            'statusCurrent', 'statusHistory', 'statusStages', 'isAdmin', 'tugasList',
+            'logbookData', 'members'
         ));
     }
 

@@ -26,6 +26,7 @@ use App\Http\Controllers\{
     ProposalController,
     StatusController,
     TugasController,
+    LogBookController,
     WarAdminController,
     WarController,
     WarMonitorController,
@@ -166,6 +167,14 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
             Route::post('/{tugas}/submit', [TugasController::class, 'submit'])->name('submit');
             Route::get('/submit', [TugasController::class, 'create'])->name('create');
             Route::post('/submission/{submission}/review', [TugasController::class, 'review'])->name('review');
+        });
+
+        Route::prefix('logbook')->name('logbook.')->group(function () {
+            Route::get('/create', [LogBookController::class, 'create'])->name('create');
+            Route::post('/', [LogBookController::class, 'store'])->name('store');
+            Route::put('/{logbook}', [LogBookController::class, 'update'])->name('update');
+            Route::delete('/{logbook}', [LogBookController::class, 'destroy'])->name('destroy');
+            Route::post('/validate-all', [LogBookController::class, 'validateAll'])->name('validateAll');
         });
     });
 

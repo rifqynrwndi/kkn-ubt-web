@@ -504,7 +504,62 @@
 
         {{-- TAB: LOGBOOK --}}
         <div class="tab-content" id="tab-logbook">
-            <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">🚧</span><h5>Log Book — Segera Hadir</h5></div></div>
+            @php $myPesertaId = $peserta->id; @endphp
+
+            {{-- Add Entry --}}
+            <div class="mb-3">
+                <a href="{{ route('kelompok.logbook.create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus mr-1"></i> Tambah Log Book
+                </a>
+            </div>
+
+            @forelse($logbookData as $pesertaId => $entries)
+            @php $member = $entries->first()->pesertaKkn->mahasiswa->user; $validated = $entries->where('is_validated',true)->count(); $total = $entries->count(); @endphp
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center" style="cursor:pointer;" onclick="toggleCollapse('lb-{{ $pesertaId }}')">
+                    <span><i class="fas fa-chevron-down mr-2" id="icon-lb-{{ $pesertaId }}"></i><strong>{{ $member->name ?? 'Unknown' }}</strong></span>
+                    <div>
+                        <span class="badge badge-{{ $validated >= 20 ? 'success' : 'warning' }} mr-2">{{ $validated }}/{{ $total }} Tervalidasi</span>
+                        @if(($isDpl || $isAdmin) && $total > 0 && $validated < $total)
+                        <form action="{{ route('kelompok.logbook.validateAll') }}" method="POST" class="d-inline" onclick="event.stopPropagation()">
+                            @csrf
+                            <input type="hidden" name="peserta_id" value="{{ $pesertaId }}">
+                            <button class="btn btn-warning btn-sm" onclick="return confirm('Validasi semua log book anggota ini?')"><i class="fas fa-check-double mr-1"></i> Validasi Semua</button>
+                        </form>
+                        @endif
+                    </div>
+                </div>
+                <div id="lb-{{ $pesertaId }}" style="display:block;">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>#</th><th>Tanggal</th><th>Judul</th><th>Deskripsi</th><th>Berkas</th><th>Status</th><th>Aksi</th></tr></thead>
+                            <tbody>
+                                @foreach($entries as $i => $lb)
+                                <tr>
+                                    <td>{{ $i+1 }}</td>
+                                    <td><small>{{ $lb->tanggal->format('d M Y') }}</small></td>
+                                    <td><small>{{ $lb->judul }}</small></td>
+                                    <td style="max-width:250px;"><small class="d-block text-truncate">{{ $lb->deskripsi }}</small></td>
+                                    <td>@if($lb->file_path)<a href="{{ asset('storage/'.$lb->file_path) }}" target="_blank" class="btn btn-sm btn-link"><i class="fas fa-download"></i></a>@else - @endif</td>
+                                    <td>@if($lb->is_validated)<span class="badge badge-success">Tervalidasi</span>@else<span class="badge badge-warning">Belum</span>@endif</td>
+                                    <td>
+                                        @if(!$lb->is_validated && $lb->peserta_kkn_id === $myPesertaId)
+                                        <form action="{{ route('kelompok.logbook.destroy', $lb->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus log book ini?')">
+                                            @csrf @method('DELETE')
+                                            <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            @empty
+            <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">📖</span><h5>Belum ada log book</h5><p class="text-muted">Tambahkan catatan kegiatan harian KKN kamu.</p></div></div>
+            @endforelse
         </div>
 
         {{-- TAB: PENILAIAN --}}
