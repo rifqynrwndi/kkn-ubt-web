@@ -433,8 +433,9 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
 
         Route::prefix('admin/tugas')->name('admin.tugas.')->group(function () {
             Route::get('/', [TugasAdminController::class, 'index'])->name('index');
+            Route::get('/create', [TugasAdminController::class, 'create'])->name('create');
             Route::post('/', [TugasAdminController::class, 'store'])->name('store');
-            Route::delete('/{tugas}', [TugasAdminController::class, 'destroy'])->name('destroy');
+            Route::delete('/destroy-by-nama', [TugasAdminController::class, 'destroyByNama'])->name('destroyByNama');
         });
 
         /*
