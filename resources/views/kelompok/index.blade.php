@@ -47,6 +47,22 @@
     .section-wrap { margin-bottom: 20px; }
     .section-wrap label { font-weight: 700; margin-bottom: 6px; display: block; }
     .char-counter { font-size: 11px; color: #adb5bd; text-align: right; margin-top: 2px; }
+    /* Proposal Document Style */
+    .proposal-doc {
+        background: #fff; border-radius: 12px; padding: 48px 40px;
+        box-shadow: 0 2px 16px rgba(0,0,0,.06); max-width: 860px; margin: 0 auto;
+    }
+    .proposal-doc-header { text-align: center; border-bottom: 2px solid #0f3460; padding-bottom: 24px; margin-bottom: 28px; }
+    .proposal-doc-header h3 { font-size: 1.1rem; font-weight: 700; color: #0f3460; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+    .proposal-doc-header h2 { font-size: 1.3rem; font-weight: 800; color: #1a1a2e; margin: 8px 0; }
+    .proposal-doc-header .doc-meta { font-size: .85rem; color: #6c757d; }
+    .proposal-doc-body h4 { font-size: 1rem; font-weight: 700; color: #0f3460; margin:2px 0 10px; text-transform: uppercase; letter-spacing: .3px; }
+    .proposal-doc-body p { text-align: justify; line-height: 1.8; margin-bottom: 20px; font-size: .9rem; }
+    [data-bs-theme="dark"] .proposal-doc { background: #1f2430; }
+    [data-bs-theme="dark"] .proposal-doc-header { border-bottom-color: #374151; }
+    [data-bs-theme="dark"] .proposal-doc-header h3, [data-bs-theme="dark"] .proposal-doc-body h4 { color: #a4b0f5; }
+    [data-bs-theme="dark"] .proposal-doc-header h2 { color: #f1f3f8; }
+    [data-bs-theme="dark"] .proposal-doc-header .doc-meta { color: #aab1c1; }
 </style>
 @endpush
 
@@ -170,13 +186,26 @@
 
             {{-- READ VIEW --}}
             @if($proposal)
-            <div id="proposal-read-view" class="card">
-                <div class="card-header"><h4>Isi Proposal</h4></div>
-                <div class="card-body">
-                    @foreach(['pendahuluan' => 'Pendahuluan', 'tujuan' => 'Tujuan', 'manfaat' => 'Manfaat', 'hasil_observasi' => 'Hasil Observasi', 'rancangan_program' => 'Rancangan Program', 'solusi_ide' => 'Solusi / Ide'] as $field => $label)
-                    <div class="mb-4"><h5 class="font-weight-bold">{{ $label }}</h5>
-                        <div class="p-3" style="background:#f8f9fa;border-radius:8px;min-height:40px;">{!! $proposal->$field ?: '<span class="text-muted">Belum diisi</span>' !!}</div>
+            <div id="proposal-read-view" class="proposal-doc">
+                <div class="proposal-doc-header">
+                    <h3>Proposal Program Kerja KKN</h3>
+                    <h2>{{ $kelompok->nama_kelompok }}</h2>
+                    <div class="doc-meta">
+                        <i class="fas fa-map-marker-alt mr-1"></i>
+                        {{ $kelompok->desaGelombang->desa->nama_desa ?? '-' }},
+                        {{ $kelompok->desaGelombang->desa->kecamatan->nama_kecamatan ?? '-' }},
+                        {{ $kelompok->desaGelombang->desa->kecamatan->kabupaten ?? '-' }}
+                        &nbsp;&middot;&nbsp;
+                        <i class="fas fa-calendar-alt mr-1"></i>
+                        {{ \Carbon\Carbon::parse($kelompok->desaGelombang->gelombang->tgl_mulai ?? now())->format('d M Y') }}
+                        &mdash;
+                        {{ \Carbon\Carbon::parse($kelompok->desaGelombang->gelombang->tgl_akhir ?? now())->format('d M Y') }}
                     </div>
+                </div>
+                <div class="proposal-doc-body">
+                    @foreach(['pendahuluan' => 'Pendahuluan', 'tujuan' => 'Tujuan', 'manfaat' => 'Manfaat', 'hasil_observasi' => 'Hasil Observasi', 'rancangan_program' => 'Rancangan Program', 'solusi_ide' => 'Solusi & Ide'] as $field => $label)
+                    <h4>{{ $label }}</h4>
+                    <p>{!! $proposal->$field ?: '<span class="text-muted">Belum diisi</span>' !!}</p>
                     @endforeach
                 </div>
             </div>
