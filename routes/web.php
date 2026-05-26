@@ -25,6 +25,7 @@ use App\Http\Controllers\{
     KelompokController,
     ProposalController,
     StatusController,
+    TugasController,
     WarAdminController,
     WarController,
     WarMonitorController,
@@ -157,6 +158,13 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
 
         Route::prefix('status')->name('status.')->group(function () {
             Route::post('/{kelompok}/change', [StatusController::class, 'change'])->name('change');
+        });
+
+        Route::prefix('tugas')->name('tugas.')->group(function () {
+            Route::post('/{kelompok}', [TugasController::class, 'store'])->name('store');
+            Route::delete('/{tugas}', [TugasController::class, 'destroy'])->name('destroy');
+            Route::post('/{tugas}/submit', [TugasController::class, 'submit'])->name('submit');
+            Route::post('/submission/{submission}/review', [TugasController::class, 'review'])->name('review');
         });
     });
 

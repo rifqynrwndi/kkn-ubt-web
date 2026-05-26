@@ -44,9 +44,13 @@ class KelompokController extends Controller
         $statusStages  = \App\Services\StatusService::STAGES;
         $isAdmin = auth()->user()->hasRole('superadmin');
 
+        $tugasList = \App\Models\TugasKelompok::where('kelompok_kkn_id', $kelompok->id)
+            ->with(['submissions.pesertaKkn.mahasiswa.user'])->get()
+            ->groupBy('kategori');
+
         return view('kelompok.index', compact(
             'kelompok', 'peserta', 'isKetua', 'isDpl', 'proposal',
-            'statusCurrent', 'statusHistory', 'statusStages', 'isAdmin'
+            'statusCurrent', 'statusHistory', 'statusStages', 'isAdmin', 'tugasList'
         ));
     }
 

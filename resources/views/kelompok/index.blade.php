@@ -401,7 +401,86 @@
 
         {{-- TAB: TUGAS --}}
         <div class="tab-content" id="tab-tugas">
-            <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">🚧</span><h5>Tugas — Segera Hadir</h5></div></div>
+            @php $katLabels = ['tugas_kelompok'=>'Tugas Kelompok','luaran_wajib'=>'Luaran Wajib','luaran_lain'=>'Luaran Lain','laporan'=>'Laporan']; @endphp
+
+            {{-- Add task (Admin/DPL only, not mahasiswa) --}}
+            @if(($isAdmin || $isDpl) && !auth()->user()->hasRole('mahasiswa'))
+            <div class="card mb-3">
+                <div class="card-header"><h5>Tambah Tugas</h5></div>
+                <div class="card-body">
+                    <form action="{{ route('kelompok.tugas.store', $kelompok->id) }}" method="POST" class="form-inline gap-2">
+                        @csrf
+                        <select name="kategori" class="form-control"><option value="tugas_kelompok">Tugas Kelompok</option><option value="luaran_wajib">Luaran Wajib</option><option value="luaran_lain">Luaran Lain</option><option value="laporan">Laporan</option></select>
+                        <input name="nama_tugas" class="form-control" placeholder="Nama tugas..." required style="flex:1;min-width:200px;">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-plus mr-1"></i> Tambah</button>
+                    </form>
+                </div>
+            </div>
+            @endif
+
+            @forelse($tugasList as $kat => $tugasItems)
+            <div class="card mb-3">
+                <div class="card-header"><h5>{{ $katLabels[$kat] ?? $kat }}</h5></div>
+                <div class="card-body p-0">
+                    @foreach($tugasItems as $tugas)
+                    <div class="border-bottom p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong>{{ $tugas->nama_tugas }}</strong>
+                            @if(($isAdmin || $isDpl) && !auth()->user()->hasRole('mahasiswa'))
+                            <form action="{{ route('kelompok.tugas.destroy', $tugas->id) }}" method="POST" onsubmit="return confirm('Hapus?')" class="d-inline">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                            </form>
+                            @endif
+                        </div>
+
+                        {{-- Upload form (mahasiswa) --}}
+                        <form action="{{ route('kelompok.tugas.submit', $tugas->id) }}" method="POST" enctype="multipart/form-data" class="mb-2 form-inline gap-2">
+                            @csrf
+                            <input name="judul" class="form-control form-control-sm" placeholder="Judul..." required style="flex:1;min-width:150px;">
+                            <input type="file" name="file" class="form-control-file form-control-sm" required style="max-width:200px;">
+                            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-upload mr-1"></i> Kumpul</button>
+                        </form>
+
+                        {{-- Submissions --}}
+                        @if($tugas->submissions->count())
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Judul</th><th>Oleh</th><th>Berkas</th><th>Status</th><th>Komentar</th>@if(($isDpl || $isAdmin) && !auth()->user()->hasRole('mahasiswa'))<th>Aksi</th>@endif</tr></thead>
+                            <tbody>
+                                @foreach($tugas->submissions as $sub)
+                                <tr>
+                                    <td>{{ $sub->judul }}</td>
+                                    <td><small>{{ $sub->pesertaKkn->mahasiswa->user->name ?? '-' }}</small></td>
+                                    <td><a href="{{ asset('storage/'.$sub->file_path) }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i></a></td>
+                                    <td>
+                                        @if($sub->status==='diterima')<span class="badge badge-success">Diterima</span>
+                                        @elseif($sub->status==='ditolak')<span class="badge badge-danger">Ditolak</span>
+                                        @elseif($sub->status==='revisi')<span class="badge badge-warning">Revisi</span>
+                                        @else<span class="badge badge-info">Menunggu</span>@endif
+                                    </td>
+                                    <td><small>{{ $sub->komentar_dpl ?: '-' }}</small></td>
+                                    @if(($isDpl || $isAdmin) && !auth()->user()->hasRole('mahasiswa'))
+                                    <td>
+                                        <form action="{{ route('kelompok.tugas.review', $sub->id) }}" method="POST" class="form-inline gap-1">
+                                            @csrf
+                                            <input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar..." style="width:100px;">
+                                            <button name="status" value="diterima" class="btn btn-success btn-sm" title="Terima">✓</button>
+                                            <button name="status" value="ditolak" class="btn btn-danger btn-sm" title="Tolak">✗</button>
+                                        </form>
+                                    </td>
+                                    @endif
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        @endif
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @empty
+            <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">🚧</span><h5>Belum ada tugas</h5></div></div>
+            @endforelse
         </div>
 
         {{-- TAB: LOGBOOK --}}
