@@ -326,7 +326,77 @@
 
         {{-- TAB: PESERTA --}}
         <div class="tab-content" id="tab-peserta">
-            <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">🚧</span><h5>Peserta & DPL — Segera Hadir</h5></div></div>
+            {{-- DPL --}}
+            @if($kelompok->dosenPembimbingLapangan)
+            <div class="card mb-3">
+                <div class="card-header"><h5><i class="fas fa-user-tie mr-2"></i> Dosen Pembimbing Lapangan</h5></div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="{{ asset('img/avatar/avatar-1.png') }}" class="rounded-circle" width="50" height="50" style="object-fit:cover;flex-shrink:0;">
+                        <div>
+                            <strong>{{ $kelompok->dosenPembimbingLapangan->user->name ?? '-' }}</strong>
+                            <br><small class="text-muted">NIDN: {{ $kelompok->dosenPembimbingLapangan->nidn ?? '-' }}</small>
+                            <br><small class="text-muted">{{ $kelompok->dosenPembimbingLapangan->fakultas->nama_fakultas ?? '-' }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            {{-- MEMBERS TABLE --}}
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-users mr-2"></i> Anggota Kelompok</h5>
+                    <span class="badge badge-primary">{{ $kelompok->pesertaKkn->count() }} orang</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th width="50">#</th>
+                                    <th width="60">Foto</th>
+                                    <th>Nama / NPM</th>
+                                    <th>Prodi</th>
+                                    <th>Fakultas</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($kelompok->pesertaKkn as $index => $p)
+                                @php $m = $p->mahasiswa; @endphp
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>
+                                        <img src="{{ $m->foto ? asset('storage/'.$m->foto) : asset('img/avatar/avatar-1.png') }}"
+                                             class="rounded-circle" width="36" height="36" style="object-fit:cover;">
+                                    </td>
+                                    <td>
+                                        <strong>{{ $m->user->name ?? '-' }}</strong>
+                                        @if($p->id === $kelompok->ketua_peserta_id)
+                                            <span class="badge badge-warning ml-1">Ketua</span>
+                                        @endif
+                                        @if($p->mahasiswa_id === auth()->id())
+                                            <span class="badge badge-primary ml-1">Kamu</span>
+                                        @endif
+                                        <br><small class="text-muted">{{ $m->npm ?? '-' }}</small>
+                                    </td>
+                                    <td><small>{{ $m->prodi->nama_prodi ?? '-' }}</small></td>
+                                    <td><small>{{ $m->prodi->fakultas->nama_fakultas ?? '-' }}</small></td>
+                                    <td>
+                                        @if($p->status_pendaftaran === 'approved')
+                                            <span class="badge badge-success">Disetujui</span>
+                                        @else
+                                            <span class="badge badge-warning">{{ $p->status_pendaftaran }}</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
         {{-- TAB: TUGAS --}}
