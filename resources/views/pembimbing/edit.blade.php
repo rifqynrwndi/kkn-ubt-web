@@ -126,9 +126,34 @@
 
                     </div>
 
-                    {{-- STATUS --}}
-                    <div class="form-group">
-                        <label>Status</label>
+                    <div class="row">
+
+                        {{-- PASSWORD BARU --}}
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Password Baru <small class="text-muted">(kosongkan jika tidak ingin mengubah)</small></label>
+                                <div class="input-group">
+                                    <input type="password"
+                                           name="password"
+                                           id="password-input"
+                                           class="form-control @error('password') is-invalid @enderror"
+                                           placeholder="Isi untuk mengganti password DPL">
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">
+                                            <i class="fas fa-eye" id="toggle-icon"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                @error('password')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        {{-- STATUS --}}
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Status</label>
 
                         <select name="status"
                                 class="form-control @error('status') is-invalid @enderror"
@@ -168,3 +193,19 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+function togglePassword() {
+    const input = document.getElementById('password-input');
+    const icon = document.getElementById('toggle-icon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
+    }
+}
+</script>
+@endpush

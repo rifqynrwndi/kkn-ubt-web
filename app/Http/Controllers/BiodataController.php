@@ -10,6 +10,8 @@ class BiodataController extends Controller
 {
     public function edit()
     {
+        abort_if(! auth()->user()->hasRole('mahasiswa'), 403, 'Halaman ini hanya untuk mahasiswa.');
+
         $mahasiswa = auth()->user()->mahasiswa;
         $prodis = ProgramStudi::all();
 

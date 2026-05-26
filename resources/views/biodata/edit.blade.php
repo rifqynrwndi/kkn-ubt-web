@@ -64,7 +64,7 @@
                             <label>Foto Profile</label>
 
                             <div class="mb-3">
-                                <img src="{{ $mahasiswa->foto ? asset('storage/'.$mahasiswa->foto) : asset('img/avatar/avatar-1.png') }}"
+                                <img src="{{ $mahasiswa?->foto ? asset('storage/'.$mahasiswa->foto) : asset('img/avatar/avatar-1.png') }}"
                                      class="rounded-circle shadow"
                                      width="120"
                                      height="120"

@@ -124,14 +124,21 @@ class DosenPembimbingLapanganController extends Controller
             'fakultas_id' => 'nullable|exists:fakultas,id',
 
             'status' => 'required|in:aktif,nonaktif',
+            'password' => 'nullable|string|min:8',
         ]);
 
         DB::transaction(function () use ($request, $dpl) {
 
-            $dpl->user->update([
+            $userData = [
                 'name' => $request->name,
                 'email' => $request->email,
-            ]);
+            ];
+
+            if ($request->filled('password')) {
+                $userData['password'] = Hash::make($request->password);
+            }
+
+            $dpl->user->update($userData);
 
             $dpl->update([
                 'nidn' => $request->nidn,
