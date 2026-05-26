@@ -56,10 +56,18 @@ class KelompokController extends Controller
 
         $members = $kelompok->pesertaKkn->map(fn($p) => ['id'=>$p->id,'name'=>$p->mahasiswa->user->name]);
 
+        $komponenList = \App\Models\PenilaianKomponen::orderBy('urutan')->get();
+        $penilaianData = \App\Models\PenilaianKelompok::where('kelompok_kkn_id', $kelompok->id)
+            ->with('komponen')->get()->keyBy('komponen_id');
+
+        $dplFinal = $this->calcScore($komponenList->where('kategori','dpl'), $penilaianData);
+        $lppmFinal = $this->calcScore($komponenList->where('kategori','lppm'), $penilaianData);
+        $finalScore = $dplFinal && $lppmFinal ? round(($dplFinal * 60 + $lppmFinal * 40) / 100, 2) : null;
+
         return view('kelompok.index', compact(
             'kelompok', 'peserta', 'isKetua', 'isDpl', 'proposal',
             'statusCurrent', 'statusHistory', 'statusStages', 'isAdmin', 'tugasList',
-            'logbookData', 'members'
+            'logbookData', 'members', 'komponenList', 'penilaianData', 'dplFinal', 'lppmFinal', 'finalScore'
         ));
     }
 
@@ -83,5 +91,15 @@ class KelompokController extends Controller
         $kelompok->update(['foto_kelompok' => $path]);
 
         return back()->with('success', 'Foto kelompok berhasil diperbarui.');
+    }
+
+    private function calcScore($komponenList, $penilaianData): ?float
+    {
+        $totalBobot = $komponenList->sum('bobot');
+        if ($totalBobot === 0) return null;
+        $totalNilai = $komponenList->sum(function ($k) use ($penilaianData) {
+            return ($penilaianData[$k->id]->nilai ?? 0) * $k->bobot;
+        });
+        return $totalNilai > 0 ? round($totalNilai / $totalBobot, 2) : null;
     }
 }

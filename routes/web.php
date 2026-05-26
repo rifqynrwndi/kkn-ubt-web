@@ -27,6 +27,7 @@ use App\Http\Controllers\{
     StatusController,
     TugasController,
     LogBookController,
+    PenilaianController,
     WarAdminController,
     WarController,
     WarMonitorController,
@@ -175,6 +176,10 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
             Route::put('/{logbook}', [LogBookController::class, 'update'])->name('update');
             Route::delete('/{logbook}', [LogBookController::class, 'destroy'])->name('destroy');
             Route::post('/validate-all', [LogBookController::class, 'validateAll'])->name('validateAll');
+        });
+
+        Route::prefix('penilaian')->name('penilaian.')->group(function () {
+            Route::post('/input', [PenilaianController::class, 'input'])->name('input');
         });
     });
 

@@ -123,7 +123,7 @@
             <a data-tab="peserta"><i class="fas fa-users"></i> Peserta & DPL</a>
             <a data-tab="tugas"><i class="fas fa-upload"></i> Tugas</a>
             <a data-tab="logbook"><i class="fas fa-book"></i> Log Book</a>
-            <a data-tab="penilaian"><i class="fas fa-star"></i> Penilaian</a>
+            <a data-tab="penilaian"><i class="fas fa-star mr-1"></i> Penilaian</a>
         </div>
 
         {{-- TAB: DASHBOARD --}}
@@ -452,7 +452,7 @@
                                         <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
                                     </form>
                                     @endif
-                                    <i class="fas fa-chevron-down" id="icon-{{ $taskId }}"></i>
+                                    <i class="fas fa-chevron-down ml-2" id="icon-{{ $taskId }}"></i>
                                 </div>
                             </div>
                             <div id="{{ $taskId }}" style="display:none;">
@@ -564,7 +564,73 @@
 
         {{-- TAB: PENILAIAN --}}
         <div class="tab-content" id="tab-penilaian">
-            <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">🚧</span><h5>Penilaian — Segera Hadir</h5></div></div>
+            <div class="card">
+                <div class="card-header"><h5><i class="fas fa-star mr-2"></i> Penilaian Kelompok</h5></div>
+                <div class="card-body p-0"><div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead><tr><th width="50">#</th><th>Komponen Penilaian</th><th width="100">Bobot</th><th width="120">Nilai</th><th width="100">Aksi</th></tr></thead>
+                        <tbody>
+                            <tr class="bg-light"><td colspan="5"><strong>Dosen Pembimbing Lapangan (DPL)</strong></td></tr>
+                            @foreach($komponenList->where('kategori','dpl') as $k)
+                            @php $nilai = $penilaianData[$k->id]->nilai ?? null; @endphp
+                            <tr>
+                                <td>{{ $k->urutan }}</td>
+                                <td><strong>{{ $k->nama_komponen }}</strong><br><small class="text-muted">{{ $k->deskripsi }}</small></td>
+                                <td><span class="badge badge-secondary">{{ $k->bobot }}%</span></td>
+                                <td>
+                                    @if($nilai!==null)<span class="font-weight-bold {{ $nilai>=75?'text-success':($nilai>=60?'text-warning':'text-danger') }}">{{ number_format($nilai,2) }}</span>
+                                    @else<span class="text-muted">-</span>@endif
+                                </td>
+                                <td>
+                                    @if($isDpl)
+                                    <form action="{{ route('kelompok.penilaian.input') }}" method="POST" class="form-inline gap-1">
+                                        @csrf
+                                        <input type="hidden" name="kelompok_kkn_id" value="{{ $kelompok->id }}">
+                                        <input type="hidden" name="komponen_id" value="{{ $k->id }}">
+                                        <input type="number" name="nilai" class="form-control form-control-sm" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $nilai }}" style="width:80px;">
+                                        <button class="btn btn-primary btn-sm"><i class="fas fa-save"></i></button>
+                                    </form>
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                            @if($dplFinal)<tr class="bg-light"><td colspan="5" class="text-right font-weight-bold">Nilai Akhir DPL: {{ number_format($dplFinal,2) }}</td></tr>@endif
+
+                            <tr class="bg-light"><td colspan="5"><strong>LPPM</strong></td></tr>
+                            @foreach($komponenList->where('kategori','lppm') as $k)
+                            @php $nilai = $penilaianData[$k->id]->nilai ?? null; @endphp
+                            <tr>
+                                <td>{{ $k->urutan }}</td>
+                                <td><strong>{{ $k->nama_komponen }}</strong><br><small class="text-muted">{{ $k->deskripsi }}</small></td>
+                                <td><span class="badge badge-secondary">{{ $k->bobot }}%</span></td>
+                                <td>
+                                    @if($nilai!==null)<span class="font-weight-bold {{ $nilai>=75?'text-success':($nilai>=60?'text-warning':'text-danger') }}">{{ number_format($nilai,2) }}</span>
+                                    @else<span class="text-muted">-</span>@endif
+                                </td>
+                                <td>
+                                    @if($isAdmin)
+                                    <form action="{{ route('kelompok.penilaian.input') }}" method="POST" class="form-inline gap-1">
+                                        @csrf
+                                        <input type="hidden" name="kelompok_kkn_id" value="{{ $kelompok->id }}">
+                                        <input type="hidden" name="komponen_id" value="{{ $k->id }}">
+                                        <input type="number" name="nilai" class="form-control form-control-sm" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $nilai }}" style="width:80px;">
+                                        <button class="btn btn-primary btn-sm"><i class="fas fa-save"></i></button>
+                                    </form>
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                            @if($lppmFinal)<tr class="bg-light"><td colspan="5" class="text-right font-weight-bold">Nilai Akhir LPPM: {{ number_format($lppmFinal,2) }}</td></tr>@endif
+
+                            @if($finalScore)
+                            <tr style="background:#e8f0fe;"><td colspan="5" class="text-center font-weight-bold" style="font-size:1.2rem;">
+                                NILAI AKHIR TOTAL: <span class="{{ $finalScore>=75?'text-success':($finalScore>=60?'text-warning':'text-danger') }}">{{ number_format($finalScore,2) }}</span>
+                            </td></tr>
+                            @endif
+                        </tbody>
+                    </table>
+                </div></div>
+            </div>
         </div>
 
     </div>
