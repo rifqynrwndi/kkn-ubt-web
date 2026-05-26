@@ -22,6 +22,12 @@ use App\Http\Controllers\{
     DplController,
     VerifikasiDokumenController,
     KelompokKknController,
+    KelompokController,
+    ProposalController,
+    StatusController,
+    TugasController,
+    LogBookController,
+    PenilaianController,
     WarAdminController,
     WarController,
     WarMonitorController,
@@ -139,6 +145,42 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
         Route::get('/kelompok', [DplController::class, 'kelompokIndex'])->name('kelompok.index');
         Route::get('/kelompok/{kelompok}', [DplController::class, 'kelompokShow'])->name('kelompok.show');
         Route::get('/mahasiswa/{peserta}', [DplController::class, 'mahasiswaShow'])->name('mahasiswa.show');
+    });
+
+    Route::prefix('kelompok')->name('kelompok.')->group(function () {
+        Route::get('/', [KelompokController::class, 'index'])->name('index');
+        Route::post('/upload-photo', [KelompokController::class, 'uploadPhoto'])->name('upload-photo');
+
+        Route::prefix('proposal')->name('proposal.')->group(function () {
+            Route::get('/', [ProposalController::class, 'index'])->name('index');
+            Route::get('/create', [ProposalController::class, 'create'])->name('create');
+            Route::post('/', [ProposalController::class, 'store'])->name('store');
+            Route::post('/{proposal}/review', [ProposalController::class, 'review'])->name('review');
+        });
+
+        Route::prefix('status')->name('status.')->group(function () {
+            Route::post('/{kelompok}/change', [StatusController::class, 'change'])->name('change');
+        });
+
+        Route::prefix('tugas')->name('tugas.')->group(function () {
+            Route::post('/{kelompok}', [TugasController::class, 'store'])->name('store');
+            Route::delete('/{tugas}', [TugasController::class, 'destroy'])->name('destroy');
+            Route::post('/{tugas}/submit', [TugasController::class, 'submit'])->name('submit');
+            Route::get('/submit', [TugasController::class, 'create'])->name('create');
+            Route::post('/submission/{submission}/review', [TugasController::class, 'review'])->name('review');
+        });
+
+        Route::prefix('logbook')->name('logbook.')->group(function () {
+            Route::get('/create', [LogBookController::class, 'create'])->name('create');
+            Route::post('/', [LogBookController::class, 'store'])->name('store');
+            Route::put('/{logbook}', [LogBookController::class, 'update'])->name('update');
+            Route::delete('/{logbook}', [LogBookController::class, 'destroy'])->name('destroy');
+            Route::post('/validate-all', [LogBookController::class, 'validateAll'])->name('validateAll');
+        });
+
+        Route::prefix('penilaian')->name('penilaian.')->group(function () {
+            Route::post('/input', [PenilaianController::class, 'input'])->name('input');
+        });
     });
 
     /*

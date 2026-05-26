@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="{{ asset('css/components.css') }}">
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/izitoast/dist/css/iziToast.min.css">
 
     <style>
         * { font-family: 'Inter', sans-serif; }
@@ -207,7 +208,10 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
+    @if(session('success'))
+    <script>iziToast.success({ title:'Berhasil', message:'{!! addslashes(session('success')) !!}', position:'topRight', timeout:5000 });</script>
+    @endif
     @livewireScripts
     @stack('scripts')
 </body>

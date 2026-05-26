@@ -63,13 +63,25 @@
 
                     </a>
                 </li>
-                {{-- Dokumen Pendaftaran (hanya jika belum approved) --}}
+                {{-- Kelompok KKN (jika sudah punya kelompok) --}}
                 @php
                     $pesertaAktif = \App\Models\PesertaKkn::where('mahasiswa_id', auth()->id())
                         ->whereHas('gelombang', fn($q) => $q->whereIn('status', ['pendaftaran', 'berjalan']))
                         ->first();
                     $showDokumen = $pesertaAktif && in_array($pesertaAktif->status_pendaftaran, ['draft', 'pending_documents', 'pending_verification', 'revision']);
                 @endphp
+                @if($pesertaAktif && $pesertaAktif->kelompok_kkn_id)
+                <li class="{{ Request::is('kelompok*') ? 'active' : '' }}">
+                    <a class="nav-link"
+                       href="{{ route('kelompok.index') }}">
+
+                        <i class="fas fa-users"></i>
+                        <span>Kelompok KKN</span>
+
+                    </a>
+                </li>
+                @endif
+                {{-- Dokumen Pendaftaran (hanya jika belum approved) --}}
                 @if($showDokumen)
                     <li class="{{ Request::is('dokumen-pendaftaran*') ? 'active' : '' }}">
                         <a class="nav-link"

@@ -218,34 +218,13 @@
         .then(r => r.json().then(d => ({ status: r.status, body: d })).catch(() => ({ status: r.status })))
         .then(res => {
             if (res.status === 200 || res.status === 302) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Terkirim!',
-                    text: 'Link verifikasi telah dikirim ke {{ auth()->user()->email }}. Silakan cek inbox atau spam Anda.',
-                    confirmButtonColor: '#6777ef',
-                    background: isDark ? '#1f2430' : '#fff',
-                    color: isDark ? '#d6d9df' : '#545454'
-                });
+                iziToast.success({ title: 'Terkirim!', message: 'Link verifikasi telah dikirim ke {{ auth()->user()->email }}. Silakan cek inbox atau spam Anda.', position: 'topRight', timeout: 8000 });
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal',
-                    text: 'Gagal mengirim verifikasi. Silakan coba lagi.',
-                    confirmButtonColor: '#6777ef',
-                    background: isDark ? '#1f2430' : '#fff',
-                    color: isDark ? '#d6d9df' : '#545454'
-                });
+                iziToast.error({ title: 'Gagal', message: 'Gagal mengirim verifikasi. Silakan coba lagi.', position: 'topRight', timeout: 8000 });
             }
         })
         .catch(() => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal',
-                text: 'Gagal terhubung ke server.',
-                confirmButtonColor: '#6777ef',
-                background: isDark ? '#1f2430' : '#fff',
-                color: isDark ? '#d6d9df' : '#545454'
-            });
+            iziToast.error({ title: 'Gagal', message: 'Gagal terhubung ke server.', position: 'topRight', timeout: 8000 });
         })
         .finally(() => {
             btn.disabled = false;
