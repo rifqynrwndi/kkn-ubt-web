@@ -73,11 +73,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-2 mb-2">
-                        <button type="button" class="btn btn-outline-secondary btn-block" onclick="window.location='{{ route('mahasiswa.index') }}'">
-                            <i class="fas fa-sync-alt"></i> Reset
-                        </button>
-                    </div>
                 </div>
             </form>
 

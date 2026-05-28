@@ -62,33 +62,36 @@ class MahasiswaManagementController extends Controller
 
         $users = $query->orderBy('name')->get();
 
-        $filename = 'data-mahasiswa-' . date('YmdHis') . '.csv';
-        $headers = ['Content-Type'=>'text/csv','Content-Disposition'=>"attachment; filename=\"{$filename}\""];
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
 
-        $callback = function() use ($users) {
-            $f = fopen('php://output','w');
-            fputcsv($f, ['No','Nama Lengkap','NPM','Email','HP','Status','Jenis Kelamin','Fakultas','Prodi','Nama Ortu','HP Ortu','Alamat Ortu']);
-            foreach ($users as $i => $u) {
-                $m = $u->mahasiswa;
-                fputcsv($f, [
-                    $i+1,
-                    $u->name,
-                    $m->npm ?? '-',
-                    $u->email,
-                    $m->no_hp ?? '-',
-                    $u->email_verified_at ? 'Verified' : 'Unverified',
-                    $m->jenis_kelamin === 'L' ? 'Laki-laki' : ($m->jenis_kelamin === 'P' ? 'Perempuan' : '-'),
-                    $m->prodi->fakultas->nama_fakultas ?? '-',
-                    $m->prodi->nama_prodi ?? '-',
-                    $m->nama_ortu ?? '-',
-                    $m->no_hp_ortu ?? '-',
-                    $m->alamat_ortu ?? '-',
-                ]);
-            }
-            fclose($f);
-        };
+        $headers = ['No','Nama Lengkap','NPM','Email','HP','Status','Jenis Kelamin','Fakultas','Prodi','Nama Ortu','HP Ortu','Alamat Ortu'];
+        $sheet->fromArray([$headers], null, 'A1');
 
-        return response()->stream($callback, 200, $headers);
+        $row = 2;
+        foreach ($users as $i => $u) {
+            $m = $u->mahasiswa;
+            $sheet->fromArray([
+                $i+1, $u->name,
+                $m->npm ?? '-', $u->email, $m->no_hp ?? '-',
+                $u->email_verified_at ? 'Verified' : 'Unverified',
+                $m->jenis_kelamin === 'L' ? 'Laki-laki' : ($m->jenis_kelamin === 'P' ? 'Perempuan' : '-'),
+                $m->prodi->fakultas->nama_fakultas ?? '-',
+                $m->prodi->nama_prodi ?? '-',
+                $m->nama_ortu ?? '-', $m->no_hp_ortu ?? '-', $m->alamat_ortu ?? '-',
+            ], null, "A{$row}");
+            $row++;
+        }
+
+        foreach (range('A','L') as $col) { $sheet->getColumnDimension($col)->setAutoSize(true); }
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $filename = 'data-mahasiswa-' . date('YmdHis') . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        $writer->save('php://output');
+        exit;
     }
 
     public function create()
