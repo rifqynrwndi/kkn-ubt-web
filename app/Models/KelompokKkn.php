@@ -112,18 +112,6 @@ class KelompokKkn extends Model
             $kelompok->kode_kelompok = $kode;
         });
 
-        static::updated(function ($kelompok) {
-
-            $jumlah = $kelompok->pesertaKkn()->count();
-
-            if ($jumlah >= $kelompok->kuota) {
-
-                $kelompok->updateQuietly([
-                    'status' => 'penuh'
-                ]);
-
-            }
-
-        });
+        // Status 'penuh' is handled explicitly in tambahAnggota() and WarAllocationService
     }
 }
