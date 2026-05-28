@@ -40,16 +40,38 @@
     <div class="card">
         <div class="card-body">
 
-            {{-- Search Form --}}
+            {{-- Search + Filter --}}
             <form method="GET" class="mb-3">
-                <div class="input-group" style="max-width: 400px;">
-                    <input type="text"
-                           name="search"
-                           class="form-control"
-                           placeholder="Cari nama / npm / email..."
-                           value="{{ request('search') }}">
-                    <div class="input-group-append">
-                        <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
+                <div class="row align-items-end">
+                    <div class="col-md-4 mb-2">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" placeholder="Cari nama / npm / email..." value="{{ request('search') }}">
+                            <div class="input-group-append"><button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <select name="status" class="form-control" onchange="this.form.submit()">
+                            <option value="">Semua Status</option>
+                            <option value="verified" {{ request('status')=='verified'?'selected':'' }}>Email Verified</option>
+                            <option value="unverified" {{ request('status')=='unverified'?'selected':'' }}>Email Unverified</option>
+                            <option value="biodata_incomplete" {{ request('status')=='biodata_incomplete'?'selected':'' }}>Biodata Belum Lengkap</option>
+                            <option value="no_photo" {{ request('status')=='no_photo'?'selected':'' }}>Belum Upload Foto</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <div class="input-group">
+                            <select id="export-gelombang" class="form-control">
+                                <option value="">Semua Gelombang</option>
+                                @foreach(\App\Models\Gelombang::orderBy('tahun','desc')->get() as $g)
+                                <option value="{{ $g->id }}">{{ $g->nama_gelombang }}</option>
+                                @endforeach
+                            </select>
+                            <div class="input-group-append">
+                                <a href="{{ route('mahasiswa.export') }}" class="btn btn-success" id="export-btn" onclick="this.href=this.href+'?gelombang_id='+document.getElementById('export-gelombang').value">
+                                    <i class="fas fa-download mr-1"></i> Export
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </form>

@@ -28,6 +28,7 @@ use App\Http\Controllers\{
     TugasController,
     LogBookController,
     PenilaianController,
+    TugasAdminController,
     WarAdminController,
     WarController,
     WarMonitorController,
@@ -251,6 +252,7 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
         */
 
         Route::resource('mahasiswa', MahasiswaManagementController::class);
+    Route::get('/mahasiswa-export', [MahasiswaManagementController::class, 'export'])->name('mahasiswa.export');
 
         /*
         |--------------------------------------------------------------------------
@@ -428,6 +430,13 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
             Route::put('/dokumen/{id}', [VerifikasiDokumenController::class, 'update'])->name('update');
             Route::post('/bulk-approve',[VerifikasiDokumenController::class, 'bulkApprove'])->name('bulk-approve');
             Route::put('/{peserta}/bulk-update',[VerifikasiDokumenController::class, 'bulkUpdate'])->name('bulk-update');
+        });
+
+        Route::prefix('admin/tugas')->name('admin.tugas.')->group(function () {
+            Route::get('/', [TugasAdminController::class, 'index'])->name('index');
+            Route::get('/create', [TugasAdminController::class, 'create'])->name('create');
+            Route::post('/', [TugasAdminController::class, 'store'])->name('store');
+            Route::delete('/destroy-by-nama', [TugasAdminController::class, 'destroyByNama'])->name('destroyByNama');
         });
 
         /*

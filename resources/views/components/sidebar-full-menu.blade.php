@@ -232,6 +232,16 @@
                     </a>
                 </li>
 
+                <li class="{{ Request::is('admin/tugas*') ? 'active' : '' }}">
+                    <a class="nav-link"
+                       href="{{ route('admin.tugas.index') }}">
+
+                        <i class="fas fa-tasks"></i>
+                        <span>Tugas Kelompok</span>
+
+                    </a>
+                </li>
+
                 {{-- MONITORING --}}
                 <li class="menu-header">
                     Monitoring
