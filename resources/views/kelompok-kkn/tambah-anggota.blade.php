@@ -40,6 +40,12 @@
             </div>
 
             <div class="card-body">
+                <form method="GET" class="mb-3">
+                    <div class="input-group" style="max-width:400px;">
+                        <input type="text" name="search" class="form-control" placeholder="Cari nama mahasiswa..." value="{{ request('search') }}">
+                        <div class="input-group-append"><button class="btn btn-primary"><i class="fas fa-search"></i></button></div>
+                    </div>
+                </form>
 
                 @if($peserta->count())
 
@@ -98,8 +104,6 @@
                     </div>
 
                 @endif
-
-            </div>
 
         </div>
 

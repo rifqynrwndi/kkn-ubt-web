@@ -351,8 +351,14 @@ class KelompokKknController extends Controller
 
     public function createAnggota(KelompokKkn $kelompok_kkn): View
     {
+        $gelombangId = $kelompok_kkn->desaGelombang->gelombang_id;
+
         $peserta = PesertaKkn::with('mahasiswa.user')
+            ->where('gelombang_id', $gelombangId)
             ->whereNull('kelompok_kkn_id')
+            ->when(request('search'), fn($q) => $q->whereHas('mahasiswa.user', fn($q) =>
+                $q->where('name', 'like', '%'.request('search').'%')
+            ))
             ->get();
 
         return view(

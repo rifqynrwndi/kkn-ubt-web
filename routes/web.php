@@ -252,6 +252,7 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
         */
 
         Route::resource('mahasiswa', MahasiswaManagementController::class);
+    Route::get('/mahasiswa-export', [MahasiswaManagementController::class, 'export'])->name('mahasiswa.export');
 
         /*
         |--------------------------------------------------------------------------

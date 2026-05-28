@@ -21,6 +21,22 @@
     [data-bs-theme="dark"] .group-nav a:hover, [data-bs-theme="dark"] .group-nav a.active { background: rgba(103,119,239,.1); }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
+    .proposal-doc {
+        background: #fff; border-radius: 12px; padding: 48px 40px;
+        box-shadow: 0 2px 16px rgba(0,0,0,.06); max-width: 860px; margin: 0 auto;
+    }
+    .proposal-doc-header { text-align: center; border-bottom: 2px solid #0f3460; padding-bottom: 24px; margin-bottom: 28px; }
+    .proposal-doc-header h3 { font-size: 1.1rem; font-weight: 700; color: #0f3460; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+    .proposal-doc-header h2 { font-size: 1.3rem; font-weight: 800; color: #1a1a2e; margin: 8px 0; }
+    .proposal-doc-header .doc-meta { font-size: .85rem; color: #6c757d; text-align: center; }
+    .proposal-doc-body h4 { font-size: 1rem; font-weight: 700; color: #0f3460; margin: 24px 0 10px; text-transform: uppercase; text-align: center; }
+    .proposal-doc-body p { text-align: justify; line-height: 1.8; margin-bottom: 20px; font-size: .9rem; }
+    .proposal-doc-body p.text-muted { text-align: center; }
+    [data-bs-theme="dark"] .proposal-doc { background: #1f2430; }
+    [data-bs-theme="dark"] .proposal-doc-header { border-bottom-color: #374151; }
+    [data-bs-theme="dark"] .proposal-doc-body h4 { color: #a4b0f5; }
+    [data-bs-theme="dark"] .proposal-doc-header h2 { color: #f1f3f8; }
+    [data-bs-theme="dark"] .proposal-doc-header .doc-meta { color: #aab1c1; }
 </style>
 @endpush
 
@@ -199,17 +215,33 @@
         {{-- TAB: PROPOSAL --}}
         <div class="tab-content active" id="tab-admin-proposal">
             @if($proposal)
-            <div class="card">
-                <div class="card-header"><h5>Proposal — <span class="badge badge-{{ $proposal->status==='disetujui'?'success':($proposal->status==='ditolak'?'danger':'info') }}">{{ $proposal->status }}</span></h5></div>
-                <div class="card-body">
+            <div class="proposal-doc">
+                <div class="proposal-doc-header">
+                    <h3>Proposal Program Kerja KKN</h3>
+                    <h2>{{ $kelompok_kkn->nama_kelompok }}</h2>
+                    <div class="doc-meta">
+                        <i class="fas fa-map-marker-alt mr-1"></i>
+                        {{ $kelompok_kkn->desaGelombang->desa->nama_desa ?? '-' }},
+                        {{ $kelompok_kkn->desaGelombang->desa->kecamatan->nama_kecamatan ?? '-' }},
+                        {{ $kelompok_kkn->desaGelombang->desa->kecamatan->kabupaten ?? '-' }}
+                        &nbsp;&middot;&nbsp;
+                        <i class="fas fa-calendar-alt mr-1"></i>
+                        {{ \Carbon\Carbon::parse($kelompok_kkn->desaGelombang->gelombang->tgl_mulai ?? now())->format('d M Y') }}
+                        &mdash;
+                        {{ \Carbon\Carbon::parse($kelompok_kkn->desaGelombang->gelombang->tgl_akhir ?? now())->format('d M Y') }}
+                    </div>
+                    <div class="mt-2"><span class="badge badge-{{ $proposal->status==='disetujui'?'success':($proposal->status==='ditolak'?'danger':'info') }}">{{ $proposal->status }}</span></div>
+                </div>
+                <div class="proposal-doc-body">
                     @foreach(['pendahuluan'=>'Pendahuluan','tujuan'=>'Tujuan','manfaat'=>'Manfaat','hasil_observasi'=>'Hasil Observasi','rancangan_program'=>'Rancangan Program','solusi_ide'=>'Solusi & Ide'] as $f=>$l)
-                    <h6 class="font-weight-bold text-primary">{{ $l }}</h6>
-                    <p style="font-size:13px;text-align:justify;">{!! $proposal->$f ?: '<span class="text-muted">—</span>' !!}</p>
+                    <h4>{{ $l }}</h4>
+                    @php $content = $proposal->$f; $isEmpty = !$content || trim(strip_tags($content)) === ''; @endphp
+                    @if($isEmpty)<p class="text-muted text-center">Belum ada {{ $l }}</p>@else<p>{!! $content !!}</p>@endif
                     @endforeach
                 </div>
             </div>
             @else
-            <div class="card"><div class="card-body text-center py-4 text-muted">Belum ada proposal.</div></div>
+            <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">📄</span><h5>Belum Ada Proposal</h5><p class="text-muted">Ketua kelompok belum membuat proposal.</p></div></div>
             @endif
         </div>
 
@@ -324,6 +356,9 @@
                 <tbody>@foreach($entries as $lb)<tr><td>{{ $lb->tanggal->format('d M Y') }}</td><td>{{ $lb->judul }}</td><td style="max-width:200px;"><small class="d-block text-truncate">{{ $lb->deskripsi }}</small></td><td>{{ $lb->is_validated?'✅':'⏳' }}</td></tr>@endforeach</tbody></table></div>
             </div>
             @endforeach
+            @if($logbookData->isEmpty())
+            <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">📖</span><h5>Belum Ada Log Book</h5><p class="text-muted">Anggota kelompok belum membuat catatan harian.</p></div></div>
+            @endif
         </div>
 
         {{-- TAB: PENILAIAN --}}
@@ -355,6 +390,8 @@
                     </form></td></tr>
                 @endforeach
             </tbody></table></div></div>
+            @else
+            <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">⭐</span><h5>Belum Ada Komponen Penilaian</h5><p class="text-muted">Jalankan seeder PenilaianKomponenSeeder terlebih dahulu.</p></div></div>
             @endif
         </div>
     </div>

@@ -33,6 +33,10 @@ class MahasiswaManagementController extends Controller
                 $query->whereNotNull('email_verified_at');
             } elseif ($request->status == 'unverified') {
                 $query->whereNull('email_verified_at');
+            } elseif ($request->status == 'biodata_incomplete') {
+                $query->whereHas('mahasiswa', fn($q) => $q->where('is_biodata_complete', false));
+            } elseif ($request->status == 'no_photo') {
+                $query->whereHas('mahasiswa', fn($q) => $q->where('is_biodata_complete', false)->orWhereNull('foto'));
             }
         }
 
@@ -44,6 +48,47 @@ class MahasiswaManagementController extends Controller
         $mahasiswas = $query->latest()->paginate(10)->withQueryString();
 
         return view('mahasiswa.index', compact('mahasiswas'));
+    }
+
+    public function export(Request $request)
+    {
+        $query = User::with('mahasiswa.prodi.fakultas')
+            ->role('mahasiswa')
+            ->whereHas('mahasiswa');
+
+        if ($request->filled('gelombang_id')) {
+            $query->whereHas('mahasiswa.pesertaKkn', fn($q) => $q->where('gelombang_id', $request->gelombang_id));
+        }
+
+        $users = $query->orderBy('name')->get();
+
+        $filename = 'data-mahasiswa-' . date('YmdHis') . '.csv';
+        $headers = ['Content-Type'=>'text/csv','Content-Disposition'=>"attachment; filename=\"{$filename}\""];
+
+        $callback = function() use ($users) {
+            $f = fopen('php://output','w');
+            fputcsv($f, ['No','Nama Lengkap','NPM','Email','HP','Status','Jenis Kelamin','Fakultas','Prodi','Nama Ortu','HP Ortu','Alamat Ortu']);
+            foreach ($users as $i => $u) {
+                $m = $u->mahasiswa;
+                fputcsv($f, [
+                    $i+1,
+                    $u->name,
+                    $m->npm ?? '-',
+                    $u->email,
+                    $m->no_hp ?? '-',
+                    $u->email_verified_at ? 'Verified' : 'Unverified',
+                    $m->jenis_kelamin === 'L' ? 'Laki-laki' : ($m->jenis_kelamin === 'P' ? 'Perempuan' : '-'),
+                    $m->prodi->fakultas->nama_fakultas ?? '-',
+                    $m->prodi->nama_prodi ?? '-',
+                    $m->nama_ortu ?? '-',
+                    $m->no_hp_ortu ?? '-',
+                    $m->alamat_ortu ?? '-',
+                ]);
+            }
+            fclose($f);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     public function create()
