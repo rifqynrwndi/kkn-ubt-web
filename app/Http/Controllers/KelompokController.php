@@ -16,14 +16,19 @@ class KelompokController extends Controller
 
         return \App\Models\PesertaKkn::where('mahasiswa_id', $mahasiswa->user_id)
             ->whereNotNull('kelompok_kkn_id')
+            ->whereDoesntHave('gelombang.warSessions', fn($q) => $q->whereIn('status', ['scheduled', 'active']))
             ->with(['kelompokKkn.desaGelombang.desa.kecamatan', 'kelompokKkn.desaGelombang.gelombang'])
             ->first();
     }
 
-    public function index(): View
+    public function index(): View|RedirectResponse
     {
         $peserta = $this->getPeserta();
-        abort_if(! $peserta, 404, 'Anda belum tergabung dalam kelompok KKN.');
+
+        if (! $peserta) {
+            session()->flash('info', 'Anda belum tergabung dalam kelompok KKN. Silakan menunggu penempatan oleh admin atau ikuti proses WAR KKN.');
+            return redirect()->route('home');
+        }
 
         $kelompok = $peserta->kelompokKkn;
         $isKetua = $kelompok->ketua_peserta_id === $peserta->id;

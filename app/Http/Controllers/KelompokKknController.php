@@ -11,6 +11,7 @@ use App\Models\ProgramStudi;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class KelompokKknController extends Controller
 {
@@ -430,35 +431,35 @@ class KelompokKknController extends Controller
 
         // Rule checks (same as WAR system)
         $currentMembers = PesertaKkn::where('kelompok_kkn_id', $kelompok_kkn->id)
-            ->with('mahasiswa.prodi')->get()->toArray();
+            ->with('mahasiswa.prodi')->get();
 
-        if (count($currentMembers) >= 12) {
+        if ($currentMembers->count() >= 12) {
             return back()->with('error', 'Kelompok sudah penuh (maks 12 orang).');
         }
 
         // Gender check
-        $gender = $peserta->mahasiswa->jenis_kelamin;
-        $genderCount = collect($currentMembers)->where('mahasiswa.jenis_kelamin', $gender)->count();
+        $gender = $peserta->mahasiswa?->jenis_kelamin;
         $maxGender = $gender === 'L' ? 4 : 9;
+        $genderCount = $currentMembers->filter(fn($m) => $m->mahasiswa?->jenis_kelamin === $gender)->count();
         if ($genderCount >= $maxGender) {
             return back()->with('error', "Kuota {$maxGender} {$gender} sudah penuh di kelompok ini.");
         }
 
         // Faculty quota check
-        $fakId = $peserta->mahasiswa->prodi->fakultas_id;
+        $fakId = $peserta->mahasiswa?->prodi?->fakultas_id;
         $fakKuota = KelompokKuota::where('kelompok_kkn_id', $kelompok_kkn->id)->where('fakultas_id', $fakId)->first();
         if ($fakKuota) {
-            $fakCount = collect($currentMembers)->where('mahasiswa.prodi.fakultas_id', $fakId)->count();
+            $fakCount = $currentMembers->filter(fn($m) => $m->mahasiswa?->prodi?->fakultas_id === $fakId)->count();
             if ($fakCount >= $fakKuota->kuota) {
                 return back()->with('error', "Kuota fakultas sudah penuh di kelompok ini (maks {$fakKuota->kuota} orang).");
             }
         }
 
         // Prodi check
-        $prodiId = $peserta->mahasiswa->prodi_id;
+        $prodiId = $peserta->mahasiswa?->prodi_id;
         $prodiCountInFak = ProgramStudi::where('fakultas_id', $fakId)->count();
         if ($prodiCountInFak > 1) {
-            $prodiCount = collect($currentMembers)->where('mahasiswa.prodi_id', $prodiId)->count();
+            $prodiCount = $currentMembers->filter(fn($m) => $m->mahasiswa?->prodi_id === $prodiId)->count();
             if ($prodiCount >= 1) {
                 return back()->with('error', 'Program studi ini sudah ada di kelompok ini (maks 1 per prodi).');
             }
@@ -521,15 +522,19 @@ class KelompokKknController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $peserta->update([
-            'kelompok_kkn_id' => null,
-        ]);
+        DB::transaction(function () use ($kelompok_kkn, $peserta) {
 
-        if ($kelompok_kkn->ketua_peserta_id === $peserta->id) {
-            $kelompok_kkn->update(['ketua_peserta_id' => null]);
-        }
+            $peserta->update([
+                'kelompok_kkn_id' => null,
+            ]);
 
-        \App\Models\WarParticipant::where('peserta_kkn_id', $peserta->id)->delete();
+            if ($kelompok_kkn->ketua_peserta_id === $peserta->id) {
+                $kelompok_kkn->updateQuietly(['ketua_peserta_id' => null]);
+            }
+
+            \App\Models\WarParticipant::where('peserta_kkn_id', $peserta->id)->delete();
+
+        });
 
         /*
         |--------------------------------------------------------------------------
@@ -537,9 +542,11 @@ class KelompokKknController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if ($kelompok_kkn->status === 'penuh') {
+        $kelompok_kkn->refresh();
 
-            $kelompok_kkn->update([
+        if ($kelompok_kkn->status === 'penuh' && $kelompok_kkn->terisi < $kelompok_kkn->kuota) {
+
+            $kelompok_kkn->updateQuietly([
                 'status' => 'dibuka'
             ]);
 

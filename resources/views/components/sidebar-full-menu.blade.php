@@ -63,14 +63,18 @@
 
                     </a>
                 </li>
-                {{-- Kelompok KKN (jika sudah punya kelompok) --}}
+                {{-- Kelompok KKN (jika sudah punya kelompok dan WAR tidak sedang berjalan) --}}
                 @php
                     $pesertaAktif = \App\Models\PesertaKkn::where('mahasiswa_id', auth()->id())
                         ->whereHas('gelombang', fn($q) => $q->whereIn('status', ['pendaftaran', 'berjalan']))
                         ->first();
                     $showDokumen = $pesertaAktif && in_array($pesertaAktif->status_pendaftaran, ['draft', 'pending_documents', 'pending_verification', 'revision']);
+                    $warActive = $pesertaAktif && \App\Models\WarSession::where('gelombang_id', $pesertaAktif->gelombang_id)
+                        ->whereIn('status', ['scheduled', 'active'])
+                        ->exists();
+                    $showKelompokMenu = $pesertaAktif && $pesertaAktif->kelompok_kkn_id && !$warActive;
                 @endphp
-                @if($pesertaAktif && $pesertaAktif->kelompok_kkn_id)
+                @if($showKelompokMenu)
                 <li class="{{ Request::is('kelompok*') ? 'active' : '' }}">
                     <a class="nav-link"
                        href="{{ route('kelompok.index') }}">

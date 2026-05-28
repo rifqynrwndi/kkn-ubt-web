@@ -75,7 +75,7 @@ class PendaftaranKknController extends Controller
     | Detail Kelompok Saya
     |--------------------------------------------------------------------------
     */
-    public function kelompokSaya(): View
+    public function kelompokSaya()
     {
         $user = auth()->user();
 
@@ -87,7 +87,13 @@ class PendaftaranKknController extends Controller
             ])
             ->where('mahasiswa_id', $user->id)
             ->whereNotNull('kelompok_kkn_id')
-            ->firstOrFail();
+            ->whereDoesntHave('gelombang.warSessions', fn($q) => $q->whereIn('status', ['scheduled', 'active']))
+            ->first();
+
+        if (! $peserta) {
+            session()->flash('info', 'Anda belum tergabung dalam kelompok KKN. Silakan menunggu penempatan oleh admin atau ikuti proses WAR KKN.');
+            return redirect()->route('home');
+        }
 
         return view('war.joined', [
             'session'     => null,
