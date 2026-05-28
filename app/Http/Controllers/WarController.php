@@ -54,16 +54,19 @@ class WarController extends Controller
             $expWar->update(['status' => 'closed']);
         }
 
+        $mahasiswa = auth()->user()->mahasiswa;
+        $fakultasId = $mahasiswa?->prodi?->fakultas_id;
+
+        // Find active WAR that includes the student's fakultas (if any)
         $activeWar = WarSession::where('status', 'active')
             ->with(['gelombang', 'faculties.fakultas'])
-            ->first();
+            ->get()
+            ->first(fn($war) => $war->faculties->contains('fakultas_id', $fakultasId));
 
         $scheduledWars = WarSession::where('status', 'scheduled')
             ->with(['gelombang'])
             ->orderBy('start_at')
             ->get();
-
-        $mahasiswa = auth()->user()->mahasiswa;
 
         /*
         |--------------------------------------------------------------------------
