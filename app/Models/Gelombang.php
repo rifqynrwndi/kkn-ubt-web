@@ -33,6 +33,11 @@ class Gelombang extends Model
     {
         return $this->hasMany(PesertaKkn::class);
     }
+
+    public function warSessions()
+    {
+        return $this->hasMany(WarSession::class);
+    }
 }
 
 
