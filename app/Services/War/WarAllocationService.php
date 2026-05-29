@@ -9,6 +9,7 @@ use App\Models\WarFaculty;
 use App\Models\WarLog;
 use App\Models\WarParticipant;
 use App\Models\WarSession;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class WarAllocationService
@@ -138,6 +139,10 @@ class WarAllocationService
                 'ip'            => request()->ip(),
             ]),
         ]);
+
+        // Hapus cache kelompok agar data realtime terlihat
+        Cache::forget("war:arena:{$session->id}");
+        Cache::forget("war:kelompok:{$session->id}");
 
         return $participant;
     }
