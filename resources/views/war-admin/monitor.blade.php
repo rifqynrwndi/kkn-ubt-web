@@ -564,9 +564,9 @@
             .catch(function() {});
     }
 
-    fetchStats();     setInterval(fetchStats,     8000);
-    fetchLogs();      setInterval(fetchLogs,      5000);
-    fetchKelompoks(); setInterval(fetchKelompoks, 7000);
+    fetchStats();     setInterval(fetchStats,     30000);
+    fetchLogs();      setInterval(fetchLogs,      30000);
+    fetchKelompoks(); setInterval(fetchKelompoks, 30000);
 
 })();
 </script>
