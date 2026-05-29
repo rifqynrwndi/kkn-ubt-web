@@ -11,76 +11,63 @@ use Illuminate\Console\Command;
 class WarProcessExpiredFaculties extends Command
 {
     protected $signature = 'war:process-expired-faculties';
-    protected $description = 'Auto-assign unplaced mahasiswa per faculty when their WAR jadwal has ended';
+    protected $description = 'Tunggu semua fakultas selesai WAR, baru assign sisa peserta ke kelompok random';
 
     public function handle(WarService $warService)
     {
-        $expiredFaculties = WarFaculty::whereHas('warSession', fn($q) => $q->where('status', 'active'))
-            ->where('end_at', '<=', now())
-            ->with(['warSession', 'fakultas'])
+        // Cari active session yang SEMUA fakultasnya sudah expired
+        $sessions = WarSession::where('status', 'active')
+            ->whereHas('faculties')
+            ->whereDoesntHave('faculties', fn($q) => $q->where('end_at', '>', now()))
+            ->with(['gelombang', 'faculties'])
             ->get();
 
-        if ($expiredFaculties->isEmpty()) {
-            $this->info('Tidak ada fakultas dengan jadwal WAR yang sudah habis.');
+        if ($sessions->isEmpty()) {
+            $this->info('Belum ada session WAR yang semua fakultasnya selesai.');
             return;
         }
 
-        $processedSessionIds = [];
-
-        foreach ($expiredFaculties as $wf) {
-            $session = $wf->warSession;
-            $fakultasId = $wf->fakultas_id;
+        foreach ($sessions as $session) {
             $gelId = $session->gelombang_id;
+            $this->line("Sesi: {$session->name}");
 
-            $namaFak = $wf->fakultas?->nama_fakultas ?? $fakultasId;
-            $this->line("Fakultas: {$namaFak}, Sesi: {$session->name}");
-
+            // Ambil SEMUA peserta approved yang belum punya kelompok (semua fakultas)
             $pesertas = PesertaKkn::where('gelombang_id', $gelId)
                 ->where('status_pendaftaran', 'approved')
                 ->whereNull('kelompok_kkn_id')
-                ->whereHas('mahasiswa.prodi', fn($q) => $q->where('fakultas_id', $fakultasId))
                 ->with(['mahasiswa.prodi.fakultas'])
                 ->get();
 
             if ($pesertas->isEmpty()) {
                 $this->line("  Tidak ada mahasiswa yang perlu di-assign.");
-            } else {
-                $this->info("  Mahasiswa perlu assign: {$pesertas->count()}");
+                $session->update(['status' => 'closed']);
+                $this->info("  Sesi ditutup.");
+                continue;
+            }
 
-                $success = 0;
-                foreach ($pesertas as $peserta) {
-                    $kelompok = KelompokKkn::whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $gelId))
-                        ->where('status', '!=', 'penuh')
-                        ->inRandomOrder()
-                        ->first();
+            $total = $pesertas->count();
+            $this->info("  Mahasiswa perlu assign (semua fakultas): {$total}");
 
-                    if (!$kelompok) {
-                        $this->warn("  Tidak ada kelompok tersedia.");
-                        break;
-                    }
+            $success = 0;
+            foreach ($pesertas as $peserta) {
+                $kelompok = KelompokKkn::whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $gelId))
+                    ->where('status', '!=', 'penuh')
+                    ->inRandomOrder()
+                    ->first();
 
-                    try {
-                        $result = $warService->joinKelompok($session, $kelompok->id, $peserta->mahasiswa_id);
-                        if ($result['success']) $success++;
-                    } catch (\Throwable) {}
+                if (!$kelompok) {
+                    $this->warn("  Kelompok habis. Assign terhenti ({$success} berhasil).");
+                    break;
                 }
 
-                $this->info("  Berhasil di-assign: {$success}");
+                try {
+                    $result = $warService->joinKelompok($session, $kelompok->id, $peserta->mahasiswa_id);
+                    if ($result['success']) $success++;
+                } catch (\Throwable) {}
             }
 
-            $processedSessionIds[] = $session->id;
-        }
-
-        // Close sessions where all faculties have expired
-        foreach (array_unique($processedSessionIds) as $sessionId) {
-            $remaining = WarFaculty::where('war_session_id', $sessionId)
-                ->where('end_at', '>', now())
-                ->exists();
-
-            if (! $remaining) {
-                WarSession::where('id', $sessionId)->update(['status' => 'closed']);
-                $this->info("Sesi #{$sessionId} ditutup (semua jadwal fakultas sudah habis).");
-            }
+            $session->update(['status' => 'closed']);
+            $this->info("  Assign selesai: {$success}/{$total} berhasil. Sesi ditutup.");
         }
 
         $this->newLine();
