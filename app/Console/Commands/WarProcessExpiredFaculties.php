@@ -52,7 +52,8 @@ class WarProcessExpiredFaculties extends Command
             foreach ($pesertas as $peserta) {
                 $kelompok = KelompokKkn::whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $gelId))
                     ->where('status', '!=', 'penuh')
-                    ->inRandomOrder()
+                    ->withCount('pesertaKkn')
+                    ->orderBy('peserta_kkn_count')
                     ->first();
 
                 if (!$kelompok) {
