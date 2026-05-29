@@ -48,9 +48,14 @@ class WarProcessExpiredFaculties extends Command
             $total = $pesertas->count();
             $this->info("  Mahasiswa perlu assign (semua fakultas): {$total}");
 
+            // Extend session & fakultas end_at temporarily agar validasi timing lolos
+            $extendedUntil = now()->addMinutes(5);
+            $session->update(['end_at' => $extendedUntil]);
+            WarFaculty::where('war_session_id', $session->id)
+                ->update(['end_at' => $extendedUntil, 'start_at' => now()->subMinutes(5)]);
+
             // Round-robin per fakultas agar komposisi kelompok beragam
             $byFakultas = $pesertas->groupBy(fn($p) => $p->mahasiswa->prodi->fakultas_id);
-            $fakultasNames = $byFakultas->map(fn($g, $fid) => $g->first()->mahasiswa->prodi->fakultas->nama_fakultas ?? "Fakultas #{$fid}");
 
             $success = 0;
 
