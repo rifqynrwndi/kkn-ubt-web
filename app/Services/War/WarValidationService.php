@@ -87,7 +87,8 @@ class WarValidationService
             throw new \RuntimeException("Giliran fakultas kamu belum dimulai. Jadwal mulai: {$mulai}.");
         }
 
-        if (now()->gt($warFaculty->end_at)) {
+        // Grace period 5 detik — fast pre-check longgar. Authoritative check ada di WarAllocationService.
+        if (now()->subSeconds(5)->gt($warFaculty->end_at)) {
             throw new \RuntimeException('Giliran WAR untuk fakultas kamu sudah berakhir.');
         }
     }

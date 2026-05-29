@@ -58,6 +58,16 @@ class WarAllocationService
 
             $fakultasId = $pesertaLocked->mahasiswa->prodi->fakultas_id;
 
+            // Lock & re-check WarFaculty timing inside the transaction (authoritative check)
+            $warFacultyLocked = WarFaculty::where('war_session_id', $session->id)
+                ->where('fakultas_id', $fakultasId)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (now()->gt($warFacultyLocked->end_at)) {
+                throw new \RuntimeException('Giliran WAR untuk fakultas kamu sudah berakhir.');
+            }
+
             $kelompokKuota = KelompokKuota::where('kelompok_kkn_id', $kelompokLocked->id)
                 ->where('fakultas_id', $fakultasId)
                 ->orderBy('id')
