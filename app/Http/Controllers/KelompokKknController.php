@@ -460,8 +460,8 @@ class KelompokKknController extends Controller
         $prodiCountInFak = ProgramStudi::where('fakultas_id', $fakId)->count();
         if ($prodiCountInFak > 1) {
             $prodiCount = $currentMembers->filter(fn($m) => $m->mahasiswa?->prodi_id === $prodiId)->count();
-            if ($prodiCount >= 1) {
-                return back()->with('error', 'Program studi ini sudah ada di kelompok ini (maks 1 per prodi).');
+            if ($prodiCount >= \App\Services\War\WarRuleService::MAX_SAME_PRODI) {
+                return back()->with('error', 'Program studi ini sudah ada di kelompok ini (maks ' . \App\Services\War\WarRuleService::MAX_SAME_PRODI . ' per prodi).');
             }
         }
 
