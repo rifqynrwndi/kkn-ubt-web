@@ -63,27 +63,47 @@ class WarMonitorController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | FAKULTAS QUOTA PROGRESS
+        | PESERTA TOTAL (semua yang terdaftar di gelombang ini)
         |--------------------------------------------------------------------------
         */
-        $fakultasStats = $session->faculties->map(fn ($wf) => [
-            'nama'    => $wf->fakultas?->nama_fakultas ?? 'N/A',
-            'quota'   => $wf->quota,
-            'filled'  => $wf->filled,
-            'sisa'    => $wf->sisa,
-            'persen'  => $wf->quota > 0
-                ? round(($wf->filled / $wf->quota) * 100, 1)
-                : 0,
-            'status'  => $wf->status_jadwal,
-        ]);
+        $totalPesertaGelombang = \App\Models\PesertaKkn::where('gelombang_id', $session->gelombang_id)->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | FAKULTAS PROGRESS (hitung dari data aktual peserta_kkn)
+        |--------------------------------------------------------------------------
+        | Menggunakan jumlah mahasiswa yang benar-benar sudah punya kelompok
+        | di gelombang ini, bukan hanya dari war_participants / WarFaculty.filled.
+        | Sehingga assign manual via Tambah Anggota / SQL juga ikut terhitung.
+        */
+        $groupIds = $kelompoks->pluck('id');
+
+        $fakultasStats = $session->faculties->map(function ($wf) use ($groupIds) {
+            $filled = \App\Models\PesertaKkn::whereIn('kelompok_kkn_id', $groupIds)
+                ->whereHas('mahasiswa.prodi', fn ($q) => $q->where('fakultas_id', $wf->fakultas_id))
+                ->count();
+
+            return [
+                'fakultas_id' => $wf->fakultas_id,
+                'nama'        => $wf->fakultas?->nama_fakultas ?? 'N/A',
+                'quota'       => $wf->quota,
+                'filled'      => $filled,
+                'sisa'        => max($wf->quota - $filled, 0),
+                'persen'      => $wf->quota > 0
+                    ? round(($filled / $wf->quota) * 100, 1)
+                    : 0,
+                'status'      => $wf->status_jadwal,
+            ];
+        });
 
         return response()->json([
-            'war_status'       => $session->status,
-            'total_peserta'    => $session->participants_count,
-            'kelompok'         => $kelompokStats,
-            'fakultas'         => $fakultasStats,
-            'server_time'      => now()->toISOString(),
-            'end_at'           => $session->end_at?->toISOString(),
+            'war_status'              => $session->status,
+            'total_peserta'           => $session->participants_count,
+            'total_peserta_gelombang' => $totalPesertaGelombang,
+            'kelompok'                => $kelompokStats,
+            'fakultas'                => $fakultasStats,
+            'server_time'             => now()->toISOString(),
+            'end_at'                  => $session->end_at?->toISOString(),
         ]);
     }
 
