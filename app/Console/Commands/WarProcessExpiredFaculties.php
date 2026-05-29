@@ -96,7 +96,7 @@ class WarProcessExpiredFaculties extends Command
 
                     if (!$assigned) {
                         $fail++;
-                        $this->warn("  Gagal assign {$peserta->mahasiswa?->user?->name} — semua kelompok penuh untuk aturannya.");
+                        $this->warn("  Gagal: {$peserta->mahasiswa?->user?->name} ({$peserta->mahasiswa?->npm}) — {$peserta->mahasiswa?->prodi?->nama_prodi} {$peserta->mahasiswa?->jenis_kelamin}");
                     }
                 }
             }
