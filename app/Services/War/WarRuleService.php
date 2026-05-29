@@ -11,7 +11,7 @@ class WarRuleService
     public const MAX_KELOMPOK_SIZE = 12;
     public const MAX_LAKI          = 4;
     public const MAX_PEREMPUAN     = 9;
-    public const MAX_SAME_PRODI    = 1;
+    public const MAX_SAME_PRODI    = 2;
 
     public function checkAllRules(
         KelompokKkn   $kelompok,
