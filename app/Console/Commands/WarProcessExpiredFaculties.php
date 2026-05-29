@@ -54,21 +54,10 @@ class WarProcessExpiredFaculties extends Command
             WarFaculty::where('war_session_id', $session->id)
                 ->update(['end_at' => $extendedUntil, 'start_at' => now()->subMinutes(5)]);
 
-            // Pre-load ID semua kelompok yang masih punya slot, urut paling kosong duluan
-            $allKelompokIds = KelompokKkn::whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $gelId))
-                ->where('status', '!=', 'penuh')
-                ->withCount('pesertaKkn')
-                ->orderBy('peserta_kkn_count')
-                ->pluck('id')
-                ->toArray();
-
-            // Round-robin per fakultas agar komposisi kelompok beragam
             $byFakultas = $pesertas->groupBy(fn($p) => $p->mahasiswa->prodi->fakultas_id);
-
             $success = 0;
-            $fail = 0;
 
-            // Loop round-robin sampai semua fakultas habis
+            // Round-robin per fakultas — skip semua aturan, cuma cek total < 12
             $hasRemaining = true;
             while ($hasRemaining) {
                 $hasRemaining = false;
@@ -78,26 +67,24 @@ class WarProcessExpiredFaculties extends Command
 
                     $hasRemaining = true;
                     $peserta = $group->shift();
-                    $assigned = false;
 
-                    // Coba semua kelompok dari paling kosong sampai ada yang cocok
-                    foreach ($allKelompokIds as $kelompokId) {
-                        try {
-                            $result = $warService->joinKelompok($session, $kelompokId, $peserta->mahasiswa_id);
-                            if ($result['success']) {
-                                $success++;
-                                $assigned = true;
-                                break;
-                            }
-                        } catch (\Throwable) {
-                            continue;
-                        }
+                    $kelompok = KelompokKkn::whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $gelId))
+                        ->where('status', '!=', 'penuh')
+                        ->withCount('pesertaKkn')
+                        ->orderBy('peserta_kkn_count')
+                        ->first();
+
+                    if (!$kelompok) {
+                        $this->warn("  Kelompok habis. Assign berhenti ({$success} berhasil).");
+                        break 2;
                     }
 
-                    if (!$assigned) {
-                        $fail++;
-                        $this->warn("  Gagal: {$peserta->mahasiswa?->user?->name} ({$peserta->mahasiswa?->npm}) — {$peserta->mahasiswa?->prodi?->nama_prodi} {$peserta->mahasiswa?->jenis_kelamin}");
-                    }
+                    // Assign langsung — skip semua validasi
+                    \Illuminate\Support\Facades\DB::update(
+                        'UPDATE peserta_kkn SET kelompok_kkn_id = ? WHERE id = ?',
+                        [$kelompok->id, $peserta->id]
+                    );
+                    $success++;
                 }
             }
 
