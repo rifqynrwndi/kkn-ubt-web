@@ -168,7 +168,7 @@ class WarController extends Controller
                 $fakProdiCount = $peserta->mahasiswa->prodi->fakultas->prodi()->count();
                 $prodiOver = $fakProdiCount <= 1 ? false : ($prodiCount >= \App\Services\War\WarRuleService::MAX_SAME_PRODI);
 
-                $k->can_join = !$k->is_full && !$fakOver && !$prodiOver;
+                $k->can_join = !$k->is_full && $k->status !== 'penuh' && !$fakOver && !$prodiOver;
             })
             ->sortBy(function ($k) {
                 $kab = $k->desaGelombang->desa->kecamatan->kabupaten ?? 'Z';
@@ -333,7 +333,7 @@ class WarController extends Controller
                     'sisa'        => $k->sisa_kuota,
                     'is_full'     => $k->is_full,
                     'status'      => $k->status,
-                    'can_join'    => !$k->is_full && !$fakOver && !$prodiOver,
+                    'can_join'    => !$k->is_full && $k->status !== 'penuh' && !$fakOver && !$prodiOver,
                 ];
             })
             ->sortBy(function ($k) {
