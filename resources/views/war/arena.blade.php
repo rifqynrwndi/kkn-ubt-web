@@ -466,6 +466,6 @@
             .catch(function() {});
     }
 
-    setInterval(refreshKelompok, 5000);
+    setInterval(refreshKelompok, 30000);
 </script>
 @endpush

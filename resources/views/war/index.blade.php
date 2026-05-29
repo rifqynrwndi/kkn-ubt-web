@@ -375,7 +375,7 @@
     }
 
     fetchStats();
-    setInterval(fetchStats, 10000);
+    setInterval(fetchStats, 30000);
 })();
 </script>
 @endif

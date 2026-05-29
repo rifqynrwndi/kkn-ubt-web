@@ -188,33 +188,9 @@ class WarAdminController extends Controller
             return back()->with('error', 'Sesi WAR belum diaktifkan.');
         }
 
-        // Auto-assign remaining unplaced mahasiswa BEFORE closing
-        $assigned = 0;
-        $warService = app(\App\Services\War\WarService::class);
-
-        $pesertas = PesertaKkn::where('gelombang_id', $war->gelombang_id)
-            ->where('status_pendaftaran', 'approved')
-            ->whereNull('kelompok_kkn_id')
-            ->with(['mahasiswa.prodi.fakultas'])
-            ->get();
-
-        foreach ($pesertas as $peserta) {
-            $kelompok = KelompokKkn::whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $war->gelombang_id))
-                ->where('status', '!=', 'penuh')
-                ->inRandomOrder()
-                ->first();
-            if (!$kelompok) break;
-            try {
-                $result = $warService->joinKelompok($war, $kelompok->id, $peserta->mahasiswa_id);
-                if ($result['success']) $assigned++;
-            } catch (\Throwable) {}
-        }
-
         $war->update(['status' => 'closed']);
 
-        $msg = 'Sesi WAR berhasil dihentikan.';
-        if ($assigned > 0) $msg .= " {$assigned} mahasiswa otomatis dimasukkan ke kelompok.";
-        return back()->with('success', $msg);
+        return back()->with('success', 'Sesi WAR berhasil dihentikan.');
     }
 
     public function reset(WarSession $war)
