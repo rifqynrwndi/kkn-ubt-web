@@ -44,9 +44,10 @@
                             <table class="table table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th width="50">No</th>
+                                        <th width="40">No</th>
                                         <th>Nama</th>
                                         <th>NPM</th>
+                                        <th>No. HP</th>
                                         <th>Prodi</th>
                                         <th>Status</th>
                                     </tr>
@@ -64,6 +65,7 @@
                                             @endif
                                         </td>
                                         <td>{{ $p->mahasiswa?->npm ?? '-' }}</td>
+                                        <td>{{ $p->mahasiswa?->no_hp ?? '-' }}</td>
                                         <td>{{ $p->mahasiswa?->prodi?->nama_prodi ?? '-' }}</td>
                                         <td>
                                             @if($p->status_pendaftaran === 'approved')
@@ -75,7 +77,7 @@
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="5" class="text-center text-muted py-4">
+                                        <td colspan="6" class="text-center text-muted py-4">
                                             Belum ada anggota.
                                         </td>
                                     </tr>
