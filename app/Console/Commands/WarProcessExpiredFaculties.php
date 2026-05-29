@@ -48,23 +48,39 @@ class WarProcessExpiredFaculties extends Command
             $total = $pesertas->count();
             $this->info("  Mahasiswa perlu assign (semua fakultas): {$total}");
 
+            // Round-robin per fakultas agar komposisi kelompok beragam
+            $byFakultas = $pesertas->groupBy(fn($p) => $p->mahasiswa->prodi->fakultas_id);
+            $fakultasNames = $byFakultas->map(fn($g, $fid) => $g->first()->mahasiswa->prodi->fakultas->nama_fakultas ?? "Fakultas #{$fid}");
+
             $success = 0;
-            foreach ($pesertas as $peserta) {
-                $kelompok = KelompokKkn::whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $gelId))
-                    ->where('status', '!=', 'penuh')
-                    ->withCount('pesertaKkn')
-                    ->orderBy('peserta_kkn_count')
-                    ->first();
 
-                if (!$kelompok) {
-                    $this->warn("  Kelompok habis. Assign terhenti ({$success} berhasil).");
-                    break;
+            // Loop round-robin sampai semua fakultas habis
+            $hasRemaining = true;
+            while ($hasRemaining) {
+                $hasRemaining = false;
+
+                foreach ($byFakultas as $fakId => $group) {
+                    if ($group->isEmpty()) continue;
+
+                    $hasRemaining = true;
+                    $peserta = $group->shift();
+
+                    $kelompok = KelompokKkn::whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $gelId))
+                        ->where('status', '!=', 'penuh')
+                        ->withCount('pesertaKkn')
+                        ->orderBy('peserta_kkn_count')
+                        ->first();
+
+                    if (!$kelompok) {
+                        $this->warn("  Kelompok habis. Assign terhenti ({$success} berhasil).");
+                        break 2;
+                    }
+
+                    try {
+                        $result = $warService->joinKelompok($session, $kelompok->id, $peserta->mahasiswa_id);
+                        if ($result['success']) $success++;
+                    } catch (\Throwable) {}
                 }
-
-                try {
-                    $result = $warService->joinKelompok($session, $kelompok->id, $peserta->mahasiswa_id);
-                    if ($result['success']) $success++;
-                } catch (\Throwable) {}
             }
 
             $session->update(['status' => 'closed']);
