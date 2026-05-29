@@ -253,7 +253,7 @@
                     @if(!$kelompok_kkn->is_full)<a href="{{ route('kelompok-kkn.anggota.create', $kelompok_kkn->id) }}" class="btn btn-primary btn-sm"><i class="fas fa-user-plus mr-1"></i> Tambah Anggota</a>@endif
                 </div>
                 <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0">
-                    <thead><tr><th width="60">No</th><th>Nama</th><th>NPM</th><th>Fakultas</th><th>Program Studi</th><th width="170">Aksi</th></tr></thead>
+                    <thead><tr><th width="40">No</th><th>Nama</th><th>NPM</th><th>No. HP</th><th>Fakultas</th><th>Program Studi</th><th width="170">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($kelompok_kkn->pesertaKkn as $item)
                         <tr>
@@ -261,6 +261,7 @@
                             <td>{{ $item->mahasiswa?->user?->name ?? '-' }}
                                 @if($item->id === $kelompok_kkn->ketua_peserta_id)<span class="badge badge-warning ml-1" style="font-size:10px;border-radius:8px;">Ketua</span>@endif</td>
                             <td>{{ $item->mahasiswa?->npm ?? '-' }}</td>
+                            <td>{{ $item->mahasiswa?->no_hp ?? '-' }}</td>
                             <td>{{ $item->mahasiswa?->prodi?->fakultas?->nama_fakultas ?? '-' }}</td>
                             <td>{{ $item->mahasiswa?->prodi?->nama_prodi ?? '-' }}</td>
                             <td><div class="d-flex gap-1">
@@ -271,7 +272,7 @@
                             </div></td>
                         </tr>
                         @empty
-                        <tr><td colspan="6" class="text-center text-muted py-4">Belum ada anggota.</td></tr>
+                        <tr><td colspan="7" class="text-center text-muted py-4">Belum ada anggota.</td></tr>
                         @endforelse
                     </tbody>
                 </table></div></div>
