@@ -272,10 +272,10 @@
                         @php $currentKabupaten = $kab; @endphp
                     @endif
 
-                    {{-- Section divider: Kuota Fakultas/Prodi Penuh --}}
+                    {{-- Section divider: Kuota Fakultas/Prodi/Gender Penuh --}}
                     @if(!$canJoin && !$isFull && !$hasFakPenuh)
                         <div class="kl-section-divider">
-                            <i class="fas fa-ban mr-1"></i> Kuota Fakultas/Prodi Anda Penuh di Kelompok Ini
+                            <i class="fas fa-ban mr-1"></i> Kuota Fakultas/Prodi/Gender Anda Penuh di Kelompok Ini
                         </div>
                         @php $hasFakPenuh = true; @endphp
                     @endif

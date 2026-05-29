@@ -155,6 +155,7 @@ class WarController extends Controller
             ->each(function ($k) use ($peserta) {
                 $fakultasId = $peserta->mahasiswa->prodi->fakultas_id;
                 $prodiId    = $peserta->mahasiswa->prodi_id;
+                $gender     = $peserta->mahasiswa->jenis_kelamin;
 
                 $kuotaFakultas = $k->kuotaFakultas->where('fakultas_id', $fakultasId)->first();
                 $fakCount = $k->pesertaKkn->filter(fn($p) =>
@@ -163,12 +164,17 @@ class WarController extends Controller
                 $prodiCount = $k->pesertaKkn->filter(fn($p) =>
                     $p->mahasiswa?->prodi_id === $prodiId
                 )->count();
+                $genderCount = $k->pesertaKkn->filter(fn($p) =>
+                    $p->mahasiswa?->jenis_kelamin === $gender
+                )->count();
 
                 $fakOver = $kuotaFakultas && $fakCount >= $kuotaFakultas->kuota;
                 $fakProdiCount = $peserta->mahasiswa->prodi->fakultas->prodi()->count();
                 $prodiOver = $fakProdiCount <= 1 ? false : ($prodiCount >= \App\Services\War\WarRuleService::MAX_SAME_PRODI);
+                $genderMax = $gender === 'L' ? \App\Services\War\WarRuleService::MAX_LAKI : \App\Services\War\WarRuleService::MAX_PEREMPUAN;
+                $genderOver = $genderCount >= $genderMax;
 
-                $k->can_join = !$k->is_full && $k->status !== 'penuh' && !$fakOver && !$prodiOver;
+                $k->can_join = !$k->is_full && $k->status !== 'penuh' && !$fakOver && !$prodiOver && !$genderOver;
             })
             ->sortBy(function ($k) {
                 $kab = $k->desaGelombang->desa->kecamatan->kabupaten ?? 'Z';
@@ -306,6 +312,7 @@ class WarController extends Controller
         $mahasiswa = auth()->user()->mahasiswa;
         $fakultasId = $mahasiswa?->prodi?->fakultas_id;
         $prodiId    = $mahasiswa?->prodi_id;
+        $gender     = $mahasiswa?->jenis_kelamin;
 
         $rawKelompoks = Cache::remember("war:kelompok:{$session->id}", 5, function () use ($session) {
             return KelompokKkn::with([
@@ -318,14 +325,17 @@ class WarController extends Controller
                 ->get();
         });
 
-        $kelompoks = $rawKelompoks->map(function ($k) use ($fakultasId, $prodiId) {
+        $kelompoks = $rawKelompoks->map(function ($k) use ($fakultasId, $prodiId, $gender) {
                 $kuotaFakultas = $k->kuotaFakultas->where('fakultas_id', $fakultasId)->first();
                 $fakCount = $k->pesertaKkn->filter(fn($p) => $p->mahasiswa?->prodi?->fakultas_id === $fakultasId)->count();
                 $prodiCount = $k->pesertaKkn->filter(fn($p) => $p->mahasiswa?->prodi_id === $prodiId)->count();
+                $genderCount = $k->pesertaKkn->filter(fn($p) => $p->mahasiswa?->jenis_kelamin === $gender)->count();
 
                 $fakOver = $kuotaFakultas && $fakCount >= $kuotaFakultas->kuota;
                 $fakProdiCount = \App\Models\ProgramStudi::where('fakultas_id', $fakultasId)->count();
                 $prodiOver = $fakProdiCount <= 1 ? false : ($prodiCount >= \App\Services\War\WarRuleService::MAX_SAME_PRODI);
+                $genderMax = $gender === 'L' ? \App\Services\War\WarRuleService::MAX_LAKI : \App\Services\War\WarRuleService::MAX_PEREMPUAN;
+                $genderOver = $genderCount >= $genderMax;
 
                 return [
                     'id'          => $k->id,
@@ -336,7 +346,7 @@ class WarController extends Controller
                     'sisa'        => $k->sisa_kuota,
                     'is_full'     => $k->is_full,
                     'status'      => $k->status,
-                    'can_join'    => !$k->is_full && $k->status !== 'penuh' && !$fakOver && !$prodiOver,
+                    'can_join'    => !$k->is_full && $k->status !== 'penuh' && !$fakOver && !$prodiOver && !$genderOver,
                 ];
             })
             ->sortBy(function ($k) {
