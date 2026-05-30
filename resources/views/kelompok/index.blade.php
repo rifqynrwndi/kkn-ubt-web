@@ -64,6 +64,12 @@
     [data-bs-theme="dark"] .proposal-doc-header h3, [data-bs-theme="dark"] .proposal-doc-body h4 { color: #a4b0f5; }
     [data-bs-theme="dark"] .proposal-doc-header h2 { color: #f1f3f8; }
     [data-bs-theme="dark"] .proposal-doc-header .doc-meta { color: #aab1c1; }
+    [data-bs-theme="dark"] .task-name { color: #e1e5eb; }
+    [data-bs-theme="dark"] .final-score-row { background: #1e2a4a; }
+    .final-score-row { background: #e8f0fe; }
+    [data-bs-theme="dark"] .bg-light { background-color: #2a2f3a !important; }
+    [data-bs-theme="dark"] .table .bg-light td,
+    [data-bs-theme="dark"] .table .bg-light th { background-color: #2a2f3a !important; }
 </style>
 @endpush
 
@@ -451,12 +457,12 @@
                 <div class="card-body p-0">
                     @foreach($wajibTasks as $kat => $tugasItems)
                         @if($tugasItems->count())
-                        <div class="border-bottom"><div class="px-3 py-2 bg-light"><small class="font-weight-bold text-dark">{{ $katLabels[$kat] ?? $kat }}</small></div>
+                        <div class="border-bottom"><div class="px-3 py-2 text-white" style="background:#6777ef;"><small class="font-weight-bold">{{ $katLabels[$kat] ?? $kat }}</small></div>
                         @foreach($tugasItems as $tugas)
                         @php $subs = $tugas->submissions; $taskId = 'task-'.$tugas->id; @endphp
                         <div class="border-bottom">
                             <div class="p-3 d-flex justify-content-between align-items-center" style="cursor:pointer;" onclick="toggleCollapse('{{ $taskId }}')">
-                                <strong>{{ $tugas->nama_tugas }}</strong>
+                                <strong class="task-name">{{ $tugas->nama_tugas }}</strong>
                                 <span class="badge badge-danger" style="font-size:10px;">Wajib</span>
                                 <div class="d-flex align-items-center">
                                     @if(($isAdmin || $isDpl) && !auth()->user()->hasRole('mahasiswa'))
@@ -511,7 +517,7 @@
                 <div class="card-body p-0">
                     @foreach($otherTasks as $kat => $tugasItems)
                         @if($tugasItems->count())
-                        <div class="border-bottom"><div class="px-3 py-2 bg-light"><small class="font-weight-bold text-dark">{{ $katLabels[$kat] ?? $kat }}</small></div>
+                        <div class="border-bottom"><div class="px-3 py-2 text-white" style="background:#6777ef;"><small class="font-weight-bold">{{ $katLabels[$kat] ?? $kat }}</small></div>
                         @foreach($tugasItems as $tugas)
                         @php $subs = $tugas->submissions; $taskId = 'task-'.$tugas->id; @endphp
                         <div class="border-bottom">
@@ -822,7 +828,7 @@
                             @if($lppmFinal)<tr class="bg-light"><td colspan="5" class="text-right font-weight-bold">Nilai Akhir LPPM: {{ number_format($lppmFinal,2) }}</td></tr>@endif
 
                             @if($finalScore)
-                            <tr style="background:#e8f0fe;"><td colspan="5" class="text-center font-weight-bold" style="font-size:1.2rem;">
+                            <tr class="final-score-row"><td colspan="5" class="text-center font-weight-bold" style="font-size:1.2rem;">
                                 NILAI AKHIR TOTAL: <span class="{{ $finalScore>=75?'text-success':($finalScore>=60?'text-warning':'text-danger') }}">{{ number_format($finalScore,2) }}</span>
                             </td></tr>
                             @endif

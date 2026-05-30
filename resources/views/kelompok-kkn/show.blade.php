@@ -37,6 +37,9 @@
     [data-bs-theme="dark"] .proposal-doc-body h4 { color: #a4b0f5; }
     [data-bs-theme="dark"] .proposal-doc-header h2 { color: #f1f3f8; }
     [data-bs-theme="dark"] .proposal-doc-header .doc-meta { color: #aab1c1; }
+    [data-bs-theme="dark"] .bg-light { background-color: #2a2f3a !important; }
+    [data-bs-theme="dark"] .table .bg-light td,
+    [data-bs-theme="dark"] .table .bg-light th { background-color: #2a2f3a !important; }
 </style>
 @endpush
 
@@ -319,10 +322,10 @@
             <div class="card mb-3 border-danger"><div class="card-header bg-danger text-white py-2"><h5 class="mb-0"><i class="fas fa-star mr-2"></i>Tugas Wajib</h5></div>
             <div class="card-body p-0">
                 @foreach($wajibTasks as $kat => $items)
-                @if($items->count())<div class="border-bottom"><div class="px-3 py-2 bg-light"><small class="font-weight-bold text-dark">{{ $katLabels[$kat] ?? $kat }}</small></div>
+                @if($items->count())<div class="border-bottom"><div class="px-3 py-2 text-white" style="background:#6777ef;"><small class="font-weight-bold">{{ $katLabels[$kat] ?? $kat }}</small></div>
                 @foreach($items as $t)
                 <div class="border-bottom p-3">
-                    <strong>{{ $t->nama_tugas }}</strong> <span class="badge badge-danger" style="font-size:10px;">Wajib</span>
+                    <strong>{{ $t->nama_tugas }}</strong>
                     @if($t->submissions->count())
                     <table class="table table-sm mt-2"><tr><th>Judul</th><th>Oleh</th><th>Berkas</th><th>Status</th><th>Aksi</th></tr>
                     @foreach($t->submissions as $s)
@@ -347,7 +350,7 @@
             <div class="card mb-3"><div class="card-header py-2"><h5 class="mb-0"><i class="fas fa-list mr-2"></i>Tugas Lainnya</h5></div>
             <div class="card-body p-0">
                 @foreach($otherTasks as $kat => $items)
-                @if($items->count())<div class="border-bottom"><div class="px-3 py-2 bg-light"><small class="font-weight-bold text-dark">{{ $katLabels[$kat] ?? $kat }}</small></div>
+                @if($items->count())<div class="border-bottom"><div class="px-3 py-2 text-white" style="background:#6777ef;"><small class="font-weight-bold">{{ $katLabels[$kat] ?? $kat }}</small></div>
                 @foreach($items as $t)
                 <div class="border-bottom p-3">
                     <strong>{{ $t->nama_tugas }}</strong>

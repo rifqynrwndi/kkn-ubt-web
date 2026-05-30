@@ -1,7 +1,16 @@
 @extends('layouts.app')
 
 @section('title', 'Detail Kelompok — ' . $kelompok->nama_kelompok)
-
+@push('css')
+<style>
+    [data-bs-theme="dark"] .bg-light { background-color: #2a2f3a !important; }
+    [data-bs-theme="dark"] .table .bg-light td,
+    [data-bs-theme="dark"] .table .bg-light th { background-color: #2a2f3a !important; }
+    [data-bs-theme="dark"] .text-dark { color: #e1e5eb !important; }
+    .task-cat-header { background: #e9ecef; }
+    [data-bs-theme="dark"] .task-cat-header { background: #2a2f3a !important; }
+</style>
+@endpush
 @section('content')
 <section class="section">
     <div class="section-header">
@@ -157,7 +166,7 @@
                         <div class="card mb-2 border-danger"><div class="card-header bg-danger text-white py-1"><strong><i class="fas fa-star mr-1"></i>Tugas Wajib</strong></div><div class="card-body p-0">
                             @foreach($wajibTasks as $kat => $items)
                             @if($items->count())
-                            <div class="px-3 py-1 bg-light border-bottom"><small class="font-weight-bold text-dark">{{ $katLabels[$kat] ?? $kat }}</small></div>
+                            <div class="px-3 py-1 task-cat-header border-bottom"><small class="font-weight-bold">{{ $katLabels[$kat] ?? $kat }}</small></div>
                             @foreach($items as $t)
                             <div class="px-3 py-2 border-bottom"><strong class="small">{{ $t->nama_tugas }}</strong> <span class="badge badge-danger" style="font-size:9px;">Wajib</span>
                                 @if($t->submissions->count())
@@ -182,7 +191,7 @@
                         <div class="card"><div class="card-header py-1"><strong><i class="fas fa-list mr-1"></i>Tugas Lainnya</strong></div><div class="card-body p-0">
                             @foreach($otherTasks as $kat => $items)
                             @if($items->count())
-                            <div class="px-3 py-1 bg-light border-bottom"><small class="font-weight-bold text-dark">{{ $katLabels[$kat] ?? $kat }}</small></div>
+                            <div class="px-3 py-1 task-cat-header border-bottom"><small class="font-weight-bold">{{ $katLabels[$kat] ?? $kat }}</small></div>
                             @foreach($items as $t)
                             <div class="px-3 py-2 border-bottom"><strong class="small">{{ $t->nama_tugas }}</strong>
                                 @if($t->submissions->count())
