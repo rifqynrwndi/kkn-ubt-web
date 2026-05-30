@@ -157,7 +157,7 @@
                         <div class="card mb-2 border-danger"><div class="card-header bg-danger text-white py-1"><strong><i class="fas fa-star mr-1"></i>Tugas Wajib</strong></div><div class="card-body p-0">
                             @foreach($wajibTasks as $kat => $items)
                             @if($items->count())
-                            <div class="px-3 py-1 bg-light border-bottom"><small class="font-weight-bold text-muted">{{ $katLabels[$kat] ?? $kat }}</small></div>
+                            <div class="px-3 py-1 bg-light border-bottom"><small class="font-weight-bold text-dark">{{ $katLabels[$kat] ?? $kat }}</small></div>
                             @foreach($items as $t)
                             <div class="px-3 py-2 border-bottom"><strong class="small">{{ $t->nama_tugas }}</strong> <span class="badge badge-danger" style="font-size:9px;">Wajib</span>
                                 @if($t->submissions->count())
@@ -182,7 +182,7 @@
                         <div class="card"><div class="card-header py-1"><strong><i class="fas fa-list mr-1"></i>Tugas Lainnya</strong></div><div class="card-body p-0">
                             @foreach($otherTasks as $kat => $items)
                             @if($items->count())
-                            <div class="px-3 py-1 bg-light border-bottom"><small class="font-weight-bold text-muted">{{ $katLabels[$kat] ?? $kat }}</small></div>
+                            <div class="px-3 py-1 bg-light border-bottom"><small class="font-weight-bold text-dark">{{ $katLabels[$kat] ?? $kat }}</small></div>
                             @foreach($items as $t)
                             <div class="px-3 py-2 border-bottom"><strong class="small">{{ $t->nama_tugas }}</strong>
                                 @if($t->submissions->count())

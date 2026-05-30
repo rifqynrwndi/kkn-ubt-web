@@ -451,7 +451,7 @@
                 <div class="card-body p-0">
                     @foreach($wajibTasks as $kat => $tugasItems)
                         @if($tugasItems->count())
-                        <div class="border-bottom"><div class="px-3 py-2 bg-light"><small class="font-weight-bold text-muted">{{ $katLabels[$kat] ?? $kat }}</small></div>
+                        <div class="border-bottom"><div class="px-3 py-2 bg-light"><small class="font-weight-bold text-dark">{{ $katLabels[$kat] ?? $kat }}</small></div>
                         @foreach($tugasItems as $tugas)
                         @php $subs = $tugas->submissions; $taskId = 'task-'.$tugas->id; @endphp
                         <div class="border-bottom">
@@ -511,7 +511,7 @@
                 <div class="card-body p-0">
                     @foreach($otherTasks as $kat => $tugasItems)
                         @if($tugasItems->count())
-                        <div class="border-bottom"><div class="px-3 py-2 bg-light"><small class="font-weight-bold text-muted">{{ $katLabels[$kat] ?? $kat }}</small></div>
+                        <div class="border-bottom"><div class="px-3 py-2 bg-light"><small class="font-weight-bold text-dark">{{ $katLabels[$kat] ?? $kat }}</small></div>
                         @foreach($tugasItems as $tugas)
                         @php $subs = $tugas->submissions; $taskId = 'task-'.$tugas->id; @endphp
                         <div class="border-bottom">
