@@ -144,13 +144,24 @@
                     </div>
                     <div class="tab-pane fade" id="dpl-tugas">
                         @if($tugasList->count())
-                        <div class="card"><div class="card-body p-0">
-                            @foreach($tugasList as $kat => $items)
-                            <div class="p-3 border-bottom"><strong>{{ ['tugas_kelompok'=>'Tugas Kelompok','luaran_wajib'=>'Luaran Wajib','luaran_lain'=>'Luaran Lain','laporan'=>'Laporan'][$kat] ?? $kat }}</strong></div>
+                        @php
+                            $wajibTasks = collect(); $otherTasks = collect();
+                            foreach ($tugasList as $kat => $items) {
+                                $wajibTasks[$kat] = $items->filter(fn($t) => $t->is_wajib);
+                                $otherTasks[$kat] = $items->filter(fn($t) => !$t->is_wajib);
+                            }
+                            $katLabels = ['tugas_kelompok'=>'Tugas Kelompok','luaran_wajib'=>'Luaran Wajib','luaran_lain'=>'Luaran Lain','laporan'=>'Laporan'];
+                        @endphp
+
+                        @if($wajibTasks->sum(fn($g) => $g->count()) > 0)
+                        <div class="card mb-2 border-danger"><div class="card-header bg-danger text-white py-1"><strong><i class="fas fa-star mr-1"></i>Tugas Wajib</strong></div><div class="card-body p-0">
+                            @foreach($wajibTasks as $kat => $items)
+                            @if($items->count())
+                            <div class="px-3 py-1 bg-light border-bottom"><small class="font-weight-bold text-muted">{{ $katLabels[$kat] ?? $kat }}</small></div>
                             @foreach($items as $t)
-                            <div class="px-3"><strong class="small">{{ $t->nama_tugas }}</strong>@if($t->is_wajib)<span class="badge badge-danger ml-1" style="font-size:9px;">Wajib</span>@endif
+                            <div class="px-3 py-2 border-bottom"><strong class="small">{{ $t->nama_tugas }}</strong> <span class="badge badge-danger" style="font-size:9px;">Wajib</span>
                                 @if($t->submissions->count())
-                                <table class="table table-sm"><tr><th>Judul</th><th>Oleh</th><th>Status</th><th>Aksi</th></tr>
+                                <table class="table table-sm mb-0"><tr><th>Judul</th><th>Oleh</th><th>Status</th><th>Aksi</th></tr>
                                 @foreach($t->submissions as $s)
                                 <tr><td>{{ $s->judul }}</td><td>{{ $s->pesertaKkn->mahasiswa->user->name ?? '-' }}</td><td><span class="badge badge-{{ $s->status==='diterima'?'success':'info' }}">{{ $s->status }}</span></td>
                                     <td><form action="{{ route('kelompok.tugas.review', $s->id) }}" method="POST" class="form-inline gap-1">@csrf
@@ -162,8 +173,39 @@
                                 @else <p class="text-muted small px-3 pb-2">Belum ada pengumpulan</p> @endif
                             </div>
                             @endforeach
+                            @endif
                             @endforeach
                         </div></div>
+                        @endif
+
+                        @if($otherTasks->sum(fn($g) => $g->count()) > 0)
+                        <div class="card"><div class="card-header py-1"><strong><i class="fas fa-list mr-1"></i>Tugas Lainnya</strong></div><div class="card-body p-0">
+                            @foreach($otherTasks as $kat => $items)
+                            @if($items->count())
+                            <div class="px-3 py-1 bg-light border-bottom"><small class="font-weight-bold text-muted">{{ $katLabels[$kat] ?? $kat }}</small></div>
+                            @foreach($items as $t)
+                            <div class="px-3 py-2 border-bottom"><strong class="small">{{ $t->nama_tugas }}</strong>
+                                @if($t->submissions->count())
+                                <table class="table table-sm mb-0"><tr><th>Judul</th><th>Oleh</th><th>Status</th><th>Aksi</th></tr>
+                                @foreach($t->submissions as $s)
+                                <tr><td>{{ $s->judul }}</td><td>{{ $s->pesertaKkn->mahasiswa->user->name ?? '-' }}</td><td><span class="badge badge-{{ $s->status==='diterima'?'success':'info' }}">{{ $s->status }}</span></td>
+                                    <td><form action="{{ route('kelompok.tugas.review', $s->id) }}" method="POST" class="form-inline gap-1">@csrf
+                                        <input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;">
+                                        <button name="status" value="diterima" class="btn btn-sm btn-success">✓</button>
+                                        <button name="status" value="ditolak" class="btn btn-sm btn-danger">✗</button>
+                                    </form></td></tr>
+                                @endforeach</table>
+                                @else <p class="text-muted small px-3 pb-2">Belum ada pengumpulan</p> @endif
+                            </div>
+                            @endforeach
+                            @endif
+                            @endforeach
+                        </div></div>
+                        @endif
+
+                        @if($wajibTasks->sum(fn($g) => $g->count()) == 0 && $otherTasks->sum(fn($g) => $g->count()) == 0)
+                        <div class="card"><div class="card-body text-muted text-center py-4">Belum ada tugas.</div></div>
+                        @endif
                         @else <div class="card"><div class="card-body text-muted text-center py-4">Belum ada tugas.</div></div> @endif
                     </div>
                     <div class="tab-pane fade" id="dpl-logbook">
