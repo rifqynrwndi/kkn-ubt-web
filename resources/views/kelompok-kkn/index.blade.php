@@ -19,26 +19,28 @@
 
         {{-- FILTER Kabupaten --}}
         <div class="card shadow-sm mb-3">
-            <div class="card-body py-2">
-                <div class="d-flex flex-wrap align-items-center gap-1">
-                    <a href="{{ route('kelompok-kkn.index') }}" class="btn btn-sm {{ !request('kabupaten') && !request('status') ? 'btn-primary' : 'btn-outline-secondary' }} mr-1 mb-1">
-                        <i class="fas fa-th-list mr-1"></i> Semua
-                    </a>
-                    @foreach($kabupatens as $kab)
-                        <a href="{{ route('kelompok-kkn.index', array_filter(array_merge(request()->all(), ['kabupaten' => $kab, 'kecamatan_id' => null, 'search' => null]))) }}" class="btn btn-sm {{ request('kabupaten') == $kab ? 'btn-primary' : 'btn-outline-secondary' }} mr-1 mb-1">
-                            {{ $kab }}
+            <div class="card-body py-3">
+                <div class="text-center">
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        <a href="{{ route('kelompok-kkn.index') }}" class="btn {{ !request('kabupaten') && !request('status') ? 'btn-primary' : 'btn-outline-secondary' }} mr-1 mb-1" style="font-weight:600;">
+                            Semua
                         </a>
-                    @endforeach
-                    <div class="dropdown ml-auto mb-1">
-                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown">
-                            {{ request('status') ? ucfirst(request('status')) : 'Semua Status' }}
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="{{ route('kelompok-kkn.index', array_filter(array_merge(request()->except('status')))) }}">Semua Status</a>
-                            <a class="dropdown-item" href="{{ route('kelompok-kkn.index', array_merge(request()->all(), ['status' => 'dibuka'])) }}">Dibuka</a>
-                            <a class="dropdown-item" href="{{ route('kelompok-kkn.index', array_merge(request()->all(), ['status' => 'penuh'])) }}">Penuh</a>
-                            <a class="dropdown-item" href="{{ route('kelompok-kkn.index', array_merge(request()->all(), ['status' => 'ditutup'])) }}">Ditutup</a>
-                            <a class="dropdown-item" href="{{ route('kelompok-kkn.index', array_merge(request()->all(), ['status' => 'draft'])) }}">Draft</a>
+                        @foreach($kabupatens as $kab)
+                            <a href="{{ route('kelompok-kkn.index', array_filter(array_merge(request()->all(), ['kabupaten' => $kab, 'kecamatan_id' => null, 'search' => null]))) }}" class="btn {{ request('kabupaten') == $kab ? 'btn-primary' : 'btn-outline-secondary' }} mr-1 mb-1" style="font-weight:600;">
+                                {{ $kab }}
+                            </a>
+                        @endforeach
+                        <div class="dropdown ml-2 mb-1">
+                            <button class="btn btn-outline-secondary dropdown-toggle" style="font-weight:600;" type="button" data-toggle="dropdown">
+                                {{ request('status') ? ucfirst(request('status')) : 'Semua Status' }}
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="{{ route('kelompok-kkn.index', request()->except('status')) }}">Semua Status</a>
+                                <a class="dropdown-item" href="{{ route('kelompok-kkn.index', array_merge(request()->all(), ['status' => 'dibuka'])) }}">Dibuka</a>
+                                <a class="dropdown-item" href="{{ route('kelompok-kkn.index', array_merge(request()->all(), ['status' => 'penuh'])) }}">Penuh</a>
+                                <a class="dropdown-item" href="{{ route('kelompok-kkn.index', array_merge(request()->all(), ['status' => 'ditutup'])) }}">Ditutup</a>
+                                <a class="dropdown-item" href="{{ route('kelompok-kkn.index', array_merge(request()->all(), ['status' => 'draft'])) }}">Draft</a>
+                            </div>
                         </div>
                     </div>
                 </div>
