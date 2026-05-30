@@ -22,7 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'email.verified.except.superadmin' => \App\Http\Middleware\EnsureEmailVerifiedExceptSuperadmin::class,
         ]);
 
-        $middleware->throttleWithRedis();
+        if (env('REDIS_THROTTLE', false)) {
+            $middleware->throttleWithRedis();
+        }
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
