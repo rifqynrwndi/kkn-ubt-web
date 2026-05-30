@@ -9,7 +9,6 @@ use App\Models\WarSession;
 use App\Services\War\WarService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class WarController extends Controller
 {
@@ -315,18 +314,15 @@ class WarController extends Controller
         $prodiId    = $mahasiswa?->prodi_id;
         $gender     = $mahasiswa?->jenis_kelamin;
 
-        $rawKelompoks = Cache::remember("war:kelompok:{$session->id}", 5, function () use ($session) {
-            return KelompokKkn::with([
-                    'desaGelombang.desa',
-                    'pesertaKkn.mahasiswa.prodi',
-                    'kuotaFakultas',
-                ])
-                ->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $session->gelombang_id))
-                ->orderBy('nama_kelompok')
-                ->get();
-        });
-
-        $kelompoks = $rawKelompoks->map(function ($k) use ($fakultasId, $prodiId, $gender) {
+        $kelompoks = KelompokKkn::with([
+                'desaGelombang.desa',
+                'pesertaKkn.mahasiswa.prodi',
+                'kuotaFakultas',
+            ])
+            ->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $session->gelombang_id))
+            ->orderBy('nama_kelompok')
+            ->get()
+            ->map(function ($k) use ($fakultasId, $prodiId, $gender) {
                 $kuotaFakultas = $k->kuotaFakultas->where('fakultas_id', $fakultasId)->first();
                 $fakCount = $k->pesertaKkn->filter(fn($p) => $p->mahasiswa?->prodi?->fakultas_id === $fakultasId)->count();
                 $prodiCount = $k->pesertaKkn->filter(fn($p) => $p->mahasiswa?->prodi_id === $prodiId)->count();
