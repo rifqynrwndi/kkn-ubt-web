@@ -45,16 +45,6 @@
                             </div>
                         </div>
                     </div>
-                    <form method="GET" class="ml-auto" style="min-width:200px;">
-                        <div class="input-group">
-                            <input type="text" name="search" class="form-control" placeholder="Cari kelompok..." value="{{ request('search') }}">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
-                            </div>
-                        </div>
-                        @if(request('kabupaten'))<input type="hidden" name="kabupaten" value="{{ request('kabupaten') }}">@endif
-                        @if(request('status'))<input type="hidden" name="status" value="{{ request('status') }}">@endif
-                    </form>
                 </div>
             </div>
         </div>
@@ -62,8 +52,18 @@
         {{-- TABLE --}}
         <div class="card shadow-sm">
 
-            <div class="card-header">
-                <h4>Daftar Kelompok KKN</h4>
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                <h4 class="mb-0">Daftar Kelompok KKN</h4>
+                <form method="GET" style="min-width:200px;">
+                    <div class="input-group input-group-sm">
+                        <input type="text" name="search" class="form-control" placeholder="Cari kelompok..." value="{{ request('search') }}">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+                    @if(request('kabupaten'))<input type="hidden" name="kabupaten" value="{{ request('kabupaten') }}">@endif
+                    @if(request('status'))<input type="hidden" name="status" value="{{ request('status') }}">@endif
+                </form>
             </div>
 
             <div class="card-body p-0">

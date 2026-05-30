@@ -64,6 +64,12 @@
     [data-bs-theme="dark"] .proposal-doc-header h3, [data-bs-theme="dark"] .proposal-doc-body h4 { color: #a4b0f5; }
     [data-bs-theme="dark"] .proposal-doc-header h2 { color: #f1f3f8; }
     [data-bs-theme="dark"] .proposal-doc-header .doc-meta { color: #aab1c1; }
+    [data-bs-theme="dark"] .task-name { color: #e1e5eb; }
+    [data-bs-theme="dark"] .final-score-row { background: #1e2a4a; }
+    .final-score-row { background: #e8f0fe; }
+    [data-bs-theme="dark"] .bg-light { background-color: #2a2f3a !important; }
+    [data-bs-theme="dark"] .table .bg-light td,
+    [data-bs-theme="dark"] .table .bg-light th { background-color: #2a2f3a !important; }
 </style>
 @endpush
 
@@ -405,7 +411,18 @@
 
         {{-- TAB: TUGAS --}}
         <div class="tab-content" id="tab-tugas">
-            @php $katLabels = ['tugas_kelompok'=>'Tugas Kelompok','luaran_wajib'=>'Luaran Wajib','luaran_lain'=>'Luaran Lain','laporan'=>'Laporan']; @endphp
+            @php
+                $katLabels = ['tugas_kelompok'=>'Tugas Kelompok','luaran_wajib'=>'Luaran Wajib','luaran_lain'=>'Luaran Lain','laporan'=>'Laporan'];
+                $allTasksFlat = $tugasList->flatten(1);
+                $wajibTasks = collect();
+                $otherTasks = collect();
+                foreach ($tugasList as $kat => $items) {
+                    $wajibTasks[$kat] = $items->filter(fn($t) => $t->is_wajib);
+                    $otherTasks[$kat] = $items->filter(fn($t) => !$t->is_wajib);
+                }
+                $hasWajib = $wajibTasks->sum(fn($g) => $g->count()) > 0;
+                $hasOther = $otherTasks->sum(fn($g) => $g->count()) > 0;
+            @endphp
 
             {{-- Add task (Admin/DPL only) --}}
             @if(($isAdmin || $isDpl) && !auth()->user()->hasRole('mahasiswa'))
@@ -423,10 +440,7 @@
             @endif
 
             {{-- Kumpulkan Tugas Button --}}
-            @php
-                $allTasks = $tugasList->flatten(1);
-            @endphp
-            @if($allTasks->count())
+            @if($allTasksFlat->count())
             <div class="mb-3">
                 <a href="{{ route('kelompok.tugas.create') }}" class="btn btn-success">
                     <i class="fas fa-upload mr-1"></i> Kumpulkan Tugas
@@ -434,22 +448,22 @@
             </div>
             @endif
 
-            @forelse($tugasList as $kat => $tugasItems)
-            @php $katId = 'kat-'.preg_replace('/[^a-z0-9]+/','-',strtolower($kat)); @endphp
-            <div class="card mb-3">
-                <div class="card-header" style="cursor:pointer;" onclick="toggleCollapse('{{ $katId }}')">
-                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-chevron-down mr-2" id="icon-{{ $katId }}"></i>{{ $katLabels[$kat] ?? $kat }}</span>
-                    </h5>
+            {{-- TUGAS WAJIB --}}
+            @if($hasWajib)
+            <div class="card mb-3 border-danger">
+                <div class="card-header bg-danger text-white py-2">
+                    <h5 class="mb-0"><i class="fas fa-star mr-2"></i>Tugas Wajib</h5>
                 </div>
-                <div id="{{ $katId }}" style="display:block;">
-                    <div class="card-body p-0">
+                <div class="card-body p-0">
+                    @foreach($wajibTasks as $kat => $tugasItems)
+                        @if($tugasItems->count())
+                        <div class="border-bottom"><div class="px-3 py-2 text-white" style="background:#6777ef;"><small class="font-weight-bold">{{ $katLabels[$kat] ?? $kat }}</small></div>
                         @foreach($tugasItems as $tugas)
                         @php $subs = $tugas->submissions; $taskId = 'task-'.$tugas->id; @endphp
                         <div class="border-bottom">
                             <div class="p-3 d-flex justify-content-between align-items-center" style="cursor:pointer;" onclick="toggleCollapse('{{ $taskId }}')">
-                                <strong>{{ $tugas->nama_tugas }}</strong>
-                                @if($tugas->is_wajib)<span class="badge badge-danger ml-1" style="font-size:10px;">Wajib</span>@endif
+                                <strong class="task-name">{{ $tugas->nama_tugas }}</strong>
+                                <span class="badge badge-danger" style="font-size:10px;">Wajib</span>
                                 <div class="d-flex align-items-center">
                                     @if(($isAdmin || $isDpl) && !auth()->user()->hasRole('mahasiswa'))
                                     <form action="{{ route('kelompok.tugas.destroy', $tugas->id) }}" method="POST" onsubmit="return confirm('Hapus?')" class="d-inline mr-2" onclick="event.stopPropagation()">
@@ -471,22 +485,10 @@
                                                 <td style="max-width:200px;"><small class="d-block text-truncate">{{ $sub->judul }}</small></td>
                                                 <td><small>{{ $sub->pesertaKkn->mahasiswa->user->name ?? '-' }}</small></td>
                                                 <td><a href="{{ asset('storage/'.$sub->file_path) }}" target="_blank" class="btn btn-sm btn-link"><i class="fas fa-download"></i> <small>{{ \Illuminate\Support\Str::limit($sub->file_name, 15) }}</small></a></td>
-                                                <td>
-                                                    @if($sub->status==='diterima')<span class="badge badge-success">Diterima</span>
-                                                    @elseif($sub->status==='ditolak')<span class="badge badge-danger">Ditolak</span>
-                                                    @elseif($sub->status==='revisi')<span class="badge badge-warning">Revisi</span>
-                                                    @else<span class="badge badge-info">Menunggu</span>@endif
-                                                </td>
+                                                <td>@if($sub->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($sub->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@elseif($sub->status==='revisi')<span class="badge badge-warning">Revisi</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
                                                 <td><small class="text-muted">{{ $sub->komentar_dpl ?: '-' }}</small></td>
                                                 @if(($isDpl || $isAdmin) && !auth()->user()->hasRole('mahasiswa'))
-                                                <td>
-                                                    <form action="{{ route('kelompok.tugas.review', $sub->id) }}" method="POST" class="form-inline gap-1">
-                                                        @csrf
-                                                        <input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;font-size:11px;">
-                                                        <button name="status" value="diterima" class="btn btn-success btn-sm" title="Terima">✓</button>
-                                                        <button name="status" value="ditolak" class="btn btn-danger btn-sm" title="Tolak">✗</button>
-                                                    </form>
-                                                </td>
+                                                <td><form action="{{ route('kelompok.tugas.review', $sub->id) }}" method="POST" class="form-inline gap-1">@csrf<input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;font-size:11px;"><button name="status" value="diterima" class="btn btn-success btn-sm" title="Terima">✓</button><button name="status" value="ditolak" class="btn btn-danger btn-sm" title="Tolak">✗</button></form></td>
                                                 @endif
                                             </tr>
                                             @endforeach
@@ -499,12 +501,75 @@
                             </div>
                         </div>
                         @endforeach
-                    </div>
+                        </div>
+                        @endif
+                    @endforeach
                 </div>
             </div>
-            @empty
+            @endif
+
+            {{-- TUGAS LAINNYA --}}
+            @if($hasOther)
+            <div class="card mb-3">
+                <div class="card-header py-2">
+                    <h5 class="mb-0"><i class="fas fa-list mr-2"></i>Tugas Lainnya</h5>
+                </div>
+                <div class="card-body p-0">
+                    @foreach($otherTasks as $kat => $tugasItems)
+                        @if($tugasItems->count())
+                        <div class="border-bottom"><div class="px-3 py-2 text-white" style="background:#6777ef;"><small class="font-weight-bold">{{ $katLabels[$kat] ?? $kat }}</small></div>
+                        @foreach($tugasItems as $tugas)
+                        @php $subs = $tugas->submissions; $taskId = 'task-'.$tugas->id; @endphp
+                        <div class="border-bottom">
+                            <div class="p-3 d-flex justify-content-between align-items-center" style="cursor:pointer;" onclick="toggleCollapse('{{ $taskId }}')">
+                                <strong>{{ $tugas->nama_tugas }}</strong>
+                                <div class="d-flex align-items-center">
+                                    @if(($isAdmin || $isDpl) && !auth()->user()->hasRole('mahasiswa'))
+                                    <form action="{{ route('kelompok.tugas.destroy', $tugas->id) }}" method="POST" onsubmit="return confirm('Hapus?')" class="d-inline mr-2" onclick="event.stopPropagation()">
+                                        @csrf @method('DELETE')
+                                        <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                    @endif
+                                    <i class="fas fa-chevron-down ml-2" id="icon-{{ $taskId }}"></i>
+                                </div>
+                            </div>
+                            <div id="{{ $taskId }}" style="display:none;">
+                                @if($subs->count())
+                                <div class="table-responsive px-3">
+                                    <table class="table table-sm">
+                                        <thead><tr><th>Judul</th><th>Oleh</th><th>Berkas</th><th>Status</th><th>Komentar</th>@if(($isDpl || $isAdmin) && !auth()->user()->hasRole('mahasiswa'))<th width="160">Aksi</th>@endif</tr></thead>
+                                        <tbody>
+                                            @foreach($subs as $sub)
+                                            <tr>
+                                                <td style="max-width:200px;"><small class="d-block text-truncate">{{ $sub->judul }}</small></td>
+                                                <td><small>{{ $sub->pesertaKkn->mahasiswa->user->name ?? '-' }}</small></td>
+                                                <td><a href="{{ asset('storage/'.$sub->file_path) }}" target="_blank" class="btn btn-sm btn-link"><i class="fas fa-download"></i> <small>{{ \Illuminate\Support\Str::limit($sub->file_name, 15) }}</small></a></td>
+                                                <td>@if($sub->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($sub->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@elseif($sub->status==='revisi')<span class="badge badge-warning">Revisi</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
+                                                <td><small class="text-muted">{{ $sub->komentar_dpl ?: '-' }}</small></td>
+                                                @if(($isDpl || $isAdmin) && !auth()->user()->hasRole('mahasiswa'))
+                                                <td><form action="{{ route('kelompok.tugas.review', $sub->id) }}" method="POST" class="form-inline gap-1">@csrf<input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;font-size:11px;"><button name="status" value="diterima" class="btn btn-success btn-sm" title="Terima">✓</button><button name="status" value="ditolak" class="btn btn-danger btn-sm" title="Tolak">✗</button></form></td>
+                                                @endif
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                                @else
+                                <div class="text-center py-3 text-muted small">Belum ada pengumpulan</div>
+                                @endif
+                            </div>
+                        </div>
+                        @endforeach
+                        </div>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            @if(!$hasWajib && !$hasOther)
             <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">📋</span><h5>Belum ada tugas</h5><p class="text-muted">Admin atau DPL akan menambahkan tugas untuk kelompok ini.</p></div></div>
-            @endforelse
+            @endif
         </div>
 
         {{-- TAB: LOGBOOK --}}
@@ -763,7 +828,7 @@
                             @if($lppmFinal)<tr class="bg-light"><td colspan="5" class="text-right font-weight-bold">Nilai Akhir LPPM: {{ number_format($lppmFinal,2) }}</td></tr>@endif
 
                             @if($finalScore)
-                            <tr style="background:#e8f0fe;"><td colspan="5" class="text-center font-weight-bold" style="font-size:1.2rem;">
+                            <tr class="final-score-row"><td colspan="5" class="text-center font-weight-bold" style="font-size:1.2rem;">
                                 NILAI AKHIR TOTAL: <span class="{{ $finalScore>=75?'text-success':($finalScore>=60?'text-warning':'text-danger') }}">{{ number_format($finalScore,2) }}</span>
                             </td></tr>
                             @endif
