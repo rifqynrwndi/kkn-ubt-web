@@ -15,6 +15,7 @@
         "laravel/ui": "^4.6",
         "livewire/livewire": "^3.6",
         "phpoffice/phpspreadsheet": "*",
+        "predis/predis": "*",
         "spatie/laravel-permission": "^6.24"
     },
     "require-dev": {

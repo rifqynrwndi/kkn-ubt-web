@@ -17,103 +17,32 @@
 
     <div class="section-body">
 
-        {{-- FILTER --}}
-        <div class="card shadow-sm mb-4">
-
-            <div class="card-body">
-
-                <form method="GET">
-
-                    <div class="row align-items-end">
-
-                        <div class="col-md-5">
-                            <div class="form-group mb-md-0">
-                                <label>Cari Kelompok</label>
-
-                                <input type="text"
-                                       name="search"
-                                       class="form-control"
-                                       placeholder="Nama kelompok / kode kelompok..."
-                                       value="{{ request('search') }}">
-                            </div>
+        {{-- FILTER Kabupaten --}}
+        <div class="card shadow-sm mb-3">
+            <div class="card-body py-2">
+                <div class="d-flex flex-wrap align-items-center gap-1">
+                    <a href="{{ route('kelompok-kkn.index') }}" class="btn btn-sm {{ !request('kabupaten') && !request('status') ? 'btn-primary' : 'btn-outline-secondary' }} mr-1 mb-1">
+                        <i class="fas fa-th-list mr-1"></i> Semua
+                    </a>
+                    @foreach($kabupatens as $kab)
+                        <a href="{{ route('kelompok-kkn.index', array_filter(array_merge(request()->all(), ['kabupaten' => $kab, 'kecamatan_id' => null, 'search' => null]))) }}" class="btn btn-sm {{ request('kabupaten') == $kab ? 'btn-primary' : 'btn-outline-secondary' }} mr-1 mb-1">
+                            {{ $kab }}
+                        </a>
+                    @endforeach
+                    <div class="dropdown ml-auto mb-1">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown">
+                            {{ request('status') ? ucfirst(request('status')) : 'Semua Status' }}
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="{{ route('kelompok-kkn.index', array_filter(array_merge(request()->except('status')))) }}">Semua Status</a>
+                            <a class="dropdown-item" href="{{ route('kelompok-kkn.index', array_merge(request()->all(), ['status' => 'dibuka'])) }}">Dibuka</a>
+                            <a class="dropdown-item" href="{{ route('kelompok-kkn.index', array_merge(request()->all(), ['status' => 'penuh'])) }}">Penuh</a>
+                            <a class="dropdown-item" href="{{ route('kelompok-kkn.index', array_merge(request()->all(), ['status' => 'ditutup'])) }}">Ditutup</a>
+                            <a class="dropdown-item" href="{{ route('kelompok-kkn.index', array_merge(request()->all(), ['status' => 'draft'])) }}">Draft</a>
                         </div>
-
-                        <div class="col-md-3">
-                            <div class="form-group mb-md-0">
-                                <label>Kabupaten</label>
-                                <select name="kabupaten" class="form-control" onchange="this.form.submit()">
-                                    <option value="">Semua Kabupaten</option>
-                                    @foreach($kabupatens as $kab)
-                                        <option value="{{ $kab }}" {{ request('kabupaten') == $kab ? 'selected' : '' }}>
-                                            {{ $kab }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="form-group mb-md-0">
-                                <label>Kecamatan</label>
-                                <select name="kecamatan_id" class="form-control" onchange="this.form.submit()">
-                                    <option value="">Semua Kecamatan</option>
-                                    @foreach($kecamatans as $kec)
-                                        <option value="{{ $kec->id }}" {{ request('kecamatan_id') == $kec->id ? 'selected' : '' }}>
-                                            {{ $kec->nama_kecamatan }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="form-group mb-md-0">
-                                <label>Status</label>
-
-                                <select name="status"
-                                        class="form-control">
-
-                                    <option value="">
-                                        Semua Status
-                                    </option>
-
-                                    <option value="draft"
-                                        {{ request('status') == 'draft' ? 'selected' : '' }}>
-                                        Draft
-                                    </option>
-
-                                    <option value="dibuka"
-                                        {{ request('status') == 'dibuka' ? 'selected' : '' }}>
-                                        Dibuka
-                                    </option>
-
-                                    <option value="penuh"
-                                        {{ request('status') == 'penuh' ? 'selected' : '' }}>
-                                        Penuh
-                                    </option>
-
-                                    <option value="ditutup"
-                                        {{ request('status') == 'ditutup' ? 'selected' : '' }}>
-                                        Ditutup
-                                    </option>
-
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-md-2">
-                            <button class="btn btn-primary btn-block">
-                                <i class="fas fa-search mr-1"></i>
-                                Filter
-                            </button>
-                        </div>
-
                     </div>
-
-                </form>
-
+                </div>
             </div>
-
         </div>
 
         {{-- TABLE --}}
