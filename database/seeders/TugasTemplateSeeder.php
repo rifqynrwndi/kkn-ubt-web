@@ -12,9 +12,9 @@ class TugasTemplateSeeder extends Seeder
         $templates = [
             ['kategori' => 'tugas_kelompok', 'nama_tugas' => 'Program Kerja'],
             ['kategori' => 'luaran_wajib', 'nama_tugas' => 'Poster'],
-            ['kategori' => 'luaran_wajib', 'nama_tugas' => 'Video Dokumentasi Pelaksanaan KKN'],
-            ['kategori' => 'luaran_wajib', 'nama_tugas' => 'Video Profil Desa'],
-            ['kategori' => 'luaran_wajib', 'nama_tugas' => 'Artikel Pengabdian'],
+            ['kategori' => 'luaran_wajib', 'nama_tugas' => 'Video Dokumentasi Pelaksanaan KKN', 'is_wajib' => true],
+            ['kategori' => 'luaran_wajib', 'nama_tugas' => 'Video Profil Desa', 'is_wajib' => true],
+            ['kategori' => 'luaran_wajib', 'nama_tugas' => 'Draft Artikel', 'is_wajib' => true],
             ['kategori' => 'laporan', 'nama_tugas' => 'Laporan Program KKN'],
         ];
 
@@ -31,6 +31,7 @@ class TugasTemplateSeeder extends Seeder
                     ], [
                         'kategori' => $t['kategori'],
                         'is_active' => true,
+                        'is_wajib' => $t['is_wajib'] ?? false,
                     ]);
                     $created++;
                 }

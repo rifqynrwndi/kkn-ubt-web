@@ -47,6 +47,7 @@
                                         <th width="40">No</th>
                                         <th>Nama</th>
                                         <th>NPM</th>
+                                        <th>JK</th>
                                         <th>No. HP</th>
                                         <th>Prodi</th>
                                         <th>Status</th>
@@ -65,6 +66,7 @@
                                             @endif
                                         </td>
                                         <td>{{ $p->mahasiswa?->npm ?? '-' }}</td>
+                                        <td>{{ $p->mahasiswa?->jenis_kelamin ?? '-' }}</td>
                                         <td>{{ $p->mahasiswa?->no_hp ?? '-' }}</td>
                                         <td>{{ $p->mahasiswa?->prodi?->nama_prodi ?? '-' }}</td>
                                         <td>
@@ -77,7 +79,7 @@
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="6" class="text-center text-muted py-4">
+                                        <td colspan="7" class="text-center text-muted py-4">
                                             Belum ada anggota.
                                         </td>
                                     </tr>
@@ -146,7 +148,7 @@
                             @foreach($tugasList as $kat => $items)
                             <div class="p-3 border-bottom"><strong>{{ ['tugas_kelompok'=>'Tugas Kelompok','luaran_wajib'=>'Luaran Wajib','luaran_lain'=>'Luaran Lain','laporan'=>'Laporan'][$kat] ?? $kat }}</strong></div>
                             @foreach($items as $t)
-                            <div class="px-3"><strong class="small">{{ $t->nama_tugas }}</strong>
+                            <div class="px-3"><strong class="small">{{ $t->nama_tugas }}</strong>@if($t->is_wajib)<span class="badge badge-danger ml-1" style="font-size:9px;">Wajib</span>@endif
                                 @if($t->submissions->count())
                                 <table class="table table-sm"><tr><th>Judul</th><th>Oleh</th><th>Status</th><th>Aksi</th></tr>
                                 @foreach($t->submissions as $s)
