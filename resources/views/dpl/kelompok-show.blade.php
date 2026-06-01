@@ -3,6 +3,39 @@
 @section('title', 'Detail Kelompok — ' . $kelompok->nama_kelompok)
 @push('css')
 <style>
+    .group-nav {
+        display: flex; justify-content: center; gap: 0; background: #fff;
+        border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        overflow: hidden; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .group-nav a {
+        padding: 14px 20px; text-align: center; font-size: 13px; font-weight: 600;
+        color: #6c757d; border-bottom: 3px solid transparent; transition: .2s;
+        text-decoration: none; white-space: nowrap; cursor: pointer;
+    }
+    .group-nav a:hover, .group-nav a.active { color: #6777ef; border-bottom-color: #6777ef; background: #f8f9ff; }
+    .group-nav a i { margin-right: 6px; }
+    [data-bs-theme="dark"] .group-nav { background: #1f2430; box-shadow: 0 2px 12px rgba(0,0,0,.2); }
+    [data-bs-theme="dark"] .group-nav a { color: #aab1c1; }
+    [data-bs-theme="dark"] .group-nav a:hover, [data-bs-theme="dark"] .group-nav a.active { background: rgba(103,119,239,.1); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .proposal-doc {
+        background: #fff; border-radius: 12px; padding: 48px 40px;
+        box-shadow: 0 2px 16px rgba(0,0,0,.06); max-width: 860px; margin: 0 auto;
+    }
+    .proposal-doc-header { text-align: center; border-bottom: 2px solid #0f3460; padding-bottom: 24px; margin-bottom: 28px; }
+    .proposal-doc-header h3 { font-size: 1.1rem; font-weight: 700; color: #0f3460; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+    .proposal-doc-header h2 { font-size: 1.3rem; font-weight: 800; color: #1a1a2e; margin: 8px 0; }
+    .proposal-doc-header .doc-meta { font-size: .85rem; color: #6c757d; text-align: center; }
+    .proposal-doc-body h4 { font-size: 1rem; font-weight: 700; color: #0f3460; margin: 24px 0 10px; text-transform: uppercase; text-align: center; letter-spacing: .3px; }
+    .proposal-doc-body p { text-align: justify; line-height: 1.8; margin-bottom: 20px; font-size: .9rem; }
+    .proposal-doc-body p.text-muted { text-align: center; }
+    [data-bs-theme="dark"] .proposal-doc { background: #1f2430; }
+    [data-bs-theme="dark"] .proposal-doc-header { border-bottom-color: #374151; }
+    [data-bs-theme="dark"] .proposal-doc-header h3, [data-bs-theme="dark"] .proposal-doc-body h4 { color: #a4b0f5; }
+    [data-bs-theme="dark"] .proposal-doc-header h2 { color: #f1f3f8; }
+    [data-bs-theme="dark"] .proposal-doc-header .doc-meta { color: #aab1c1; }
     [data-bs-theme="dark"] .bg-light { background-color: #2a2f3a !important; }
     [data-bs-theme="dark"] .table .bg-light td,
     [data-bs-theme="dark"] .table .bg-light th { background-color: #2a2f3a !important; }
@@ -104,15 +137,16 @@
         {{-- POST-WAR MODULES --}}
         <div class="row mt-3">
             <div class="col-12">
-                <ul class="nav nav-tabs" id="dplTabs">
-                    <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#dpl-status">Status</a></li>
-                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#dpl-proposal">Proposal</a></li>
-                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#dpl-tugas">Tugas</a></li>
-                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#dpl-logbook">Log Book</a></li>
-                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#dpl-penilaian">Penilaian</a></li>
-                </ul>
-                <div class="tab-content">
-                    <div class="tab-pane fade show active" id="dpl-status">
+                <div class="group-nav">
+                    <a class="active" data-tab="status"><i class="fas fa-tasks"></i> Status</a>
+                    <a data-tab="anggota"><i class="fas fa-users"></i> Anggota</a>
+                    <a data-tab="proposal"><i class="fas fa-file-alt"></i> Proposal</a>
+                    <a data-tab="tugas"><i class="fas fa-upload"></i> Tugas</a>
+                    <a data-tab="logbook"><i class="fas fa-book"></i> Log Book</a>
+                    <a data-tab="penilaian"><i class="fas fa-star"></i> Penilaian</a>
+                </div>
+
+                <div class="tab-content active" id="tab-status">
                         <div class="card"><div class="card-body">
                             <div class="d-flex justify-content-center flex-wrap gap-1 mb-3">
                                 @foreach($statusStages as $i => $s)
@@ -120,7 +154,7 @@
                                     <div style="width:30px;height:30px;border-radius:50%;margin:0 auto 3px;background:{{ $i <= (int)$kelompok->status_tahap ? '#6777ef' : '#e0e0e0' }};color:{{ $i <= (int)$kelompok->status_tahap ? '#fff' : '#999' }};font-weight:800;font-size:12px;line-height:30px;">{{ $i }}</div>
                                     <small style="font-size:9px;color:{{ $i === (int)$kelompok->status_tahap ? '#6777ef' : '#adb5bd' }};">{{ $s['nama'] }}</small>
                                 </div>
-                                @if($i < 7)<div style="width:20px;height:2px;background:{{ $i < (int)$kelompok->status_tahap ? '#6777ef' : '#e0e0e0' }};margin-top:14px;flex-shrink:0;"></div>@endif
+                                @if($i < 3)<div style="width:20px;height:2px;background:{{ $i < (int)$kelompok->status_tahap ? '#6777ef' : '#e0e0e0' }};margin-top:14px;flex-shrink:0;"></div>@endif
                                 @endforeach
                             </div>
                             <form action="{{ route('kelompok.status.change', $kelompok->id) }}" method="POST" class="form-inline gap-2 justify-content-center">
@@ -133,25 +167,96 @@
                             </form>
                         </div></div>
                     </div>
-                    <div class="tab-pane fade" id="dpl-proposal">
-                        @if($proposal)
-                        <div class="card"><div class="card-body">
-                            <div class="alert alert-{{ $proposal->status==='disetujui'?'success':($proposal->status==='ditolak'?'danger':'info') }} mb-3">Status: {{ $proposal->status }}</div>
-                            @foreach(['pendahuluan'=>'Pendahuluan','tujuan'=>'Tujuan','manfaat'=>'Manfaat','hasil_observasi'=>'Hasil Observasi','rancangan_program'=>'Rancangan Program','solusi_ide'=>'Solusi & Ide'] as $f=>$l)
-                            <h6 class="font-weight-bold text-primary">{{ $l }}</h6><p style="font-size:13px;">{!! $proposal->$f ?: '<span class="text-muted">—</span>' !!}</p>
-                            @endforeach
-                            @if($proposal->status==='diajukan')
-                            <form action="{{ route('kelompok.proposal.review', $proposal->id) }}" method="POST">
-                                @csrf
-                                <textarea name="komentar_dpl" class="form-control form-control-sm mb-2" rows="2" placeholder="Komentar..."></textarea>
-                                <button name="action" value="setujui" class="btn btn-sm btn-success" onclick="return confirm('Setujui?')">Setujui</button>
-                                <button name="action" value="tolak" class="btn btn-sm btn-danger" onclick="return confirm('Tolak?')">Tolak</button>
-                            </form>
-                            @endif
-                        </div></div>
-                        @else <div class="card"><div class="card-body text-muted text-center py-4">Belum ada proposal.</div></div> @endif
+                    {{-- TAB: ANGGOTA --}}
+                    <div class="tab-content" id="tab-anggota">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h4>Anggota Kelompok</h4>
+                                <span class="badge badge-primary">{{ $kelompok->pesertaKkn->count() }} orang</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group mb-3">
+                                    <input type="text" class="form-control" id="anggotaSearch" placeholder="Cari anggota...">
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0" id="anggotaTable">
+                                        <thead><tr><th>No</th><th>Nama / NPM</th><th>JK</th><th>No. HP</th><th>Prodi</th><th>Status</th></tr></thead>
+                                        <tbody>
+                                            @forelse($kelompok->pesertaKkn as $index => $p)
+                                            <tr>
+                                                <td>{{ $index + 1 }}</td>
+                                                <td>
+                                                    <strong>{{ $p->mahasiswa?->user?->name ?? '-' }}</strong>
+                                                    @if($p->id === $kelompok->ketua_peserta_id)
+                                                        <span class="badge badge-warning ml-1">Ketua</span>
+                                                    @endif
+                                                    <br><small class="text-muted">{{ $p->mahasiswa?->npm ?? '-' }}</small>
+                                                </td>
+                                                <td>{{ $p->mahasiswa?->jenis_kelamin ?? '-' }}</td>
+                                                <td>{{ $p->mahasiswa?->no_hp ?? '-' }}</td>
+                                                <td><small>{{ $p->mahasiswa?->prodi?->nama_prodi ?? '-' }}</small></td>
+                                                <td>
+                                                    @if($p->status_pendaftaran === 'approved')
+                                                        <span class="badge badge-success">Approved</span>
+                                                    @else
+                                                        <span class="badge badge-warning">{{ $p->status_pendaftaran }}</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            @empty
+                                            <tr><td colspan="6" class="text-center text-muted py-4">Belum ada anggota.</td></tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="tab-pane fade" id="dpl-tugas">
+
+                    {{-- TAB: PROPOSAL --}}
+                    <div class="tab-content" id="tab-proposal">
+                        @if($proposal)
+                        <div class="alert alert-{{ $proposal->status==='disetujui'?'success':($proposal->status==='ditolak'?'danger':'info') }} mb-3">
+                            <strong>Status:</strong> {{ $proposal->status === 'disetujui' ? 'Disetujui' : ($proposal->status === 'ditolak' ? 'Ditolak' : 'Menunggu Review') }}
+                            @if($proposal->status === 'ditolak' && $proposal->komentar_dpl)
+                                <br><small><strong>Komentar:</strong> {{ $proposal->komentar_dpl }}</small>
+                            @endif
+                        </div>
+                        <div class="proposal-doc">
+                            <div class="proposal-doc-header">
+                                <h3>Proposal Program Kerja KKN</h3>
+                                <h2>{{ $kelompok->nama_kelompok }}</h2>
+                                <div class="doc-meta">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>
+                                    {{ $kelompok->desaGelombang->desa->nama_desa ?? '-' }},
+                                    {{ $kelompok->desaGelombang->desa->kecamatan->nama_kecamatan ?? '-' }},
+                                    {{ $kelompok->desaGelombang->desa->kecamatan->kabupaten ?? '-' }}
+                                </div>
+                            </div>
+                            <div class="proposal-doc-body">
+                                @foreach(['pendahuluan'=>'Pendahuluan','tujuan'=>'Tujuan','manfaat'=>'Manfaat','hasil_observasi'=>'Hasil Observasi','rancangan_program'=>'Rancangan Program','solusi_ide'=>'Solusi & Ide'] as $f=>$l)
+                                <h4>{{ $l }}</h4>
+                                @php $content = $proposal->$f; $isEmpty = !$content || trim(strip_tags($content)) === ''; @endphp
+                                @if($isEmpty)<p class="text-muted text-center">Belum ada {{ $l }}</p>@else<p>{!! $content !!}</p>@endif
+                                @endforeach
+                            </div>
+                        </div>
+                            @if($proposal->status==='diajukan')
+                            <div class="card mt-3">
+                                <div class="card-header"><h4>Review (DPL)</h4></div>
+                                <div class="card-body">
+                                    <form action="{{ route('kelompok.proposal.review', $proposal->id) }}" method="POST">
+                                        @csrf
+                                        <div class="form-group"><label>Komentar</label><textarea name="komentar_dpl" class="form-control" rows="3"></textarea></div>
+                                        <button name="action" value="setujui" class="btn btn-success" onclick="return confirm('Setujui?')"><i class="fas fa-check mr-1"></i> Setujui</button>
+                                        <button name="action" value="tolak" class="btn btn-danger" onclick="return confirm('Tolak?')"><i class="fas fa-times mr-1"></i> Tolak</button>
+                                    </form>
+                                </div>
+                            </div>
+                            @endif
+                        @else <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">📄</span><h5>Belum Ada Proposal</h5><p class="text-muted">Ketua kelompok belum membuat proposal.</p></div></div> @endif
+                    </div>
+                    <div class="tab-content" id="tab-tugas">
                         @if($tugasList->count())
                         @php
                             $wajibTasks = collect(); $otherTasks = collect();
@@ -217,7 +322,7 @@
                         @endif
                         @else <div class="card"><div class="card-body text-muted text-center py-4">Belum ada tugas.</div></div> @endif
                     </div>
-                    <div class="tab-pane fade" id="dpl-logbook">
+                    <div class="tab-content" id="tab-logbook">
                         @if($logbookData->count())
                         @foreach($logbookData as $pesertaId => $entries)
                         @php $member = $entries->first()->pesertaKkn->mahasiswa->user; $v = $entries->where('is_validated',true)->count(); @endphp
@@ -235,24 +340,42 @@
                         @endforeach
                         @else <div class="card"><div class="card-body text-muted text-center py-4">Belum ada log book.</div></div> @endif
                     </div>
-                    <div class="tab-pane fade" id="dpl-penilaian">
+                    <div class="tab-content" id="tab-penilaian">
                         @if($komponenList->count())
-                        <div class="card"><div class="card-body p-0"><table class="table table-sm mb-0"><tbody>
-                            @foreach($komponenList->where('kategori','dpl') as $k)
-                            @php $nilai = $penilaianData[$k->id]->nilai ?? null; @endphp
-                            <tr>
-                                <td width="50"><span class="badge badge-secondary">{{ $k->bobot }}%</span></td>
-                                <td>{{ $k->nama_komponen }}</td>
-                                <td width="150">
-                                    <form action="{{ route('kelompok.penilaian.input') }}" method="POST" class="form-inline gap-1">@csrf
-                                        <input type="hidden" name="kelompok_kkn_id" value="{{ $kelompok->id }}"><input type="hidden" name="komponen_id" value="{{ $k->id }}">
-                                        <input type="number" name="nilai" class="form-control form-control-sm" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $nilai }}" style="width:80px;">
-                                        <button class="btn btn-primary btn-sm"><i class="fas fa-save"></i></button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody></table></div></div>
+                        <div class="card">
+                            <div class="card-header"><h4>Penilaian Per Anggota</h4></div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-sm mb-0">
+                                        <thead><tr><th>Anggota</th>@foreach($komponenList->where('kategori','dpl') as $k)<th class="text-center">{{ $k->nama_komponen }}<br><small class="text-muted">{{ $k->bobot }}%</small></th>@endforeach</tr></thead>
+                                        <tbody>
+                                            @foreach($kelompok->pesertaKkn as $p)
+                                            <tr>
+                                                <td><strong>{{ $p->mahasiswa?->user?->name ?? '-' }}</strong><br><small class="text-muted">{{ $p->mahasiswa?->npm ?? '-' }}</small></td>
+                                                @foreach($komponenList->where('kategori','dpl') as $k)
+                                                @php
+                                                    $nilai = $penilaianIndividu[$p->id][$k->id]->nilai ?? null;
+                                                @endphp
+                                                <td class="text-center">
+                                                    <form action="{{ route('kelompok.penilaian.input') }}" method="POST" class="form-inline gap-1 justify-content-center">
+                                                        @csrf
+                                                        <input type="hidden" name="kelompok_kkn_id" value="{{ $kelompok->id }}">
+                                                        <input type="hidden" name="komponen_id" value="{{ $k->id }}">
+                                                        <input type="hidden" name="peserta_kkn_id" value="{{ $p->id }}">
+                                                        <input type="number" name="nilai" class="form-control form-control-sm" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $nilai }}" style="width:70px;">
+                                                        <button class="btn btn-primary btn-sm"><i class="fas fa-save"></i></button>
+                                                    </form>
+                                                </td>
+                                                @endforeach
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        @else
+                        <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">⭐</span><h5>Belum Ada Komponen Penilaian</h5><p class="text-muted">Jalankan seeder PenilaianKomponenSeeder terlebih dahulu.</p></div></div>
                         @endif
                     </div>
                 </div>
@@ -261,3 +384,22 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+    document.querySelectorAll('.group-nav a').forEach(link => {
+        link.addEventListener('click', function() {
+            document.querySelectorAll('.group-nav a').forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+        });
+    });
+    document.getElementById('anggotaSearch')?.addEventListener('keyup', function() {
+        var q = this.value.toLowerCase();
+        document.querySelectorAll('#anggotaTable tbody tr').forEach(function(row) {
+            row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+</script>
+@endpush

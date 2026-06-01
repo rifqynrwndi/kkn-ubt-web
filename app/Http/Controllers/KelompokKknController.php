@@ -575,4 +575,65 @@ class KelompokKknController extends Controller
             'Ketua kelompok berhasil diubah menjadi ' . ($peserta->mahasiswa?->user?->name ?? 'Unknown') . '.'
         );
     }
+
+    public function exportXlsx()
+    {
+        $kelompoks = KelompokKkn::with([
+            'pesertaKkn.mahasiswa.user',
+            'pesertaKkn.mahasiswa.prodi.fakultas',
+            'dosenPembimbingLapangan.user',
+            'desaGelombang.desa.kecamatan',
+        ])->orderBy('nama_kelompok')->get();
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data Mahasiswa KKN');
+
+        $headers = ['No','Nama','NPM','Email','HP','Jenis Kelamin','Fakultas','Prodi','Kelompok','Kode Kelompok','Desa','Kecamatan','Kabupaten','DPL','Status Peserta'];
+        $sheet->fromArray([$headers], null, 'A1');
+
+        $styleHeader = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '6777EF']],
+        ];
+        $sheet->getStyle('A1:O1')->applyFromArray($styleHeader);
+
+        $row = 2;
+        $no = 1;
+        foreach ($kelompoks as $k) {
+            foreach ($k->pesertaKkn as $p) {
+                $m = $p->mahasiswa;
+                $sheet->fromArray([
+                    $no++,
+                    $m?->user?->name ?? '-',
+                    $m?->npm ?? '-',
+                    $m?->user?->email ?? '-',
+                    $m?->no_hp ?? '-',
+                    $m?->jenis_kelamin ?? '-',
+                    $m?->prodi?->fakultas?->nama_fakultas ?? '-',
+                    $m?->prodi?->nama_prodi ?? '-',
+                    $k->nama_kelompok,
+                    $k->kode_kelompok,
+                    $k->desaGelombang?->desa?->nama_desa ?? '-',
+                    $k->desaGelombang?->desa?->kecamatan?->nama_kecamatan ?? '-',
+                    $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? '-',
+                    $k->dosenPembimbingLapangan?->user?->name ?? '-',
+                    $p->status_pendaftaran ?? '-',
+                ], null, 'A' . $row++);
+            }
+        }
+
+        foreach (range('A', 'O') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $filename = 'data-mahasiswa-kkn-' . now()->format('Ymd-His') . '.xlsx';
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
 }

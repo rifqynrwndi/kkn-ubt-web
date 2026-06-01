@@ -309,6 +309,7 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
         Route::put('kelompok-kkn/{kelompok_kkn}/buka',[KelompokKknController::class, 'buka'])->name('kelompok-kkn.buka');
         Route::put('kelompok-kkn/{kelompok_kkn}/tutup',[KelompokKknController::class, 'tutup'])->name('kelompok-kkn.tutup');
         Route::put('kelompok-kkn/{kelompok_kkn}/ketua/{peserta}',[KelompokKknController::class, 'setKetua'])->name('kelompok-kkn.ketua');
+        Route::get('kelompok-kkn-export', [KelompokKknController::class, 'exportXlsx'])->name('kelompok-kkn.export');
 
         /*
         |--------------------------------------------------------------------------

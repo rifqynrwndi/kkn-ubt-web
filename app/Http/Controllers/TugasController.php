@@ -70,14 +70,23 @@ class TugasController extends Controller
 
     public function review(Request $request, TugasSubmission $submission): RedirectResponse
     {
-        $request->validate(['status'=>'required|in:diterima,ditolak,revisi']);
+        $request->validate([
+            'status'=>'required|in:diterima,ditolak,revisi',
+            'nilai'=>'nullable|numeric|min:0|max:100',
+        ]);
 
-        $submission->update([
+        $updateData = [
             'status' => $request->status,
             'komentar_dpl' => $request->komentar_dpl,
             'reviewed_by' => auth()->id(),
             'reviewed_at' => now(),
-        ]);
+        ];
+
+        if ($request->user()->hasRole('superadmin')) {
+            $updateData['nilai'] = $request->nilai;
+        }
+
+        $submission->update($updateData);
 
         return back()->with('success','Tugas di-review.');
     }
