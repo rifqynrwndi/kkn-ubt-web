@@ -255,8 +255,9 @@
                     <div class="d-flex align-items-center"><h4 class="mb-0 mr-3">Anggota Kelompok</h4><span class="badge badge-primary">{{ $kelompok_kkn->terisi }} Anggota</span></div>
                     @if(!$kelompok_kkn->is_full)<a href="{{ route('kelompok-kkn.anggota.create', $kelompok_kkn->id) }}" class="btn btn-primary btn-sm"><i class="fas fa-user-plus mr-1"></i> Tambah Anggota</a>@endif
                 </div>
-                <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0">
-                    <thead><tr><th width="40">No</th><th>Nama</th><th>NPM</th><th>JK</th><th>No. HP</th><th>Fakultas</th><th>Program Studi</th><th width="170">Aksi</th></tr></thead>
+                <div class="card-body"><div class="form-group mb-3"><input type="text" class="form-control" id="anggotaSearch" placeholder="Cari anggota..."></div></div>
+                <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0" id="anggotaTable">
+                    <thead><tr><th width="40">No</th><th>Nama / NPM</th><th>JK</th><th>No. HP</th><th>Fakultas</th><th>Prodi</th><th width="170">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($kelompok_kkn->pesertaKkn as $item)
                         <tr>
@@ -292,7 +293,7 @@
                         <div style="width:30px;height:30px;border-radius:50%;margin:0 auto 3px;background:{{ $i <= (int)$kelompok_kkn->status_tahap ? '#6777ef' : '#e0e0e0' }};color:{{ $i <= (int)$kelompok_kkn->status_tahap ? '#fff' : '#999' }};font-weight:800;font-size:12px;line-height:30px;">{{ $i }}</div>
                         <small style="font-size:9px;color:{{ $i === (int)$kelompok_kkn->status_tahap ? '#6777ef' : '#adb5bd' }};">{{ $s['nama'] }}</small>
                     </div>
-                    @if($i < 7)<div style="width:20px;height:2px;background:{{ $i < (int)$kelompok_kkn->status_tahap ? '#6777ef' : '#e0e0e0' }};margin-top:14px;flex-shrink:0;"></div>@endif
+                    @if($i < 3)<div style="width:20px;height:2px;background:{{ $i < (int)$kelompok_kkn->status_tahap ? '#6777ef' : '#e0e0e0' }};margin-top:14px;flex-shrink:0;"></div>@endif
                     @endforeach
                 </div>
                 <div class="alert alert-primary text-center mb-3"><strong>Tahap Saat Ini: {{ $statusCurrent['nama'] }}</strong></div>
@@ -334,6 +335,7 @@
                         <td><span class="badge badge-{{ $s->status==='diterima'?'success':($s->status==='ditolak'?'danger':'info') }}">{{ $s->status }}</span></td>
                         <td><form action="{{ route('kelompok.tugas.review', $s->id) }}" method="POST" class="form-inline gap-1">@csrf
                             <input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;">
+                            <input name="nilai" class="form-control form-control-sm" placeholder="Nilai" min="0" max="100" step="0.01" style="width:60px;">
                             <button name="status" value="diterima" class="btn btn-sm btn-success">✓</button>
                             <button name="status" value="ditolak" class="btn btn-sm btn-danger">✗</button>
                         </form></td></tr>
@@ -362,6 +364,7 @@
                         <td><span class="badge badge-{{ $s->status==='diterima'?'success':($s->status==='ditolak'?'danger':'info') }}">{{ $s->status }}</span></td>
                         <td><form action="{{ route('kelompok.tugas.review', $s->id) }}" method="POST" class="form-inline gap-1">@csrf
                             <input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;">
+                            <input name="nilai" class="form-control form-control-sm" placeholder="Nilai" min="0" max="100" step="0.01" style="width:60px;">
                             <button name="status" value="diterima" class="btn btn-sm btn-success">✓</button>
                             <button name="status" value="ditolak" class="btn btn-sm btn-danger">✗</button>
                         </form></td></tr>
@@ -463,5 +466,11 @@
         document.querySelectorAll('.logbook-member-card').forEach(c => c.style.display = 'none');
         if (val) document.getElementById('card-' + val).style.display = 'block';
     }
+    document.getElementById('anggotaSearch')?.addEventListener('keyup', function() {
+        var q = this.value.toLowerCase();
+        document.querySelectorAll('#anggotaTable tbody tr').forEach(function(row) {
+            row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
 </script>
 @endpush

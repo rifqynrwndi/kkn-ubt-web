@@ -11,7 +11,7 @@
                     {{ $s['nama'] }}
                 </small>
             </div>
-            @if($i < 7)
+            @if($i < 3)
             <div style="width:24px;height:2px;background:{{ $i < $kelompok->status_tahap ? '#6777ef' : '#e0e0e0' }};margin-top:16px;flex-shrink:0;"></div>
             @endif
             @endforeach
@@ -25,7 +25,7 @@
     </div>
 </div>
 
-@if(($isAdmin || $isDpl) && $kelompok->status_tahap < 7)
+@if(($isAdmin || $isDpl) && $kelompok->status_tahap < 3)
 <div class="card mb-3">
     <div class="card-header"><h5>Ubah Status</h5></div>
     <div class="card-body">

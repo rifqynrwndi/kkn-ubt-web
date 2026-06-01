@@ -257,7 +257,7 @@
                                 font-weight:800;font-size:12px;line-height:30px;">{{ $i }}</div>
                             <small style="font-size:9px;color:{{ $i === (int)$kelompok->status_tahap ? '#6777ef' : '#adb5bd' }};font-weight:{{ $i === (int)$kelompok->status_tahap ? '700' : '400' }};">{{ $s['nama'] }}</small>
                         </div>
-                        @if($i < 7)<div style="width:20px;height:2px;background:{{ $i < (int)$kelompok->status_tahap ? '#6777ef' : '#e0e0e0' }};margin-top:14px;flex-shrink:0;"></div>@endif
+                        @if($i < 3)<div style="width:20px;height:2px;background:{{ $i < (int)$kelompok->status_tahap ? '#6777ef' : '#e0e0e0' }};margin-top:14px;flex-shrink:0;"></div>@endif
                         @endforeach
                     </div>
                     <div class="alert alert-primary text-center mb-0">
@@ -267,7 +267,7 @@
             </div>
 
             {{-- CHANGE STATUS (Admin/DPL only, not mahasiswa) --}}
-            @if(($isAdmin || $isDpl) && !auth()->user()->hasRole('mahasiswa') && $kelompok->status_tahap < 7)
+            @if(($isAdmin || $isDpl) && !auth()->user()->hasRole('mahasiswa') && $kelompok->status_tahap < 3)
             <div class="card mb-3">
                 <div class="card-header"><h5>Ubah Status</h5></div>
                 <div class="card-body">
@@ -296,7 +296,7 @@
                 <div class="card-header"><h5>Panduan Proses Status</h5></div>
                 <div class="card-body">
                     @foreach($statusStages as $i => $s)
-                    <div class="mb-3 pb-3 {{ $i < 7 ? 'border-bottom' : '' }}">
+                    <div class="mb-3 pb-3 {{ $i < 3 ? 'border-bottom' : '' }}">
                         <span class="badge badge-primary mr-2" style="font-size:12px;">{{ $i }}. {{ $s['nama'] }}</span>
                         @if($i === (int)$kelompok->status_tahap)
                         <span class="badge badge-pill badge-success" style="font-size:10px;">Saat Ini</span>
@@ -355,10 +355,11 @@
                     <h5><i class="fas fa-users mr-2"></i> Anggota Kelompok</h5>
                     <span class="badge badge-primary">{{ $kelompok->pesertaKkn->count() }} orang</span>
                 </div>
+                <div class="card-body"><div class="form-group mb-0"><input type="text" class="form-control" id="anggotaSearch" placeholder="Cari anggota..."></div></div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead>
+                        <table class="table table-hover mb-0" id="anggotaTable">
+                            <thead>
                                     <tr>
                                         <th width="40">#</th>
                                         <th width="50">Foto</th>
@@ -488,7 +489,7 @@
                                                 <td>@if($sub->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($sub->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@elseif($sub->status==='revisi')<span class="badge badge-warning">Revisi</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
                                                 <td><small class="text-muted">{{ $sub->komentar_dpl ?: '-' }}</small></td>
                                                 @if(($isDpl || $isAdmin) && !auth()->user()->hasRole('mahasiswa'))
-                                                <td><form action="{{ route('kelompok.tugas.review', $sub->id) }}" method="POST" class="form-inline gap-1">@csrf<input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;font-size:11px;"><button name="status" value="diterima" class="btn btn-success btn-sm" title="Terima">✓</button><button name="status" value="ditolak" class="btn btn-danger btn-sm" title="Tolak">✗</button></form></td>
+                                                <td><form action="{{ route('kelompok.tugas.review', $sub->id) }}" method="POST" class="form-inline gap-1">@csrf<input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;font-size:11px;"><input name="nilai" class="form-control form-control-sm" placeholder="Nilai" min="0" max="100" step="0.01" style="width:55px;font-size:11px;"><button name="status" value="diterima" class="btn btn-success btn-sm" title="Terima">✓</button><button name="status" value="ditolak" class="btn btn-danger btn-sm" title="Tolak">✗</button></form></td>
                                                 @endif
                                             </tr>
                                             @endforeach
@@ -547,7 +548,7 @@
                                                 <td>@if($sub->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($sub->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@elseif($sub->status==='revisi')<span class="badge badge-warning">Revisi</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
                                                 <td><small class="text-muted">{{ $sub->komentar_dpl ?: '-' }}</small></td>
                                                 @if(($isDpl || $isAdmin) && !auth()->user()->hasRole('mahasiswa'))
-                                                <td><form action="{{ route('kelompok.tugas.review', $sub->id) }}" method="POST" class="form-inline gap-1">@csrf<input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;font-size:11px;"><button name="status" value="diterima" class="btn btn-success btn-sm" title="Terima">✓</button><button name="status" value="ditolak" class="btn btn-danger btn-sm" title="Tolak">✗</button></form></td>
+                                                <td><form action="{{ route('kelompok.tugas.review', $sub->id) }}" method="POST" class="form-inline gap-1">@csrf<input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;font-size:11px;"><input name="nilai" class="form-control form-control-sm" placeholder="Nilai" min="0" max="100" step="0.01" style="width:55px;font-size:11px;"><button name="status" value="diterima" class="btn btn-success btn-sm" title="Terima">✓</button><button name="status" value="ditolak" class="btn btn-danger btn-sm" title="Tolak">✗</button></form></td>
                                                 @endif
                                             </tr>
                                             @endforeach
@@ -904,5 +905,11 @@
             icon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
         }
     }
+    document.getElementById('anggotaSearch')?.addEventListener('keyup', function() {
+        var q = this.value.toLowerCase();
+        document.querySelectorAll('#anggotaTable tbody tr').forEach(function(row) {
+            row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
 </script>
 @endpush

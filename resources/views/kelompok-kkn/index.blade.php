@@ -13,6 +13,11 @@
             <i class="fas fa-plus mr-1"></i>
             Tambah Kelompok
         </a>
+        <a href="{{ route('kelompok-kkn.export') }}"
+           class="btn btn-success ml-2">
+            <i class="fas fa-file-excel mr-1"></i>
+            Export XLSX
+        </a>
     </div>
 
     <div class="section-body">
