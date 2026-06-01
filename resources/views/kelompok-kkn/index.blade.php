@@ -61,7 +61,7 @@
                 <h4 class="mb-0">Daftar Kelompok KKN</h4>
                 <form method="GET" style="min-width:200px;">
                     <div class="input-group input-group-sm">
-                        <input type="text" name="search" class="form-control" placeholder="Cari kelompok..." value="{{ request('search') }}">
+                        <input type="text" name="search" class="form-control" placeholder="Cari kelompok atau mahasiswa..." value="{{ request('search') }}">
                         <div class="input-group-append">
                             <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
                         </div>

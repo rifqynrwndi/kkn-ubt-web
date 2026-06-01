@@ -33,18 +33,10 @@ class KelompokKknController extends Controller
         if ($request->filled('search')) {
 
             $query->where(function ($q) use ($request) {
-
-                $q->where(
-                    'kode_kelompok',
-                    'like',
-                    '%' . $request->search . '%'
-                )
-                ->orWhere(
-                    'nama_kelompok',
-                    'like',
-                    '%' . $request->search . '%'
-                );
-
+                $q->where('kode_kelompok', 'like', '%' . $request->search . '%')
+                  ->orWhere('nama_kelompok', 'like', '%' . $request->search . '%')
+                  ->orWhereHas('pesertaKkn.mahasiswa.user', fn($uq) => $uq->where('name', 'like', '%' . $request->search . '%'))
+                  ->orWhereHas('pesertaKkn.mahasiswa', fn($mq) => $mq->where('npm', 'like', '%' . $request->search . '%'));
             });
 
         }
@@ -587,48 +579,61 @@ class KelompokKknController extends Controller
 
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Data Mahasiswa KKN');
+        $sheet->setTitle('Data Kelompok KKN');
 
-        $headers = ['No','Nama','NPM','Email','HP','Jenis Kelamin','Fakultas','Prodi','Kelompok','Kode Kelompok','Desa','Kecamatan','Kabupaten','DPL','Status Peserta'];
-        $sheet->fromArray([$headers], null, 'A1');
-
-        $styleHeader = [
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '6777EF']],
-        ];
-        $sheet->getStyle('A1:O1')->applyFromArray($styleHeader);
-
-        $row = 2;
-        $no = 1;
+        $row = 1;
         foreach ($kelompoks as $k) {
+            $dpl = $k->dosenPembimbingLapangan?->user?->name ?? '-';
+            $desa = $k->desaGelombang?->desa?->nama_desa ?? '-';
+            $kec = $k->desaGelombang?->desa?->kecamatan?->nama_kecamatan ?? '-';
+            $kab = $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? '-';
+
+            // Kelompok header
+            $sheet->setCellValue("A{$row}", 'Kelompok');
+            $sheet->getStyle("A{$row}")->getFont()->setBold(true);
+            $sheet->setCellValue("B{$row}", $k->nama_kelompok . ' (' . $k->kode_kelompok . ')');
+            $row++;
+
+            $sheet->setCellValue("A{$row}", 'DPL');
+            $sheet->getStyle("A{$row}")->getFont()->setBold(true);
+            $sheet->setCellValue("B{$row}", $dpl);
+            $row++;
+
+            $sheet->setCellValue("A{$row}", 'Lokasi');
+            $sheet->getStyle("A{$row}")->getFont()->setBold(true);
+            $sheet->setCellValue("B{$row}", "{$desa}, {$kec}, {$kab}");
+            $row++;
+
+            $sheet->setCellValue("A{$row}", 'Status');
+            $sheet->getStyle("A{$row}")->getFont()->setBold(true);
+            $sheet->setCellValue("B{$row}", $k->pesertaKkn->count() . '/' . $k->kuota);
+            $row++;
+
+            // Anggota header
+            $sheet->setCellValue("A{$row}", 'Anggota:');
+            $sheet->getStyle("A{$row}")->getFont()->setBold(true)->setSize(11);
+            $row++;
+
+            $no = 1;
             foreach ($k->pesertaKkn as $p) {
                 $m = $p->mahasiswa;
-                $sheet->fromArray([
-                    $no++,
-                    $m?->user?->name ?? '-',
-                    $m?->npm ?? '-',
-                    $m?->user?->email ?? '-',
-                    $m?->no_hp ?? '-',
-                    $m?->jenis_kelamin ?? '-',
-                    $m?->prodi?->fakultas?->nama_fakultas ?? '-',
-                    $m?->prodi?->nama_prodi ?? '-',
-                    $k->nama_kelompok,
-                    $k->kode_kelompok,
-                    $k->desaGelombang?->desa?->nama_desa ?? '-',
-                    $k->desaGelombang?->desa?->kecamatan?->nama_kecamatan ?? '-',
-                    $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? '-',
-                    $k->dosenPembimbingLapangan?->user?->name ?? '-',
-                    $p->status_pendaftaran ?? '-',
-                ], null, 'A' . $row++);
+                $sheet->setCellValue("A{$row}", "  {$no}. " . ($m?->user?->name ?? '-'));
+                $sheet->setCellValue("B{$row}", $m?->npm ?? '-');
+                $sheet->setCellValue("C{$row}", $m?->prodi?->nama_prodi ?? '-');
+                $sheet->setCellValue("D{$row}", $m?->prodi?->fakultas?->nama_fakultas ?? '-');
+                $row++;
+                $no++;
             }
+
+            $row++; // blank row between groups
         }
 
-        foreach (range('A', 'O') as $col) {
+        foreach (range('A', 'D') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        $filename = 'data-mahasiswa-kkn-' . now()->format('Ymd-His') . '.xlsx';
+        $filename = 'data-kelompok-kkn-' . now()->format('Ymd-His') . '.xlsx';
 
         return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
