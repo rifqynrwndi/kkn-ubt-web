@@ -9,8 +9,8 @@ return new class extends Migration
     {
         Schema::create('penilaian_individu', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('kelompok_kkn_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('peserta_kkn_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('kelompok_kkn_id')->constrained('kelompok_kkn')->cascadeOnDelete();
+            $table->foreignId('peserta_kkn_id')->constrained('peserta_kkn')->cascadeOnDelete();
             $table->foreignId('komponen_id')->constrained('penilaian_komponen')->cascadeOnDelete();
             $table->decimal('nilai', 5, 2)->nullable();
             $table->foreignId('input_by')->nullable()->constrained('users')->nullOnDelete();
