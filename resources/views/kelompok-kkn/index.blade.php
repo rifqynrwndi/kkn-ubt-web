@@ -7,17 +7,18 @@
 
     <div class="section-header d-flex justify-content-between align-items-center">
         <h1>Kelompok KKN</h1>
-
-        <a href="{{ route('kelompok-kkn.create') }}"
-           class="btn btn-primary">
-            <i class="fas fa-plus mr-1"></i>
-            Tambah Kelompok
-        </a>
-        <a href="{{ route('kelompok-kkn.export') }}"
-           class="btn btn-success ml-2">
-            <i class="fas fa-file-excel mr-1"></i>
-            Export XLSX
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{{ route('kelompok-kkn.create') }}"
+               class="btn btn-primary">
+                <i class="fas fa-plus mr-1"></i>
+                Tambah Kelompok
+            </a>
+            <a href="{{ route('kelompok-kkn.export') }}"
+               class="btn btn-success">
+                <i class="fas fa-file-excel mr-1"></i>
+                Export XLSX
+            </a>
+        </div>
     </div>
 
     <div class="section-body">
