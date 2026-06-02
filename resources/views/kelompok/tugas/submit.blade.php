@@ -14,7 +14,7 @@
         <div class="card">
             <div class="card-header"><h4>Form Pengumpulan Tugas</h4></div>
             <div class="card-body">
-                <form action="{{ route('kelompok.tugas.submit', 0) }}" method="POST" enctype="multipart/form-data" onsubmit="return setAction()">
+                <form id="tugas-form" action="{{ route('kelompok.tugas.submit', 0) }}" method="POST" enctype="multipart/form-data" onsubmit="return setAction(this)">
                     @csrf
                     <div class="form-group">
                         <label>Pilih Tugas</label>
@@ -54,10 +54,10 @@
 @endsection
 @push('scripts')
 <script>
-function setAction() {
+function setAction(form) {
     var val = document.getElementById('tugas-select').value;
-    if (!val) { iziToast.warning({title:'Pilih Tugas', message:'Silakan pilih tugas.', position:'topRight'}); return false; }
-    this.action = "{{ route('kelompok.tugas.submit', 0) }}".replace('/0', '/' + val);
+    if (!val) { iziToast.warning({title:'Pilih Tugas', message:'Silakan pilih tugas terlebih dahulu.', position:'topRight'}); return false; }
+    form.action = "/kelompok/tugas/" + val + "/submit";
     return true;
 }
 </script>

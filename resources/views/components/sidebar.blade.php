@@ -80,7 +80,7 @@
 </div>
 @endauth
 
-@if(auth()->user()->hasRole('mahasiswa') && !auth()->user()->mahasiswa?->is_biodata_complete)
+@if(auth()->user()?->hasRole('mahasiswa') && !auth()->user()->mahasiswa?->is_biodata_complete)
 <div class="alert alert-warning">
     Biodata Anda belum lengkap.
     <a href="{{ route('biodata.edit') }}" class="alert-link">
