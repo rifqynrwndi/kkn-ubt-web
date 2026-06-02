@@ -577,59 +577,78 @@ class KelompokKknController extends Controller
             'desaGelombang.desa.kecamatan',
         ])->orderBy('nama_kelompok')->get();
 
+        $grouped = $kelompoks->groupBy(fn($k) => $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? 'Tanpa Kabupaten');
+
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Data Kelompok KKN');
+        $first = true;
 
-        $row = 1;
-        foreach ($kelompoks as $k) {
-            $dpl = $k->dosenPembimbingLapangan?->user?->name ?? '-';
-            $desa = $k->desaGelombang?->desa?->nama_desa ?? '-';
-            $kec = $k->desaGelombang?->desa?->kecamatan?->nama_kecamatan ?? '-';
-            $kab = $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? '-';
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '2D3A8A']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER, 'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN, 'color' => ['rgb' => 'FFFFFF']]],
+        ];
 
-            // Kelompok header
-            $sheet->setCellValue("A{$row}", 'Kelompok');
-            $sheet->getStyle("A{$row}")->getFont()->setBold(true);
-            $sheet->setCellValue("B{$row}", $k->nama_kelompok . ' (' . $k->kode_kelompok . ')');
-            $row++;
+        $rowStripeStyle = [
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F0F2FA']],
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN, 'color' => ['rgb' => 'D0D5E8']]],
+        ];
 
-            $sheet->setCellValue("A{$row}", 'DPL');
-            $sheet->getStyle("A{$row}")->getFont()->setBold(true);
-            $sheet->setCellValue("B{$row}", $dpl);
-            $row++;
+        $rowStyle = [
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN, 'color' => ['rgb' => 'D0D5E8']]],
+        ];
 
-            $sheet->setCellValue("A{$row}", 'Lokasi');
-            $sheet->getStyle("A{$row}")->getFont()->setBold(true);
-            $sheet->setCellValue("B{$row}", "{$desa}, {$kec}, {$kab}");
-            $row++;
+        $altRowStyle = [
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN, 'color' => ['rgb' => 'D0D5E8']]],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F8F9FC']],
+        ];
 
-            $sheet->setCellValue("A{$row}", 'Status');
-            $sheet->getStyle("A{$row}")->getFont()->setBold(true);
-            $sheet->setCellValue("B{$row}", $k->pesertaKkn->count() . '/' . $k->kuota);
-            $row++;
+        foreach ($grouped as $kabupaten => $kels) {
+            $sheet = $first ? $spreadsheet->getActiveSheet() : $spreadsheet->createSheet();
+            $first = false;
 
-            // Anggota header
-            $sheet->setCellValue("A{$row}", 'Anggota:');
-            $sheet->getStyle("A{$row}")->getFont()->setBold(true)->setSize(11);
-            $row++;
+            $safeName = mb_substr(str_replace(['\\','/','*','?','[',']',':'], '', $kabupaten), 0, 31);
+            $sheet->setTitle($safeName);
 
+            $headers = ['No', 'Kelompok', 'DPL', 'Lokasi', 'Anggota'];
+            $lastCol = 'E';
+
+            $sheet->fromArray([$headers], null, 'A1');
+            $sheet->getStyle("A1:{$lastCol}1")->applyFromArray($headerStyle);
+            $sheet->getRowDimension(1)->setRowHeight(28);
+
+            $row = 2;
             $no = 1;
-            foreach ($k->pesertaKkn as $p) {
-                $m = $p->mahasiswa;
-                $sheet->setCellValue("A{$row}", "  {$no}. " . ($m?->user?->name ?? '-'));
-                $sheet->setCellValue("B{$row}", $m?->npm ?? '-');
-                $sheet->setCellValue("C{$row}", $m?->prodi?->nama_prodi ?? '-');
-                $sheet->setCellValue("D{$row}", $m?->prodi?->fakultas?->nama_fakultas ?? '-');
+            foreach ($kels as $k) {
+                $dpl = $k->dosenPembimbingLapangan?->user?->name ?? '-';
+                $desa = $k->desaGelombang?->desa?->nama_desa ?? '-';
+                $kec = $k->desaGelombang?->desa?->kecamatan?->nama_kecamatan ?? '-';
+
+                $anggotaList = $k->pesertaKkn->map(function ($p, $i) {
+                    $m = $p->mahasiswa;
+                    $nama = $m?->user?->name ?? '-';
+                    $npm = $m?->npm ?? '';
+                    $prodi = $m?->prodi?->nama_prodi ?? '';
+                    $fakultas = $m?->prodi?->fakultas?->nama_fakultas ?? '';
+                    return ($i + 1) . ". {$nama} | {$npm} | {$prodi} | {$fakultas}";
+                })->implode("\n");
+
+                $rowData = [$no++, $k->nama_kelompok . "\n(" . $k->kode_kelompok . ')', $dpl, "{$desa}\n{$kec}", $anggotaList];
+
+                $sheet->fromArray([$rowData], null, "A{$row}");
+                $style = ($no % 2 === 1) ? $rowStripeStyle : $altRowStyle;
+                $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray($style);
+                $sheet->getRowDimension($row)->setRowHeight(max(36, $k->pesertaKkn->count() * 18));
+                $sheet->getStyle("A{$row}:{$lastCol}{$row}")->getAlignment()->setWrapText(true)->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+                $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
                 $row++;
-                $no++;
             }
 
-            $row++; // blank row between groups
-        }
-
-        foreach (range('A', 'D') as $col) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
+            $sheet->getColumnDimension('A')->setWidth(6);
+            $sheet->getColumnDimension('B')->setWidth(24);
+            $sheet->getColumnDimension('C')->setWidth(22);
+            $sheet->getColumnDimension('D')->setWidth(20);
+            $sheet->getColumnDimension('E')->setWidth(50);
         }
 
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
