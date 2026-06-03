@@ -417,32 +417,91 @@
         {{-- TAB: PENILAIAN --}}
         <div class="tab-content" id="tab-admin-penilaian">
             @if($komponenList->count())
-            <div class="card"><div class="card-body p-0"><table class="table table-sm mb-0"><tbody>
-                <tr class="bg-light"><td colspan="4"><strong>Dosen Pembimbing Lapangan (DPL)</strong></td></tr>
-                @foreach($komponenList->where('kategori','dpl') as $k)
-                @php $nilai = $penilaianData[$k->id]->nilai ?? null; @endphp
-                <tr><td width="50"><span class="badge badge-primary">{{ $k->bobot }}%</span></td>
-                    <td>{{ $k->nama_komponen }}</td>
-                    <td width="80"><strong>{{ $nilai !== null ? number_format($nilai,2) : '-' }}</strong></td>
-                    <td width="150"><form action="{{ route('kelompok.penilaian.input') }}" method="POST" class="form-inline gap-1">@csrf
-                        <input type="hidden" name="kelompok_kkn_id" value="{{ $kelompok_kkn->id }}"><input type="hidden" name="komponen_id" value="{{ $k->id }}">
-                        <input type="number" name="nilai" class="form-control form-control-sm" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $nilai }}" style="width:80px;">
-                        <button class="btn btn-primary btn-sm"><i class="fas fa-save"></i></button>
-                    </form></td></tr>
-                @endforeach
-                <tr class="bg-light"><td colspan="4"><strong>LPPM</strong></td></tr>
-                @foreach($komponenList->where('kategori','lppm') as $k)
-                @php $nilai = $penilaianData[$k->id]->nilai ?? null; @endphp
-                <tr><td width="50"><span class="badge badge-primary">{{ $k->bobot }}%</span></td>
-                    <td>{{ $k->nama_komponen }}</td>
-                    <td width="80"><strong>{{ $nilai !== null ? number_format($nilai,2) : '-' }}</strong></td>
-                    <td width="150"><form action="{{ route('kelompok.penilaian.input') }}" method="POST" class="form-inline gap-1">@csrf
-                        <input type="hidden" name="kelompok_kkn_id" value="{{ $kelompok_kkn->id }}"><input type="hidden" name="komponen_id" value="{{ $k->id }}">
-                        <input type="number" name="nilai" class="form-control form-control-sm" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $nilai }}" style="width:80px;">
-                        <button class="btn btn-primary btn-sm"><i class="fas fa-save"></i></button>
-                    </form></td></tr>
-                @endforeach
-            </tbody></table></div></div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-bottom">
+                    <h4 class="mb-0">Penilaian Kelompok</h4>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle mb-0" style="border-collapse:collapse;">
+                            <thead>
+                                <tr style="background:#2D3A8A;">
+                                    <th class="text-white py-3" width="60">#</th>
+                                    <th class="text-white py-3">Komponen Penilaian</th>
+                                    <th class="text-white text-center py-3" width="80">Bobot</th>
+                                    <th class="text-white text-center py-3" width="100">Nilai</th>
+                                    <th class="text-white text-center py-3" width="170">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{-- DPL SECTION --}}
+                                <tr class="bg-light">
+                                    <td colspan="5" class="py-2"><strong><i class="fas fa-user-tie mr-2"></i>Dosen Pembimbing Lapangan (DPL)</strong></td>
+                                </tr>
+                                @foreach($komponenList->where('kategori','dpl') as $k)
+                                @php $nilai = $penilaianData[$k->id]->nilai ?? null; @endphp
+                                <tr>
+                                    <td class="text-center">{{ $k->urutan }}</td>
+                                    <td><strong>{{ $k->nama_komponen }}</strong><br><small class="text-muted">{{ $k->deskripsi }}</small></td>
+                                    <td class="text-center"><span class="badge badge-primary">{{ $k->bobot }}%</span></td>
+                                    <td class="text-center">{{ $nilai !== null ? number_format($nilai,2) : '-' }}</td>
+                                    <td class="text-center">
+                                        <form action="{{ route('kelompok.penilaian.input') }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="kelompok_kkn_id" value="{{ $kelompok_kkn->id }}">
+                                            <input type="hidden" name="komponen_id" value="{{ $k->id }}">
+                                            <div class="d-flex justify-content-center">
+                                                <input type="number" name="nilai" class="form-control form-control-sm text-center rounded-right-0" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $nilai }}" style="width:90px;">
+                                                <button class="btn btn-sm btn-primary rounded-left-0"><i class="fas fa-save"></i></button>
+                                            </div>
+                                        </form>
+                                    </td>
+                                </tr>
+                                @endforeach
+                                <tr style="background:#eef1f8;">
+                                    <td colspan="4" class="text-right font-weight-bold py-2">Nilai Akhir dari Dosen Pembimbing Lapangan</td>
+                                    <td class="text-center font-weight-bold py-2">{{ $dplFinal ? number_format($dplFinal, 2) : '-' }}</td>
+                                </tr>
+
+                                {{-- LPPM SECTION --}}
+                                <tr class="bg-light">
+                                    <td colspan="5" class="py-2"><strong><i class="fas fa-building mr-2"></i>LPPM UBT</strong></td>
+                                </tr>
+                                @foreach($komponenList->where('kategori','lppm') as $k)
+                                @php $nilai = $penilaianData[$k->id]->nilai ?? null; @endphp
+                                <tr>
+                                    <td class="text-center">{{ $k->urutan }}</td>
+                                    <td><strong>{{ $k->nama_komponen }}</strong><br><small class="text-muted">{{ $k->deskripsi }}</small></td>
+                                    <td class="text-center"><span class="badge badge-primary">{{ $k->bobot }}%</span></td>
+                                    <td class="text-center">{{ $nilai !== null ? number_format($nilai,2) : '-' }}</td>
+                                    <td class="text-center">
+                                        <form action="{{ route('kelompok.penilaian.input') }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="kelompok_kkn_id" value="{{ $kelompok_kkn->id }}">
+                                            <input type="hidden" name="komponen_id" value="{{ $k->id }}">
+                                            <div class="d-flex justify-content-center">
+                                                <input type="number" name="nilai" class="form-control form-control-sm text-center rounded-right-0" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $nilai }}" style="width:90px;">
+                                                <button class="btn btn-sm btn-primary rounded-left-0"><i class="fas fa-save"></i></button>
+                                            </div>
+                                        </form>
+                                    </td>
+                                </tr>
+                                @endforeach
+                                <tr style="background:#eef1f8;">
+                                    <td colspan="4" class="text-right font-weight-bold py-2">Nilai Akhir dari LPPM UBT</td>
+                                    <td class="text-center font-weight-bold py-2">{{ $lppmFinal ? number_format($lppmFinal, 2) : '-' }}</td>
+                                </tr>
+
+                                {{-- FINAL SCORE --}}
+                                <tr style="background:#2D3A8A;">
+                                    <td colspan="4" class="text-right font-weight-bold text-white py-3" style="font-size:1.1rem;">Nilai Akhir</td>
+                                    <td class="text-center font-weight-bold text-white py-3" style="font-size:1.1rem;">{{ $finalScore ? number_format($finalScore, 2) : '-' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
             @else
             <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">⭐</span><h5>Belum Ada Komponen Penilaian</h5><p class="text-muted">Jalankan seeder PenilaianKomponenSeeder terlebih dahulu.</p></div></div>
             @endif

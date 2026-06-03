@@ -190,10 +190,24 @@ class KelompokKknController extends Controller
         $komponenList = \App\Models\PenilaianKomponen::orderBy('urutan')->get();
         $penilaianData = \App\Models\PenilaianKelompok::where('kelompok_kkn_id', $kelompok_kkn->id)->with('komponen')->get()->keyBy('komponen_id');
 
+        $dplFinal = $this->calcScore($komponenList->where('kategori','dpl'), $penilaianData);
+        $lppmFinal = $this->calcScore($komponenList->where('kategori','lppm'), $penilaianData);
+        $finalScore = $dplFinal && $lppmFinal ? round(($dplFinal * 60 + $lppmFinal * 40) / 100, 2) : null;
+
         return view(
             'kelompok-kkn.show',
-            compact('kelompok_kkn', 'proposal', 'statusStages', 'statusCurrent', 'statusHistory', 'tugasList', 'logbookData', 'komponenList', 'penilaianData')
+            compact('kelompok_kkn', 'proposal', 'statusStages', 'statusCurrent', 'statusHistory', 'tugasList', 'logbookData', 'komponenList', 'penilaianData', 'dplFinal', 'lppmFinal', 'finalScore')
         );
+    }
+
+    private function calcScore($komponenList, $penilaianData): ?float
+    {
+        $totalBobot = $komponenList->sum('bobot');
+        if ($totalBobot === 0) return null;
+        $totalNilai = $komponenList->sum(function ($k) use ($penilaianData) {
+            return ($penilaianData[$k->id]->nilai ?? 0) * $k->bobot;
+        });
+        return $totalNilai > 0 ? round($totalNilai / $totalBobot, 2) : null;
     }
 
     public function edit(
