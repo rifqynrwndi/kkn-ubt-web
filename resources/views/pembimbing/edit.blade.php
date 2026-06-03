@@ -25,7 +25,8 @@
             <div class="card-body">
 
                 <form action="{{ route('pembimbing-lapangan.update', $dpl->id) }}"
-                      method="POST">
+                      method="POST"
+                      enctype="multipart/form-data">
 
                     @csrf
                     @method('PUT')
@@ -124,6 +125,37 @@
                             </div>
                         </div>
 
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Jenis Kelamin</label>
+                                <select name="jenis_kelamin" class="form-control @error('jenis_kelamin') is-invalid @enderror">
+                                    <option value="">Pilih</option>
+                                    <option value="laki_laki" {{ old('jenis_kelamin', $dpl->jenis_kelamin) == 'laki_laki' ? 'selected' : '' }}>Laki-laki</option>
+                                    <option value="perempuan" {{ old('jenis_kelamin', $dpl->jenis_kelamin) == 'perempuan' ? 'selected' : '' }}>Perempuan</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>No. HP</label>
+                                <input type="text" name="no_hp" class="form-control @error('no_hp') is-invalid @enderror" value="{{ old('no_hp', $dpl->no_hp) }}" placeholder="08xxxxxxxxxx">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Foto</label>
+                        @if($dpl->foto)
+                            <div class="mb-2">
+                                <img src="{{ asset('storage/'.$dpl->foto) }}" class="rounded" width="80" height="80" style="object-fit:cover;">
+                                <small class="text-muted ml-2">Upload foto baru untuk mengganti.</small>
+                            </div>
+                        @endif
+                        <input type="file" name="foto" class="form-control-file" accept="image/*">
+                        <small class="text-muted d-block mt-1">Format: JPG, PNG. Maks 2MB. Kosongkan jika tidak ingin mengubah.</small>
                     </div>
 
                     <div class="row">

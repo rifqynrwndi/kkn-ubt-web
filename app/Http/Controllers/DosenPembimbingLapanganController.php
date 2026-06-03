@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\Fakultas;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\RedirectResponse;
 use App\Models\DosenPembimbingLapangan;
 
 class DosenPembimbingLapanganController extends Controller
@@ -51,6 +51,7 @@ class DosenPembimbingLapanganController extends Controller
             'alamat' => 'nullable|string',
 
             'status' => 'required|in:aktif,nonaktif',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -58,25 +59,24 @@ class DosenPembimbingLapanganController extends Controller
         $user = User::create([
             'name'     => $request->name,
             'email'    => $request->email,
-            'password' => Hash::make(Str::random(20)),
+            'password' => Hash::make('kknubt2026'),
             'email_verified_at' => now(),
         ]);
 
             $user->assignRole('pembimbing');
 
+            $fotoPath = $request->hasFile('foto')
+                ? $request->file('foto')->store('foto-dpl', 'public')
+                : null;
+
             DosenPembimbingLapangan::create([
                 'user_id' => $user->id,
-
                 'nidn' => $request->nidn,
-
                 'fakultas_id' => $request->fakultas_id,
-
                 'no_hp' => $request->no_hp,
-
                 'jenis_kelamin' => $request->jenis_kelamin,
-
                 'alamat' => $request->alamat,
-
+                'foto' => $fotoPath,
                 'status' => $request->status,
             ]);
         });
@@ -125,6 +125,9 @@ class DosenPembimbingLapanganController extends Controller
 
             'status' => 'required|in:aktif,nonaktif',
             'password' => 'nullable|string|min:8',
+            'no_hp' => 'nullable|string|max:20',
+            'jenis_kelamin' => 'nullable|in:laki_laki,perempuan',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         DB::transaction(function () use ($request, $dpl) {
@@ -140,11 +143,23 @@ class DosenPembimbingLapanganController extends Controller
 
             $dpl->user->update($userData);
 
-            $dpl->update([
+            $dplData = [
                 'nidn' => $request->nidn,
                 'fakultas_id' => $request->fakultas_id,
                 'status' => $request->status,
-            ]);
+                'no_hp' => $request->no_hp,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'alamat' => $request->alamat,
+            ];
+
+            if ($request->hasFile('foto')) {
+                if ($dpl->foto) {
+                    Storage::disk('public')->delete($dpl->foto);
+                }
+                $dplData['foto'] = $request->file('foto')->store('foto-dpl', 'public');
+            }
+
+            $dpl->update($dplData);
         });
 
         return redirect()
