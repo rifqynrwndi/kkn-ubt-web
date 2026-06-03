@@ -44,7 +44,7 @@
                     @csrf
                     @method('PUT')
 
-                    {{-- DESA & DPL --}}
+                     {{-- DESA & DPL --}}
                     <div class="row">
 
                         {{-- DESA GELOMBANG --}}
@@ -60,7 +60,8 @@
                                     id="desa_gelombang_id"
                                     name="desa_gelombang_id"
                                     class="form-control @error('desa_gelombang_id') is-invalid @enderror"
-                                    required>
+                                    required
+                                    onchange="autoNamaKelompok()">
 
                                     <option value="">
                                         Pilih Desa Penempatan
@@ -69,6 +70,8 @@
                                     @forelse($desaGelombang as $item)
 
                                         <option value="{{ $item->id }}"
+                                            data-desa="{{ $item->desa->nama_desa }}"
+                                            data-gelombang="{{ $item->gelombang->nama_gelombang }}"
                                             {{ old('desa_gelombang_id', $kelompok_kkn->desa_gelombang_id) == $item->id ? 'selected' : '' }}>
 
                                             {{ $item->desa->nama_desa }}
@@ -146,6 +149,19 @@
 
                         </div>
 
+                    </div>
+
+                    {{-- NAMA KELOMPOK --}}
+                    <div class="form-group">
+                        <label for="nama_kelompok">Nama Kelompok</label>
+                        <input type="text" id="nama_kelompok" name="nama_kelompok"
+                            class="form-control @error('nama_kelompok') is-invalid @enderror"
+                            value="{{ old('nama_kelompok', $kelompok_kkn->nama_kelompok) }}"
+                            placeholder="Nama kelompok..." required>
+                        @error('nama_kelompok')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <small class="text-muted">Nama kelompok akan otomatis terisi sesuai desa & gelombang yang dipilih.</small>
                     </div>
 
                     <hr>
@@ -276,5 +292,19 @@
 
     </div>
 
-</section>
+ </section>
 @endsection
+
+@push('scripts')
+<script>
+function autoNamaKelompok() {
+    var sel = document.getElementById('desa_gelombang_id');
+    var opt = sel.options[sel.selectedIndex];
+    var desa = opt.getAttribute('data-desa') || '';
+    var gelombang = opt.getAttribute('data-gelombang') || '';
+    if (desa && gelombang) {
+        document.getElementById('nama_kelompok').value = desa + ' - ' + gelombang;
+    }
+}
+</script>
+@endpush

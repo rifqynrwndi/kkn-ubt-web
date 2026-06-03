@@ -257,7 +257,7 @@
                 </div>
                 <div class="card-body"><div class="form-group mb-3"><input type="text" class="form-control" id="anggotaSearch" placeholder="Cari anggota..."></div></div>
                 <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0" id="anggotaTable">
-                    <thead><tr><th width="40">No</th><th>Nama / NPM</th><th>JK</th><th>No. HP</th><th>Fakultas</th><th>Prodi</th><th width="170">Aksi</th></tr></thead>
+                    <thead><tr><th width="40">No</th><th>Nama</th><th>NPM</th><th>JK</th><th>No. HP</th><th>Fakultas</th><th>Prodi</th><th width="170">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($kelompok_kkn->pesertaKkn as $item)
                         <tr>
@@ -277,7 +277,7 @@
                             </div></td>
                         </tr>
                         @empty
-                        <tr><td colspan="7" class="text-center text-muted py-4">Belum ada anggota.</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted py-4">Belum ada anggota.</td></tr>
                         @endforelse
                     </tbody>
                 </table></div></div>
