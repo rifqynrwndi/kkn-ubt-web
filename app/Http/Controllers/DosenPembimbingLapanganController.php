@@ -14,14 +14,24 @@ use App\Models\DosenPembimbingLapangan;
 
 class DosenPembimbingLapanganController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $dpl = DosenPembimbingLapangan::with([
+        $query = DosenPembimbingLapangan::with([
             'user',
             'fakultas'
-        ])
-        ->latest()
-        ->paginate(10);
+        ]);
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->whereHas('user', fn($uq) => $uq->where('name', 'like', '%' . $request->search . '%')
+                    ->orWhere('email', 'like', '%' . $request->search . '%'))
+                  ->orWhere('nidn', 'like', '%' . $request->search . '%')
+                  ->orWhere('no_hp', 'like', '%' . $request->search . '%')
+                  ->orWhereHas('fakultas', fn($fq) => $fq->where('nama_fakultas', 'like', '%' . $request->search . '%'));
+            });
+        }
+
+        $dpl = $query->latest()->paginate(10)->withQueryString();
 
         return view('pembimbing.index', compact('dpl'));
     }

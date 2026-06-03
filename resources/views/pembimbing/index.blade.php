@@ -16,6 +16,22 @@
 
     <div class="section-body">
 
+        <div class="card shadow-sm mb-3">
+            <div class="card-body py-2">
+                <form method="GET" class="form-inline">
+                    <div class="input-group input-group-sm" style="max-width:400px;">
+                        <input type="text" name="search" class="form-control" placeholder="Cari nama, email, NIDN, no HP, atau fakultas..." value="{{ request('search') }}">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
+                            @if(request('search'))
+                            <a href="{{ route('pembimbing-lapangan.index') }}" class="btn btn-outline-secondary"><i class="fas fa-times"></i></a>
+                            @endif
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-body p-0">
 
