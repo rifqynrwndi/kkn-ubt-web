@@ -15,6 +15,12 @@
 </li>
 
 <li class="menu-header">Profil</li>
+<li class="{{ Request::is('dpl/profile*') ? 'active' : '' }}">
+    <a class="nav-link" href="{{ route('dpl.profile.edit') }}">
+        <i class="fas fa-user-edit"></i>
+        <span>Edit Profil</span>
+    </a>
+</li>
 <li class="{{ Request::is('profile/change-password') ? 'active' : '' }}">
     <a class="nav-link" href="{{ url('profile/change-password') }}">
         <i class="fas fa-key"></i>

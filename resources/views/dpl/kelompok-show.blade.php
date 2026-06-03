@@ -342,33 +342,48 @@
                     </div>
                     <div class="tab-content" id="tab-penilaian">
                         @if($komponenList->count())
-                        <div class="card">
-                            <div class="card-header"><h4>Penilaian Per Anggota</h4></div>
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-transparent border-bottom">
+                                <h4 class="mb-0">Penilaian Per Anggota</h4>
+                            </div>
                             <div class="card-body p-0">
                                 <div class="table-responsive">
-                                    <table class="table table-sm mb-0">
-                                        <thead><tr><th>Anggota</th>@foreach($komponenList->where('kategori','dpl') as $k)<th class="text-center">{{ $k->nama_komponen }}<br><small class="text-muted">{{ $k->bobot }}%</small></th>@endforeach</tr></thead>
+                                    <table class="table table-striped table-hover align-middle mb-0" style="border-collapse:collapse;">
+                                        <thead>
+                                            <tr style="background:#2D3A8A;">
+                                                <th class="text-white py-3" width="200"><i class="fas fa-user mr-2"></i>Anggota</th>
+                                                @foreach($komponenList->where('kategori','dpl') as $k)
+                                                <th class="text-white text-center py-3" width="180">{{ $k->nama_komponen }}<br><small class="text-white-50">{{ $k->bobot }}%</small></th>
+                                                @endforeach
+                                            </tr>
+                                        </thead>
                                         <tbody>
                                             @foreach($kelompok->pesertaKkn as $p)
                                             <tr>
-                                                <td><strong>{{ $p->mahasiswa?->user?->name ?? '-' }}</strong><br><small class="text-muted">{{ $p->mahasiswa?->npm ?? '-' }}</small></td>
+                                                <td class="py-2">
+                                                    <strong class="d-block">{{ $p->mahasiswa?->user?->name ?? '-' }}</strong>
+                                                    <small class="text-muted">{{ $p->mahasiswa?->npm ?? '-' }}</small>
+                                                </td>
                                                 @foreach($komponenList->where('kategori','dpl') as $k)
-                                                @php
-                                                    $nilai = $penilaianIndividu[$p->id][$k->id]->nilai ?? null;
-                                                @endphp
-                                                <td class="text-center">
-                                                    <form action="{{ route('kelompok.penilaian.input') }}" method="POST" class="form-inline gap-1 justify-content-center">
+                                                @php $nilai = $penilaianIndividu[$p->id][$k->id]->nilai ?? null; @endphp
+                                                <td class="text-center py-2">
+                                                    <form action="{{ route('kelompok.penilaian.input') }}" method="POST">
                                                         @csrf
                                                         <input type="hidden" name="kelompok_kkn_id" value="{{ $kelompok->id }}">
                                                         <input type="hidden" name="komponen_id" value="{{ $k->id }}">
                                                         <input type="hidden" name="peserta_kkn_id" value="{{ $p->id }}">
-                                                        <input type="number" name="nilai" class="form-control form-control-sm" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $nilai }}" style="width:70px;">
-                                                        <button class="btn btn-primary btn-sm"><i class="fas fa-save"></i></button>
+                                                        <div class="d-flex justify-content-center">
+                                                            <input type="number" name="nilai" class="form-control form-control-sm text-center rounded-right-0" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $nilai }}" style="width:75px;">
+                                                            <button class="btn btn-sm btn-primary rounded-left-0"><i class="fas fa-save"></i></button>
+                                                        </div>
                                                     </form>
                                                 </td>
                                                 @endforeach
                                             </tr>
                                             @endforeach
+                                            @if($kelompok->pesertaKkn->count() === 0)
+                                            <tr><td colspan="{{ $komponenList->where('kategori','dpl')->count() + 1 }}" class="text-center text-muted py-4">Belum ada anggota.</td></tr>
+                                            @endif
                                         </tbody>
                                     </table>
                                 </div>

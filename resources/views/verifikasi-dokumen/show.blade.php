@@ -132,7 +132,7 @@
                                                 @if($dokumen->status_verifikasi === 'verified') badge-success
                                                 @elseif($dokumen->status_verifikasi === 'revision_required') badge-warning
                                                 @elseif($dokumen->status_verifikasi === 'rejected') badge-danger
-                                                @else badge-secondary
+                                                @else badge-info
                                                 @endif">
                                                 {{ ucfirst(str_replace('_', ' ', $dokumen->status_verifikasi)) }}
                                             </span>

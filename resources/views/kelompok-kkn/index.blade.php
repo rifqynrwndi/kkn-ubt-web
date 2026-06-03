@@ -204,7 +204,7 @@
 
                                         @else
 
-                                            <span class="badge badge-secondary">
+                                            <span class="badge badge-warning">
                                                 Draft
                                             </span>
 

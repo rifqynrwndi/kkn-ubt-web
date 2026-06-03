@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\KelompokKkn;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class DplController extends Controller
 {
@@ -102,5 +105,47 @@ class DplController extends Controller
         );
 
         return view('dpl.mahasiswa-show', compact('peserta'));
+    }
+
+    public function profileEdit(): View
+    {
+        $dpl = $this->getDpl();
+        abort_if(!$dpl, 403);
+        return view('dpl.profile-edit', compact('dpl'));
+    }
+
+    public function profileUpdate(Request $request): RedirectResponse
+    {
+        $dpl = $this->getDpl();
+        abort_if(!$dpl, 403);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $dpl->user->id,
+            'no_hp' => 'nullable|string|max:20',
+            'jenis_kelamin' => 'nullable|in:laki_laki,perempuan',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        $dpl->user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+        ]);
+
+        $dplData = [
+            'no_hp' => $request->no_hp,
+            'jenis_kelamin' => $request->jenis_kelamin,
+        ];
+
+        if ($request->hasFile('foto')) {
+            if ($dpl->foto) {
+                Storage::disk('public')->delete($dpl->foto);
+            }
+            $dplData['foto'] = $request->file('foto')->store('foto-dpl', 'public');
+        }
+
+        $dpl->update($dplData);
+
+        return redirect()->route('dpl.profile.edit')->with('success', 'Profil berhasil diperbarui.');
     }
 }

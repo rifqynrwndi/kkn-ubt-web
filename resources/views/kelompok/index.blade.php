@@ -338,11 +338,18 @@
                 <div class="card-header"><h5><i class="fas fa-user-tie mr-2"></i> Dosen Pembimbing Lapangan</h5></div>
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-3">
-                        <img src="{{ asset('img/avatar/avatar-1.png') }}" class="rounded-circle" width="50" height="50" style="object-fit:cover;flex-shrink:0;">
+                        @if($kelompok->dosenPembimbingLapangan->foto)
+                            <img src="{{ asset('storage/'.$kelompok->dosenPembimbingLapangan->foto) }}" class="rounded-circle" width="50" height="50" style="object-fit:cover;flex-shrink:0;">
+                        @else
+                            <img src="{{ asset('img/avatar/avatar-1.png') }}" class="rounded-circle" width="50" height="50" style="object-fit:cover;flex-shrink:0;">
+                        @endif
                         <div>
                             <strong>{{ $kelompok->dosenPembimbingLapangan->user->name ?? '-' }}</strong>
                             <br><small class="text-muted">NIDN: {{ $kelompok->dosenPembimbingLapangan->nidn ?? '-' }}</small>
                             <br><small class="text-muted">{{ $kelompok->dosenPembimbingLapangan->fakultas->nama_fakultas ?? '-' }}</small>
+                            @if($kelompok->dosenPembimbingLapangan->no_hp)
+                                <br><small class="text-muted"><i class="fas fa-phone mr-1"></i>{{ $kelompok->dosenPembimbingLapangan->no_hp }}</small>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -782,7 +789,7 @@
                             <tr>
                                 <td>{{ $k->urutan }}</td>
                                 <td><strong>{{ $k->nama_komponen }}</strong><br><small class="text-muted">{{ $k->deskripsi }}</small></td>
-                                <td><span class="badge badge-secondary">{{ $k->bobot }}%</span></td>
+                                <td><span class="badge badge-primary">{{ $k->bobot }}%</span></td>
                                 <td>
                                     @if($nilai!==null)<span class="font-weight-bold {{ $nilai>=75?'text-success':($nilai>=60?'text-warning':'text-danger') }}">{{ number_format($nilai,2) }}</span>
                                     @else<span class="text-muted">-</span>@endif
@@ -808,7 +815,7 @@
                             <tr>
                                 <td>{{ $k->urutan }}</td>
                                 <td><strong>{{ $k->nama_komponen }}</strong><br><small class="text-muted">{{ $k->deskripsi }}</small></td>
-                                <td><span class="badge badge-secondary">{{ $k->bobot }}%</span></td>
+                                <td><span class="badge badge-primary">{{ $k->bobot }}%</span></td>
                                 <td>
                                     @if($nilai!==null)<span class="font-weight-bold {{ $nilai>=75?'text-success':($nilai>=60?'text-warning':'text-danger') }}">{{ number_format($nilai,2) }}</span>
                                     @else<span class="text-muted">-</span>@endif

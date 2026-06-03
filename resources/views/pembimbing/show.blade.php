@@ -22,7 +22,18 @@
                 <table class="table">
 
                     <tr>
-                        <th width="220">Nama</th>
+                        <th width="220">Foto</th>
+                        <td>
+                            @if($dpl->foto)
+                                <img src="{{ asset('storage/'.$dpl->foto) }}" class="rounded-circle" width="80" height="80" style="object-fit:cover;">
+                            @else
+                                <img src="{{ asset('img/avatar/avatar-1.png') }}" class="rounded-circle" width="80" height="80" style="object-fit:cover;">
+                            @endif
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>Nama</th>
                         <td>{{ $dpl->user->name }}</td>
                     </tr>
 
@@ -37,6 +48,16 @@
                     </tr>
 
                     <tr>
+                        <th>No. HP</th>
+                        <td>{{ $dpl->no_hp ?? '-' }}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Jenis Kelamin</th>
+                        <td>{{ $dpl->jenis_kelamin ? ($dpl->jenis_kelamin === 'laki_laki' ? 'Laki-laki' : 'Perempuan') : '-' }}</td>
+                    </tr>
+
+                    <tr>
                         <th>Fakultas</th>
                         <td>{{ $dpl->fakultas?->nama_fakultas ?? '-' }}</td>
                     </tr>
@@ -45,13 +66,9 @@
                         <th>Status</th>
                         <td>
                             @if($dpl->status === 'aktif')
-                                <span class="badge badge-success">
-                                    Aktif
-                                </span>
+                                <span class="badge badge-success">Aktif</span>
                             @else
-                                <span class="badge badge-secondary">
-                                    Nonaktif
-                                </span>
+                                <span class="badge badge-primary">Nonaktif</span>
                             @endif
                         </td>
                     </tr>

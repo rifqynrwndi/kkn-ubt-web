@@ -15,6 +15,7 @@ class DosenPembimbingLapangan extends Model
         'no_hp',
         'jenis_kelamin',
         'alamat',
+        'foto',
         'status',
     ];
 

@@ -24,8 +24,10 @@
 
                         <thead>
                             <tr>
+                                <th width="50">Foto</th>
                                 <th>Nama</th>
                                 <th>Email</th>
+                                <th>No. HP</th>
                                 <th>Fakultas</th>
                                 <th>NIDN</th>
                                 <th>Status</th>
@@ -39,11 +41,19 @@
                                 <tr>
 
                                     <td>
+                                        <img src="{{ $item->foto ? asset('storage/'.$item->foto) : asset('img/avatar/avatar-1.png') }}" class="rounded-circle" width="36" height="36" style="object-fit:cover;">
+                                    </td>
+
+                                    <td>
                                         {{ $item->user->name }}
                                     </td>
 
                                     <td>
                                         {{ $item->user->email }}
+                                    </td>
+
+                                    <td>
+                                        {{ $item->no_hp ?? '-' }}
                                     </td>
 
                                     <td>
@@ -60,7 +70,7 @@
                                                 Aktif
                                             </span>
                                         @else
-                                            <span class="badge badge-secondary">
+                                            <span class="badge badge-primary">
                                                 Nonaktif
                                             </span>
                                         @endif
@@ -100,7 +110,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6"
+                                    <td colspan="8"
                                         class="text-center text-muted py-4">
                                         Belum ada data DPL.
                                     </td>

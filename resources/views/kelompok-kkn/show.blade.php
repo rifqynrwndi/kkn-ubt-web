@@ -182,7 +182,7 @@
                             @elseif($kelompok_kkn->status == 'ditutup')
                                 <span class="badge badge-dark">Ditutup</span>
                             @else
-                                <span class="badge badge-secondary">Draft</span>
+                                <span class="badge badge-primary">Draft</span>
                             @endif
                         </div>
                     </div>
@@ -421,7 +421,7 @@
                 <tr class="bg-light"><td colspan="4"><strong>Dosen Pembimbing Lapangan (DPL)</strong></td></tr>
                 @foreach($komponenList->where('kategori','dpl') as $k)
                 @php $nilai = $penilaianData[$k->id]->nilai ?? null; @endphp
-                <tr><td width="50"><span class="badge badge-secondary">{{ $k->bobot }}%</span></td>
+                <tr><td width="50"><span class="badge badge-primary">{{ $k->bobot }}%</span></td>
                     <td>{{ $k->nama_komponen }}</td>
                     <td width="80"><strong>{{ $nilai !== null ? number_format($nilai,2) : '-' }}</strong></td>
                     <td width="150"><form action="{{ route('kelompok.penilaian.input') }}" method="POST" class="form-inline gap-1">@csrf
@@ -433,7 +433,7 @@
                 <tr class="bg-light"><td colspan="4"><strong>LPPM</strong></td></tr>
                 @foreach($komponenList->where('kategori','lppm') as $k)
                 @php $nilai = $penilaianData[$k->id]->nilai ?? null; @endphp
-                <tr><td width="50"><span class="badge badge-secondary">{{ $k->bobot }}%</span></td>
+                <tr><td width="50"><span class="badge badge-primary">{{ $k->bobot }}%</span></td>
                     <td>{{ $k->nama_komponen }}</td>
                     <td width="80"><strong>{{ $nilai !== null ? number_format($nilai,2) : '-' }}</strong></td>
                     <td width="150"><form action="{{ route('kelompok.penilaian.input') }}" method="POST" class="form-inline gap-1">@csrf
