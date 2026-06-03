@@ -43,7 +43,7 @@
                                     @elseif($k->status === 'dibuka')
                                         <span class="badge badge-success">Dibuka</span>
                                     @else
-                                        <span class="badge badge-secondary">{{ $k->status }}</span>
+                                        <span class="badge badge-info">{{ $k->status }}</span>
                                     @endif
                                 </td>
                                 <td>

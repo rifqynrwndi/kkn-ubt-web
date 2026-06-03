@@ -70,7 +70,7 @@
                                                 Aktif
                                             </span>
                                         @else
-                                            <span class="badge badge-secondary">
+                                            <span class="badge badge-primary">
                                                 Nonaktif
                                             </span>
                                         @endif

@@ -70,7 +70,7 @@
                                     Aktif
                                 </span>
                             @else
-                                <span class="badge badge-secondary px-3 py-2">
+                                <span class="badge badge-warning px-3 py-2">
                                     Nonaktif
                                 </span>
                             @endif
@@ -183,7 +183,7 @@
                                                 Penuh
                                             </span>
                                         @elseif($item->status === 'ditutup')
-                                            <span class="badge badge-secondary">
+                                            <span class="badge badge-dark">
                                                 Ditutup
                                             </span>
                                         @else

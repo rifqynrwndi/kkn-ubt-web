@@ -789,7 +789,7 @@
                             <tr>
                                 <td>{{ $k->urutan }}</td>
                                 <td><strong>{{ $k->nama_komponen }}</strong><br><small class="text-muted">{{ $k->deskripsi }}</small></td>
-                                <td><span class="badge badge-secondary">{{ $k->bobot }}%</span></td>
+                                <td><span class="badge badge-primary">{{ $k->bobot }}%</span></td>
                                 <td>
                                     @if($nilai!==null)<span class="font-weight-bold {{ $nilai>=75?'text-success':($nilai>=60?'text-warning':'text-danger') }}">{{ number_format($nilai,2) }}</span>
                                     @else<span class="text-muted">-</span>@endif
@@ -815,7 +815,7 @@
                             <tr>
                                 <td>{{ $k->urutan }}</td>
                                 <td><strong>{{ $k->nama_komponen }}</strong><br><small class="text-muted">{{ $k->deskripsi }}</small></td>
-                                <td><span class="badge badge-secondary">{{ $k->bobot }}%</span></td>
+                                <td><span class="badge badge-primary">{{ $k->bobot }}%</span></td>
                                 <td>
                                     @if($nilai!==null)<span class="font-weight-bold {{ $nilai>=75?'text-success':($nilai>=60?'text-warning':'text-danger') }}">{{ number_format($nilai,2) }}</span>
                                     @else<span class="text-muted">-</span>@endif

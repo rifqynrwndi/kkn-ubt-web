@@ -68,7 +68,7 @@
                             @if($dpl->status === 'aktif')
                                 <span class="badge badge-success">Aktif</span>
                             @else
-                                <span class="badge badge-secondary">Nonaktif</span>
+                                <span class="badge badge-primary">Nonaktif</span>
                             @endif
                         </td>
                     </tr>

@@ -142,7 +142,7 @@
                                                     @break
 
                                                 @case('expired')
-                                                    <span class="badge badge-secondary">Expired</span>
+                                                    <span class="badge badge-danger">Expired</span>
                                                     @break
                                             @endswitch
                                         </td>
