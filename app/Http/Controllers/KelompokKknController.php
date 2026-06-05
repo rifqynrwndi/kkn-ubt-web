@@ -395,101 +395,23 @@ class KelompokKknController extends Controller
             ],
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Kelompok Full Check
-        |--------------------------------------------------------------------------
-        */
-
-        if ($kelompok_kkn->is_full) {
-
-            return back()->with(
-                'error',
-                'Kelompok sudah penuh.'
-            );
-
-        }
-
         $peserta = PesertaKkn::findOrFail(
             $validated['peserta_kkn_id']
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | Prevent Double Group
-        |--------------------------------------------------------------------------
-        */
-
         if ($peserta->kelompok_kkn_id) {
-
             return back()->with(
                 'error',
                 'Mahasiswa sudah memiliki kelompok.'
             );
-
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Assign Kelompok
-        |--------------------------------------------------------------------------
-        */
-
-        // Rule checks (same as WAR system)
-        $currentMembers = PesertaKkn::where('kelompok_kkn_id', $kelompok_kkn->id)
-            ->with('mahasiswa.prodi')->get();
-
-        if ($currentMembers->count() >= 12) {
-            return back()->with('error', 'Kelompok sudah penuh (maks 12 orang).');
-        }
-
-        // Gender check
-        $gender = $peserta->mahasiswa?->jenis_kelamin;
-        $maxGender = $gender === 'L' ? 4 : 9;
-        $genderCount = $currentMembers->filter(fn($m) => $m->mahasiswa?->jenis_kelamin === $gender)->count();
-        if ($genderCount >= $maxGender) {
-            return back()->with('error', "Kuota {$maxGender} {$gender} sudah penuh di kelompok ini.");
-        }
-
-        // Faculty quota check
-        $fakId = $peserta->mahasiswa?->prodi?->fakultas_id;
-        $fakKuota = KelompokKuota::where('kelompok_kkn_id', $kelompok_kkn->id)->where('fakultas_id', $fakId)->first();
-        if ($fakKuota) {
-            $fakCount = $currentMembers->filter(fn($m) => $m->mahasiswa?->prodi?->fakultas_id === $fakId)->count();
-            if ($fakCount >= $fakKuota->kuota) {
-                return back()->with('error', "Kuota fakultas sudah penuh di kelompok ini (maks {$fakKuota->kuota} orang).");
-            }
-        }
-
-        // Prodi check
-        $prodiId = $peserta->mahasiswa?->prodi_id;
-        $prodiCountInFak = ProgramStudi::where('fakultas_id', $fakId)->count();
-        if ($prodiCountInFak > 1) {
-            $prodiCount = $currentMembers->filter(fn($m) => $m->mahasiswa?->prodi_id === $prodiId)->count();
-            if ($prodiCount >= \App\Services\War\WarRuleService::MAX_SAME_PRODI) {
-                return back()->with('error', 'Program studi ini sudah ada di kelompok ini (maks ' . \App\Services\War\WarRuleService::MAX_SAME_PRODI . ' per prodi).');
-            }
         }
 
         $peserta->kelompok_kkn_id = $kelompok_kkn->id;
+        $peserta->status_pendaftaran = 'approved';
         $peserta->save();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Auto Full Status
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            $kelompok_kkn->fresh()->pesertaKkn()->count()
-            >=
-            $kelompok_kkn->kuota
-        ) {
-
-            $kelompok_kkn->update([
-                'status' => 'penuh'
-            ]);
-
+        if ($kelompok_kkn->fresh()->pesertaKkn()->count() >= $kelompok_kkn->kuota) {
+            $kelompok_kkn->update(['status' => 'penuh']);
         }
 
         return redirect()
