@@ -37,6 +37,7 @@ class MigrateStorageToS3 extends Command
 
         $errors = [];
         $migrated = 0;
+        $skipped = 0;
 
         foreach ($allFiles as $filePath) {
             if ($filePath === '.gitignore') {
@@ -45,6 +46,11 @@ class MigrateStorageToS3 extends Command
             }
 
             try {
+                // Skip jika sudah ada di S3 (resume support)
+                $exists = false;
+                try { $exists = Storage::disk($targetDisk)->exists($filePath); } catch (\Throwable $e) {}
+                if ($exists) { $skipped++; $bar->advance(); continue; }
+
                 $contents = Storage::disk($sourceDisk)->get($filePath);
                 $mimeType = Storage::disk($sourceDisk)->mimeType($filePath);
                 Storage::disk($targetDisk)->put($filePath, $contents, [
@@ -64,6 +70,7 @@ class MigrateStorageToS3 extends Command
 
         $this->info("Migrasi selesai.");
         $this->info("  Berhasil: {$migrated}");
+        $this->info("  Dilewati (sudah ada): {$skipped}");
         $this->info("  Gagal: " . count($errors));
 
         if (!empty($errors)) {

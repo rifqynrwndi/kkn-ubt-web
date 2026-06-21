@@ -8,9 +8,13 @@ class FileProxyController extends Controller
 {
     public function streamS3(Request $request, string $path)
     {
-        $disk = env('FILESYSTEM_DISK') === 's3' ? 's3' : 'public';
+        $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
 
-        if (!Storage::disk($disk)->exists($path)) {
+        try {
+            if (!Storage::disk($disk)->exists($path)) {
+                abort(404);
+            }
+        } catch (\Throwable $e) {
             abort(404);
         }
 
@@ -19,8 +23,8 @@ class FileProxyController extends Controller
 
         return response()->stream(function () use ($disk, $path) {
             $stream = Storage::disk($disk)->readStream($path);
-            fpassthru($stream);
             if (is_resource($stream)) {
+                fpassthru($stream);
                 fclose($stream);
             }
         }, 200, [
