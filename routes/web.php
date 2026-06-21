@@ -10,6 +10,7 @@ use App\Http\Controllers\{
     BiodataController,
     FakultasProdiController,
     FileManagerController,
+    FileProxyController,
     GelombangController,
     HakaksesController,
     HomeController,
@@ -45,6 +46,8 @@ use App\Http\Controllers\{
 Route::get('/', fn () => view('auth.login'));
 
 Auth::routes();
+
+Route::get('/s3/{path}', [FileProxyController::class, 'streamS3'])->where('path', '.*')->name('s3.proxy');
 
 // Custom error pages
 Route::get('/errors/413', fn () => view('errors.413'))->name('error.413');
