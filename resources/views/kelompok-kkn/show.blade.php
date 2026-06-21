@@ -387,15 +387,39 @@
         <div class="tab-content" id="tab-admin-logbook">
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-body py-2">
-                    <form class="form-inline" onsubmit="return false;">
-                        <label class="mr-2"><strong>Pilih Anggota:</strong></label>
-                        <select id="logbook-member-select" class="form-control" onchange="filterLogbook()">
-                            <option value="">-- Semua Anggota --</option>
-                            @foreach($kelompok_kkn->pesertaKkn as $p)
-                            <option value="lb-{{ $p->id }}">{{ $p->mahasiswa->user->name ?? 'Unknown' }}</option>
-                            @endforeach
-                        </select>
-                    </form>
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <div class="input-group input-group-sm" style="max-width:320px;">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            </div>
+                            <input type="text" class="form-control admin-logbook-search" placeholder="Cari judul, deskripsi, atau tanggal...">
+                        </div>
+                        <div class="d-flex align-items-center ml-2">
+                            <small class="text-muted mr-2">Pilih Anggota</small>
+                            <select id="logbook-member-select" class="form-control form-control-sm" onchange="adminFilterLogbook()">
+                                <option value="">Semua Anggota</option>
+                                @foreach($kelompok_kkn->pesertaKkn as $p)
+                                <option value="lb-{{ $p->id }}">{{ $p->mahasiswa->user->name ?? 'Unknown' }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="d-flex align-items-center ml-2">
+                            <small class="text-muted mr-2">Tampilkan</small>
+                            <select class="form-control form-control-sm admin-logbook-perpage" style="width:80px;">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                        <div class="d-flex align-items-center ml-auto">
+                            <small class="text-muted mr-2">Tampilkan Dokumen</small>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input admin-logbook-toggle-doc" id="adminLogbookToggleDoc" checked>
+                                <label class="custom-control-label" for="adminLogbookToggleDoc"></label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             @foreach($logbookData as $pesertaId => $entries)
@@ -413,32 +437,39 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle mb-0" style="border-collapse:collapse;">
+                        <table class="table table-striped table-hover align-middle mb-0 logbook-table" data-peserta="{{ $pesertaId }}" style="border-collapse:collapse;">
                             <thead>
                                 <tr style="background:#2D3A8A;">
                                     <th class="text-white py-2" width="40">#</th>
                                     <th class="text-white py-2" width="110">Tanggal</th>
-                                    <th class="text-white py-2" width="220">Judul</th>
+                                    <th class="text-white py-2" width="200">Judul</th>
                                     <th class="text-white py-2">Deskripsi</th>
                                     <th class="text-white py-2 text-center" width="100">Berkas</th>
-                                    <th class="text-white py-2 text-center" width="100">Status</th>
+                                    <th class="text-white py-2 text-center" width="90">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($entries as $i => $lb)
-                                <tr>
+                                <tr class="logbook-row" data-judul="{{ strtolower($lb->judul) }}" data-deskripsi="{{ strtolower($lb->deskripsi) }}" data-tanggal="{{ $lb->tanggal->format('Ymd') }}">
                                     <td class="text-center text-muted small">{{ $i+1 }}</td>
                                     <td><small>{{ $lb->tanggal->format('d M Y') }}</small></td>
                                     <td><strong style="font-size:13px;">{{ $lb->judul }}</strong></td>
                                     <td style="max-width:250px;"><small class="d-block text-truncate text-muted">{{ \Illuminate\Support\Str::limit($lb->deskripsi, 120) }}</small></td>
                                     <td class="text-center">
                                         @if($lb->file_path)
-                                        @php $ext = pathinfo($lb->file_path, PATHINFO_EXTENSION); @endphp
-                                        @if(in_array($ext, ['jpg','jpeg','png','gif']))
-                                        <a href="{{ storage_url($lb->file_path) }}" target="_blank"><img src="{{ storage_url($lb->file_path) }}" class="rounded shadow-sm" style="max-width:60px;max-height:60px;object-fit:cover;"></a>
-                                        @else
-                                        <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></a>
-                                        @endif
+                                        <div class="logbook-download" style="display:inline;">
+                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></a>
+                                        </div>
+                                        <div class="logbook-preview" style="display:none;">
+                                            @php $ext = pathinfo($lb->file_path, PATHINFO_EXTENSION); @endphp
+                                            @if(in_array($ext, ['jpg','jpeg','png','gif']))
+                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank"><img src="{{ storage_url($lb->file_path) }}" class="rounded shadow-sm" style="max-width:60px;max-height:60px;object-fit:cover;"></a>
+                                            @elseif($ext === 'pdf')
+                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf fa-lg"></i></a>
+                                            @else
+                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file"></i></a>
+                                            @endif
+                                        </div>
                                         @else <span class="text-muted">-</span> @endif
                                     </td>
                                     <td class="text-center">@if($lb->is_validated)<span class="badge badge-success">✅</span>@else<span class="badge badge-warning">Belum</span>@endif</td>
@@ -446,6 +477,9 @@
                                 @endforeach
                             </tbody>
                         </table>
+                        <div class="p-3 bg-light">
+                            <small class="text-muted logbook-info">Menampilkan <span class="lb-showing">0</span> dari <span class="lb-total">0</span> entri</small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -561,11 +595,55 @@
             document.getElementById('tab-' + this.dataset.tab).classList.add('active');
         });
     });
-    function filterLogbook() {
+    function adminFilterLogbook() {
         var val = document.getElementById('logbook-member-select').value;
-        document.querySelectorAll('.logbook-member-card').forEach(c => c.style.display = 'none');
-        if (val) document.getElementById('card-' + val).style.display = 'block';
+        document.querySelectorAll('.logbook-member-card').forEach(function(c) {
+            c.style.display = val ? (c.id === 'card-' + val ? '' : 'none') : '';
+        });
+        applyAdminLogbookFilters();
     }
+    function applyAdminLogbookFilters() {
+        var search = (document.querySelector('.admin-logbook-search')?.value || '').toLowerCase();
+        var perPage = parseInt(document.querySelector('.admin-logbook-perpage')?.value || 25);
+        var showDoc = document.querySelector('.admin-logbook-toggle-doc')?.checked || false;
+
+        document.querySelectorAll('.logbook-member-card').forEach(function(card) {
+            if (card.style.display === 'none') return;
+            var tbody = card.querySelector('tbody');
+            if (!tbody) return;
+            var rows = Array.from(tbody.querySelectorAll('.logbook-row'));
+            var info = card.querySelector('.logbook-info');
+            var showingEl = card.querySelector('.lb-showing');
+            var totalEl = card.querySelector('.lb-total');
+
+            var filtered = rows.filter(function(r) {
+                if (!search) return true;
+                var text = (r.dataset.judul || '') + ' ' + (r.dataset.deskripsi || '') + ' ' + (r.dataset.tanggal || '');
+                return text.includes(search);
+            });
+
+            var total = filtered.length;
+            var shown = filtered.slice(0, perPage);
+
+            rows.forEach(function(r) {
+                var download = r.querySelector('.logbook-download');
+                var preview = r.querySelector('.logbook-preview');
+                if (download) download.style.display = showDoc ? 'none' : 'inline';
+                if (preview) preview.style.display = showDoc ? 'inline' : 'none';
+            });
+
+            rows.forEach(function(r) { r.style.display = 'none'; });
+            shown.forEach(function(r) { r.style.display = ''; });
+
+            if (showingEl) showingEl.textContent = Math.min(perPage, total);
+            if (totalEl) totalEl.textContent = total;
+            if (info) info.style.display = total === 0 ? 'none' : '';
+        });
+    }
+    document.querySelector('.admin-logbook-search')?.addEventListener('keyup', applyAdminLogbookFilters);
+    document.querySelector('.admin-logbook-perpage')?.addEventListener('change', applyAdminLogbookFilters);
+    document.querySelector('.admin-logbook-toggle-doc')?.addEventListener('change', applyAdminLogbookFilters);
+    setTimeout(applyAdminLogbookFilters, 100);
     document.getElementById('anggotaSearch')?.addEventListener('keyup', function() {
         var q = this.value.toLowerCase();
         document.querySelectorAll('#anggotaTable tbody tr').forEach(function(row) {

@@ -8,10 +8,13 @@ if (!function_exists('storage_url')) {
         }
 
         $disk = env('FILESYSTEM_DISK', 'local');
-        $s3Disks = ['s3', 'r2', 'do', 'b2'];
 
-        if (in_array($disk, $s3Disks)) {
-            return Storage::disk($disk)->url($path);
+        if ($disk === 's3') {
+            try {
+                return Storage::disk('s3')->temporaryUrl($path, now()->addDay());
+            } catch (\Throwable $e) {
+                return Storage::disk('s3')->url($path);
+            }
         }
 
         return asset('storage/' . $path);
