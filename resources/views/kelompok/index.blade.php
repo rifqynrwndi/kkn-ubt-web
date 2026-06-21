@@ -584,57 +584,90 @@
         <div class="tab-content" id="tab-logbook">
             @php $myPesertaId = $peserta->id; @endphp
 
-            {{-- Toolbar --}}
+            @push('css')
+            <style>
+                .logbook-toggle:checked + .custom-switch-indicator { background: #47c363; }
+                .logbook-toggle:checked + .custom-switch-indicator::before { background: #fff; }
+                .logbook-toggle + .custom-switch-indicator { background: #adb5bd; }
+                .logbook-table img.lb-preview-img { max-width:180px; max-height:180px; object-fit:contain; }
+            </style>
+            @endpush
+
+            {{-- HEADER + BUTTONS --}}
             <div class="card border-0 shadow-sm mb-3">
-                <div class="card-body py-2">
-                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <div class="input-group input-group-sm" style="max-width:360px;">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                            </div>
-                            <input type="text" class="form-control logbook-search" placeholder="Cari judul, deskripsi, atau tanggal...">
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-outline-secondary" onclick="document.querySelector('.logbook-search').value=''; applyLogbookFilters();" title="Refresh"><i class="fas fa-sync-alt"></i> Refresh</button>
-                            <a href="{{ route('kelompok.logbook.create') }}" class="btn btn-sm btn-primary"><i class="fas fa-plus mr-1"></i> Tambah Log Book</a>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center flex-wrap gap-2 mt-2 pt-2 border-top">
-                        <div class="d-flex align-items-center mr-3">
-                            <small class="text-muted mr-2">Tampilkan</small>
-                            <select class="form-control form-control-sm logbook-perpage" style="width:80px;">
-                                <option value="5">5</option>
-                                <option value="10" selected>10</option>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                            </select>
-                        </div>
-                        <div class="d-flex align-items-center mr-3">
-                            <small class="text-muted mr-2">Urutkan</small>
-                            <select class="form-control form-control-sm logbook-sortby" style="width:130px;">
-                                <option value="tanggal">Tanggal</option>
-                                <option value="judul">Judul</option>
-                                <option value="deskripsi">Deskripsi</option>
-                            </select>
-                        </div>
-                        <div class="d-flex align-items-center mr-3">
-                            <select class="form-control form-control-sm logbook-order" style="width:100px;">
-                                <option value="desc">Terbaru</option>
-                                <option value="asc">Terlama</option>
-                            </select>
-                        </div>
-                        <div class="d-flex align-items-center ml-auto">
-                            <small class="text-muted mr-2">Tampilkan Dokumen</small>
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input logbook-toggle-doc" id="logbookToggleDoc" checked>
-                                <label class="custom-control-label" for="logbookToggleDoc"></label>
-                            </div>
-                        </div>
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center flex-wrap">
+                    <h4 class="mb-0 text-default"><i class="fas fa-book mr-2"></i>Log Book</h4>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-light btn-sm" onclick="document.querySelector('.logbook-search').value=''; applyLogbookFilters();"><i class="fas fa-sync-alt mr-1"></i> Refresh</button>
+                        <a href="{{ route('kelompok.logbook.create') }}" class="btn btn-success btn-sm"><i class="fas fa-plus mr-1"></i> Buat</a>
                     </div>
                 </div>
             </div>
 
+            {{-- FILTER TOOLBAR --}}
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body py-2">
+                    <div class="row justify-content-between align-items-end">
+                        <div class="col-md-5">
+                            <div class="form-group mb-2">
+                                <label class="small font-weight-bold">Cari Berdasarkan</label>
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <select class="form-control form-control-sm rounded-0" id="logbook-searchby" style="max-width:110px;">
+                                            <option value="all">Semua</option>
+                                            <option value="judul">Judul</option>
+                                            <option value="deskripsi">Deskripsi</option>
+                                            <option value="tanggal">Tanggal</option>
+                                        </select>
+                                    </div>
+                                    <input type="text" class="form-control logbook-search" placeholder="Cari sesuatu.." id="logbook-search">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="d-flex flex-wrap gap-2 justify-content-end">
+                                <div class="form-group mb-2">
+                                    <label class="small font-weight-bold">Tampilkan</label>
+                                    <select class="form-control form-control-sm logbook-perpage" style="width:80px;">
+                                        <option value="5">5</option>
+                                        <option value="10" selected>10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label class="small font-weight-bold">Urutkan</label>
+                                    <select class="form-control form-control-sm logbook-sortby" style="width:110px;">
+                                        <option value="tanggal">Tanggal</option>
+                                        <option value="judul">Judul</option>
+                                        <option value="deskripsi">Deskripsi</option>
+                                    </select>
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label class="small font-weight-bold">Tipe</label>
+                                    <select class="form-control form-control-sm logbook-order" style="width:90px;">
+                                        <option value="desc">DESC</option>
+                                        <option value="asc">ASC</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{-- TOGGLE DOKUMEN --}}
+                    <ul class="nav nav-tabs" style="cursor:pointer;">
+                        <li class="nav-item">
+                            <label class="custom-switch nav-link" style="cursor:pointer;margin-bottom:0;">
+                                                <input type="checkbox" class="custom-switch-input logbook-toggle logbook-toggle-doc" id="logbookToggleDoc" checked>
+                                <span class="custom-switch-indicator"></span>
+                                <span class="custom-switch-description ml-2" style="font-size:13px;">Tampilkan Dokumen Langsung</span>
+                            </label>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            {{-- LOGBOOK CARDS PER MEMBER --}}
             @forelse($logbookData as $pesertaId => $entries)
             @php $member = $entries->first()->pesertaKkn->mahasiswa->user; $validated = $entries->where('is_validated',true)->count(); $total = $entries->count(); @endphp
             <div class="card border-0 shadow-sm mb-3 logbook-member-card">
@@ -647,58 +680,58 @@
                             <small class="text-muted">{{ $total }} entri</small>
                         </div>
                     </div>
-                    <div>
+                    <div class="d-flex align-items-center">
                         <span class="badge badge-{{ $validated >= 20 ? 'success' : 'warning' }} mr-2">{{ $validated }}/{{ $total }} Tervalidasi</span>
                         @if(($isDpl || $isAdmin) && $total > 0 && $validated < $total)
                         <form action="{{ route('kelompok.logbook.validateAll') }}" method="POST" class="d-inline" onclick="event.stopPropagation()">
                             @csrf
                             <input type="hidden" name="peserta_id" value="{{ $pesertaId }}">
-                            <button class="btn btn-warning btn-sm" onclick="return confirm('Validasi semua log book anggota ini?')"><i class="fas fa-check-double mr-1"></i> Validasi Semua</button>
+                            <button class="btn btn-warning btn-sm" onclick="return confirm('Validasi semua?')"><i class="fas fa-check-double mr-1"></i> Validasi Semua</button>
                         </form>
                         @endif
                     </div>
                 </div>
                 <div id="lb-{{ $pesertaId }}" style="display:block;">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle mb-0 logbook-table" data-peserta="{{ $pesertaId }}" style="border-collapse:collapse;">
-                            <thead>
-                                <tr style="background:#2D3A8A;">
-                                    <th class="text-white py-2 lb-no" width="40">#</th>
-                                    <th class="text-white py-2 lb-tanggal" width="110">Tanggal</th>
-                                    <th class="text-white py-2 lb-judul" width="220">Judul</th>
-                                    <th class="text-white py-2 lb-deskripsi">Deskripsi</th>
-                                    <th class="text-white py-2 text-center lb-berkas" width="100">Berkas</th>
-                                    <th class="text-white py-2 text-center lb-status" width="100">Status</th>
-                                    <th class="text-white py-2 text-center lb-aksi" width="60">Aksi</th>
+                    <div class="table-responsive rounded-bottom">
+                        <table class="table table-bordered table-hover align-middle mb-0 logbook-table" data-peserta="{{ $pesertaId }}" style="border-collapse:collapse;">
+                            <thead style="background:#2D3A8A;">
+                                <tr>
+                                    <th class="text-white py-2 text-center" width="50">#</th>
+                                    <th class="text-white py-2" width="250">Judul</th>
+                                    <th class="text-white py-2">Deskripsi</th>
+                                    <th class="text-white py-2 text-center" style="width:20%;">Berkas</th>
+                                    <th class="text-white py-2 text-center" width="100">Status</th>
+                                    <th class="text-white py-2 text-center" width="60">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($entries as $i => $lb)
                                 <tr class="logbook-row" data-judul="{{ strtolower($lb->judul) }}" data-deskripsi="{{ strtolower($lb->deskripsi) }}" data-tanggal="{{ $lb->tanggal->format('Ymd') }}" data-status="{{ $lb->is_validated ? 'tervalidasi' : 'belum' }}">
-                                    <td class="lb-no text-center text-muted small">{{ $i+1 }}</td>
-                                    <td class="lb-tanggal"><small>{{ $lb->tanggal->format('d M Y') }}</small></td>
-                                    <td class="lb-judul"><strong class="d-block" style="font-size:13px;">{{ $lb->judul }}</strong></td>
-                                    <td class="lb-deskripsi" style="max-width:300px;"><small class="d-block text-truncate text-muted">{{ \Illuminate\Support\Str::limit($lb->deskripsi, 120) }}</small></td>
-                                    <td class="lb-berkas text-center">
+                                    <td class="text-center text-muted small">{{ $i+1 }}</td>
+                                    <td>
+                                        <small class="text-muted d-block">{{ $lb->tanggal->format('d F Y') }}</small>
+                                        <strong>{{ $lb->judul }}</strong>
+                                    </td>
+                                    <td class="text-justify" style="max-width:300px;"><small>{{ \Illuminate\Support\Str::limit($lb->deskripsi, 200) }}</small></td>
+                                    <td class="text-center">
                                         @if($lb->file_path)
                                         <div class="logbook-download" style="display:none;">
-                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Unduh"><i class="fas fa-download"></i></a>
+                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i> Unduh</a>
                                         </div>
                                         <div class="logbook-preview" style="display:inline;">
-                                            @if(in_array(pathinfo($lb->file_path, PATHINFO_EXTENSION), ['jpg','jpeg','png','gif']))
-                                            <img src="{{ storage_url($lb->file_path) }}" class="rounded shadow-sm" style="max-width:70px;max-height:70px;object-fit:cover;cursor:pointer;" onclick="this.requestFullscreen ? this.requestFullscreen() : window.open('{{ storage_url($lb->file_path) }}')" title="Klik untuk fullscreen">
-                                            @elseif(in_array(pathinfo($lb->file_path, PATHINFO_EXTENSION), ['pdf']))
-                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf fa-lg"></i></a>
+                                            @php $ext = pathinfo($lb->file_path, PATHINFO_EXTENSION); @endphp
+                                            @if(in_array($ext, ['jpg','jpeg','png','gif']))
+                                            <img src="{{ storage_url($lb->file_path) }}" class="lb-preview-img my-2 rounded shadow-sm" onclick="window.open('{{ storage_url($lb->file_path) }}')" title="Klik untuk lihat penuh">
+                                            @elseif($ext === 'pdf')
+                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf fa-lg mr-1"></i>PDF</a>
                                             @else
-                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file"></i></a>
+                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file mr-1"></i>File</a>
                                             @endif
                                         </div>
                                         @else <span class="text-muted">-</span> @endif
                                     </td>
-                                    <td class="lb-status text-center">
-                                        @if($lb->is_validated)<span class="badge badge-success">✅ Tervalidasi</span>@else<span class="badge badge-warning">Belum</span>@endif
-                                    </td>
-                                    <td class="lb-aksi text-center">
+                                    <td class="text-center">@if($lb->is_validated)<span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i> Tervalidasi</span>@else<span class="badge badge-warning">Belum</span>@endif</td>
+                                    <td class="text-center">
                                         @if(!$lb->is_validated && $lb->peserta_kkn_id === $myPesertaId)
                                         <form action="{{ route('kelompok.logbook.destroy', $lb->id) }}" method="POST" class="d-inline">
                                             @csrf @method('DELETE')
@@ -726,6 +759,7 @@
         (function() {
             function applyLogbookFilters() {
                 var search = (document.querySelector('.logbook-search')?.value || '').toLowerCase();
+                var searchBy = document.getElementById('logbook-searchby')?.value || 'all';
                 var perPage = parseInt(document.querySelector('.logbook-perpage')?.value || 10);
                 var sortBy = document.querySelector('.logbook-sortby')?.value || 'tanggal';
                 var order = document.querySelector('.logbook-order')?.value || 'desc';
@@ -742,27 +776,17 @@
 
                     var filtered = rows.filter(function(r) {
                         if (!search) return true;
-                        var text = (r.dataset.judul || '') + ' ' + (r.dataset.deskripsi || '') + ' ' + (r.dataset.tanggal || '');
-                        return text.includes(search);
+                        if (searchBy === 'all') return (r.dataset.judul + ' ' + r.dataset.deskripsi + ' ' + r.dataset.tanggal).includes(search);
+                        return (r.dataset[searchBy] || '').includes(search);
                     });
 
                     filtered.sort(function(a, b) {
-                        var valA, valB;
-                        if (sortBy === 'tanggal') {
-                            valA = a.dataset.tanggal || '';
-                            valB = b.dataset.tanggal || '';
-                        } else if (sortBy === 'judul') {
-                            valA = a.dataset.judul || '';
-                            valB = b.dataset.judul || '';
-                        } else {
-                            valA = a.dataset.deskripsi || '';
-                            valB = b.dataset.deskripsi || '';
-                        }
+                        var valA = a.dataset[sortBy] || '', valB = b.dataset[sortBy] || '';
                         if (order === 'desc') return valA < valB ? 1 : -1;
                         return valA > valB ? 1 : -1;
                     });
 
-                    var totalFiltered = filtered.length;
+                    var total = filtered.length;
                     var shown = filtered.slice(0, perPage);
 
                     rows.forEach(function(r) {
@@ -775,15 +799,15 @@
                     rows.forEach(function(r) { r.style.display = 'none'; });
                     shown.forEach(function(r) { r.style.display = ''; });
 
-                    if (showingEl) showingEl.textContent = Math.min(perPage, totalFiltered);
-                    if (totalEl) totalEl.textContent = totalFiltered;
-                    if (info) info.style.display = totalFiltered === 0 ? 'none' : '';
+                    if (showingEl) showingEl.textContent = Math.min(perPage, total);
+                    if (totalEl) totalEl.textContent = total;
+                    if (info) info.style.display = total === 0 ? 'none' : '';
                 });
             }
 
-            document.querySelectorAll('.logbook-search, .logbook-perpage, .logbook-sortby, .logbook-order, .logbook-toggle-doc').forEach(function(el) {
+            document.querySelectorAll('.logbook-search, .logbook-perpage, .logbook-sortby, .logbook-order, .logbook-toggle-doc, #logbook-searchby').forEach(function(el) {
                 el.addEventListener('change', applyLogbookFilters);
-                el.addEventListener('keyup', applyLogbookFilters);
+                if (el.type === 'text' || el.tagName === 'INPUT') el.addEventListener('keyup', applyLogbookFilters);
             });
             setTimeout(applyLogbookFilters, 100);
         })();
