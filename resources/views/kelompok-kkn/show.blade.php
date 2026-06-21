@@ -40,6 +40,9 @@
     [data-bs-theme="dark"] .bg-light { background-color: #2a2f3a !important; }
     [data-bs-theme="dark"] .table .bg-light td,
     [data-bs-theme="dark"] .table .bg-light th { background-color: #2a2f3a !important; }
+    .logbook-toggle:checked + .custom-switch-indicator { background: #47c363; }
+    .logbook-toggle + .custom-switch-indicator { background: #adb5bd; }
+    .logbook-table img.lb-preview-img { max-width:180px; max-height:180px; object-fit:contain; }
 </style>
 @endpush
 
@@ -386,45 +389,58 @@
         {{-- TAB: LOGBOOK --}}
         <div class="tab-content" id="tab-admin-logbook">
             <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center flex-wrap">
+                    <h4 class="mb-0 text-default"><i class="fas fa-book mr-2"></i>Log Book</h4>
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm mb-3">
                 <div class="card-body py-2">
-                    <div class="d-flex align-items-center flex-wrap gap-2">
-                        <div class="input-group input-group-sm" style="max-width:320px;">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <div class="row justify-content-between align-items-end">
+                        <div class="col-md-5">
+                            <div class="form-group mb-2">
+                                <label class="small font-weight-bold">Cari Berdasarkan</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control admin-logbook-search" placeholder="Cari judul, deskripsi, atau tanggal...">
+                                </div>
                             </div>
-                            <input type="text" class="form-control admin-logbook-search" placeholder="Cari judul, deskripsi, atau tanggal...">
                         </div>
-                        <div class="d-flex align-items-center ml-2">
-                            <small class="text-muted mr-2">Pilih Anggota</small>
-                            <select id="logbook-member-select" class="form-control form-control-sm" onchange="adminFilterLogbook()">
-                                <option value="">Semua Anggota</option>
-                                @foreach($kelompok_kkn->pesertaKkn as $p)
-                                <option value="lb-{{ $p->id }}">{{ $p->mahasiswa->user->name ?? 'Unknown' }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="d-flex align-items-center ml-2">
-                            <small class="text-muted mr-2">Tampilkan</small>
-                            <select class="form-control form-control-sm admin-logbook-perpage" style="width:80px;">
-                                <option value="10">10</option>
-                                <option value="25" selected>25</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                            </select>
-                        </div>
-                        <div class="d-flex align-items-center ml-auto">
-                            <small class="text-muted mr-2">Tampilkan Dokumen</small>
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input admin-logbook-toggle-doc" id="adminLogbookToggleDoc" checked>
-                                <label class="custom-control-label" for="adminLogbookToggleDoc"></label>
+                        <div class="col-md-7">
+                            <div class="d-flex flex-wrap gap-2 justify-content-end">
+                                <div class="form-group mb-2">
+                                    <label class="small font-weight-bold">Pilih Anggota</label>
+                                    <select id="logbook-member-select" class="form-control form-control-sm" onchange="adminFilterLogbook()" style="min-width:160px;">
+                                        <option value="">Semua Anggota</option>
+                                        @foreach($kelompok_kkn->pesertaKkn as $p)
+                                        <option value="lb-{{ $p->id }}">{{ $p->mahasiswa->user->name ?? 'Unknown' }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label class="small font-weight-bold">Tampilkan</label>
+                                    <select class="form-control form-control-sm admin-logbook-perpage" style="width:80px;">
+                                        <option value="10">10</option>
+                                        <option value="25" selected>25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    <ul class="nav nav-tabs" style="cursor:pointer;">
+                        <li class="nav-item">
+                            <label class="custom-switch nav-link" style="cursor:pointer;margin-bottom:0;">
+                                                <input type="checkbox" class="custom-switch-input logbook-toggle admin-logbook-toggle-doc" id="adminLogbookToggleDoc" checked>
+                                <span class="custom-switch-indicator"></span>
+                                <span class="custom-switch-description ml-2" style="font-size:13px;">Tampilkan Dokumen Langsung</span>
+                            </label>
+                        </li>
+                    </ul>
                 </div>
             </div>
             @foreach($logbookData as $pesertaId => $entries)
             @php $member = $entries->first()->pesertaKkn->mahasiswa->user; $v = $entries->where('is_validated',true)->count(); @endphp
-            <div class="card border-0 shadow-sm mb-2 logbook-member-card" id="card-lb-{{ $pesertaId }}" style="display:none;">
+            <div class="card border-0 shadow-sm mb-3 logbook-member-card" id="card-lb-{{ $pesertaId }}" style="display:none;">
                 <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
                     <strong>{{ $member->name ?? 'Unknown' }} <small class="text-muted ml-2">{{ $entries->count() }} entri</small></strong>
                     <div>
@@ -436,43 +452,44 @@
                     </div>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle mb-0 logbook-table" data-peserta="{{ $pesertaId }}" style="border-collapse:collapse;">
-                            <thead>
-                                <tr style="background:#2D3A8A;">
-                                    <th class="text-white py-2" width="40">#</th>
-                                    <th class="text-white py-2" width="110">Tanggal</th>
-                                    <th class="text-white py-2" width="200">Judul</th>
+                    <div class="table-responsive rounded-bottom">
+                        <table class="table table-bordered table-hover align-middle mb-0 logbook-table" data-peserta="{{ $pesertaId }}" style="border-collapse:collapse;">
+                            <thead style="background:#2D3A8A;">
+                                <tr>
+                                    <th class="text-white py-2 text-center" width="50">#</th>
+                                    <th class="text-white py-2" width="250">Judul</th>
                                     <th class="text-white py-2">Deskripsi</th>
-                                    <th class="text-white py-2 text-center" width="100">Berkas</th>
-                                    <th class="text-white py-2 text-center" width="90">Status</th>
+                                    <th class="text-white py-2 text-center" style="width:20%;">Berkas</th>
+                                    <th class="text-white py-2 text-center" width="100">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($entries as $i => $lb)
                                 <tr class="logbook-row" data-judul="{{ strtolower($lb->judul) }}" data-deskripsi="{{ strtolower($lb->deskripsi) }}" data-tanggal="{{ $lb->tanggal->format('Ymd') }}">
                                     <td class="text-center text-muted small">{{ $i+1 }}</td>
-                                    <td><small>{{ $lb->tanggal->format('d M Y') }}</small></td>
-                                    <td><strong style="font-size:13px;">{{ $lb->judul }}</strong></td>
-                                    <td style="max-width:250px;"><small class="d-block text-truncate text-muted">{{ \Illuminate\Support\Str::limit($lb->deskripsi, 120) }}</small></td>
+                                    <td>
+                                        <small class="text-muted d-block">{{ $lb->tanggal->format('d F Y') }}</small>
+                                        <strong>{{ $lb->judul }}</strong>
+                                    </td>
+                                    <td class="text-justify" style="max-width:300px;"><small>{{ \Illuminate\Support\Str::limit($lb->deskripsi, 200) }}</small></td>
                                     <td class="text-center">
                                         @if($lb->file_path)
                                         <div class="logbook-download" style="display:none;">
-                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></a>
+                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i> Unduh</a>
                                         </div>
                                         <div class="logbook-preview" style="display:inline;">
                                             @php $ext = pathinfo($lb->file_path, PATHINFO_EXTENSION); @endphp
                                             @if(in_array($ext, ['jpg','jpeg','png','gif']))
-                                            <img src="{{ storage_url($lb->file_path) }}" class="rounded shadow-sm" style="max-width:60px;max-height:60px;object-fit:cover;cursor:pointer;" onclick="this.requestFullscreen?this.requestFullscreen():window.open('{{ storage_url($lb->file_path) }}')" title="Klik fullscreen">
+                                            <img src="{{ storage_url($lb->file_path) }}" class="lb-preview-img my-2 rounded shadow-sm" onclick="window.open('{{ storage_url($lb->file_path) }}')" title="Klik untuk lihat penuh">
                                             @elseif($ext === 'pdf')
-                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf fa-lg"></i></a>
+                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf fa-lg mr-1"></i>PDF</a>
                                             @else
-                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file"></i></a>
+                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file mr-1"></i>File</a>
                                             @endif
                                         </div>
                                         @else <span class="text-muted">-</span> @endif
                                     </td>
-                                    <td class="text-center">@if($lb->is_validated)<span class="badge badge-success">✅</span>@else<span class="badge badge-warning">Belum</span>@endif</td>
+                                    <td class="text-center">@if($lb->is_validated)<span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i></span>@else<span class="badge badge-warning">Belum</span>@endif</td>
                                 </tr>
                                 @endforeach
                             </tbody>
