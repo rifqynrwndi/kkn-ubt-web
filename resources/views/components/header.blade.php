@@ -35,7 +35,7 @@
                 <img
                     alt="Profile"
                     src="{{ auth()->user()->mahasiswa?->foto
-                        ? asset('storage/' . auth()->user()->mahasiswa->foto)
+                        ? storage_url(auth()->user()->mahasiswa->foto)
                         : asset('img/avatar/avatar-1.png') }}"
                     class="rounded-circle mr-1"
                     width="35"

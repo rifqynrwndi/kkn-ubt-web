@@ -154,7 +154,7 @@
                             <div class="mb-2">
                                 <img
                                     src="{{ $mahasiswa->mahasiswa->foto
-                                        ? asset('storage/'.$mahasiswa->mahasiswa->foto)
+                                        ? storage_url($mahasiswa->mahasiswa->foto)
                                         : asset('img/avatar/avatar-1.png') }}"
                                     width="120"
                                     height="120"

@@ -57,7 +57,7 @@
                                 <tr>
 
                                     <td>
-                                        <img src="{{ $item->foto ? asset('storage/'.$item->foto) : asset('img/avatar/avatar-1.png') }}" class="rounded-circle" width="36" height="36" style="object-fit:cover;">
+                                        <img src="{{ $item->foto ? storage_url($item->foto) : asset('img/avatar/avatar-1.png') }}" class="rounded-circle" width="36" height="36" style="object-fit:cover;">
                                     </td>
 
                                     <td>

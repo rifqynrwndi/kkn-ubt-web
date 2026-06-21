@@ -150,7 +150,7 @@
                         <label>Foto</label>
                         @if($dpl->foto)
                             <div class="mb-2">
-                                <img src="{{ asset('storage/'.$dpl->foto) }}" class="rounded" width="80" height="80" style="object-fit:cover;">
+                                <img src="{{ storage_url($dpl->foto) }}" class="rounded" width="80" height="80" style="object-fit:cover;">
                                 <small class="text-muted ml-2">Upload foto baru untuk mengganti.</small>
                             </div>
                         @endif

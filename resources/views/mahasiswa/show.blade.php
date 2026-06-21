@@ -22,7 +22,7 @@
                     <div class="col-md-3 text-center mb-4">
                         <img
                             src="{{ $mahasiswa->mahasiswa?->foto
-                                ? asset('storage/'.$mahasiswa->mahasiswa->foto)
+                                ? storage_url($mahasiswa->mahasiswa->foto)
                                 : asset('img/avatar/avatar-1.png') }}"
                             class="rounded-circle shadow"
                             width="180"
