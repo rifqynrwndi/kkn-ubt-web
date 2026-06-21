@@ -387,13 +387,13 @@
                                                 <td style="max-width:250px;"><small class="d-block text-truncate text-muted">{{ \Illuminate\Support\Str::limit($lb->deskripsi, 120) }}</small></td>
                                                 <td class="text-center">
                                                     @if($lb->file_path)
-                                                    <div class="logbook-download" style="display:inline;">
+                                                    <div class="logbook-download" style="display:none;">
                                                         <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></a>
                                                     </div>
-                                                    <div class="logbook-preview" style="display:none;">
+                                                    <div class="logbook-preview" style="display:inline;">
                                                         @php $ext = pathinfo($lb->file_path, PATHINFO_EXTENSION); @endphp
                                                         @if(in_array($ext, ['jpg','jpeg','png','gif']))
-                                                        <a href="{{ storage_url($lb->file_path) }}" target="_blank"><img src="{{ storage_url($lb->file_path) }}" class="rounded shadow-sm" style="max-width:60px;max-height:60px;object-fit:cover;"></a>
+                                                        <img src="{{ storage_url($lb->file_path) }}" class="rounded shadow-sm" style="max-width:60px;max-height:60px;object-fit:cover;cursor:pointer;" onclick="this.requestFullscreen?this.requestFullscreen():window.open('{{ storage_url($lb->file_path) }}')" title="Klik fullscreen">
                                                         @elseif($ext === 'pdf')
                                                         <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf fa-lg"></i></a>
                                                         @else
@@ -513,8 +513,8 @@
                 rows.forEach(function(r) {
                     var d = r.querySelector('.logbook-download');
                     var p = r.querySelector('.logbook-preview');
-                    if (d) d.style.display = showDoc ? 'none' : 'inline';
-                    if (p) p.style.display = showDoc ? 'inline' : 'none';
+                    if (d) d.style.display = showDoc ? 'none' : '';
+                    if (p) p.style.display = showDoc ? '' : 'none';
                 });
                 rows.forEach(function(r) { r.style.display = 'none'; });
                 shown.forEach(function(r) { r.style.display = ''; });
