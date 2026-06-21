@@ -584,53 +584,51 @@
         <div class="tab-content" id="tab-logbook">
             @php $myPesertaId = $peserta->id; @endphp
 
-            {{-- Add Entry --}}
-            <div class="mb-3">
-                <a href="{{ route('kelompok.logbook.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus mr-1"></i> Tambah Log Book
-                </a>
-            </div>
-
-            {{-- Filter Bar --}}
-            <div class="card mb-3">
+            {{-- Toolbar --}}
+            <div class="card border-0 shadow-sm mb-3">
                 <div class="card-body py-2">
-                    <div class="row align-items-center">
-                        <div class="col-md-4 mb-2 mb-md-0">
-                            <small class="text-muted d-block mb-1">Cari Berdasarkan</small>
-                            <div class="input-group input-group-sm">
-                                <div class="input-group-prepend"><span class="input-group-text">Judul</span></div>
-                                <input type="text" class="form-control logbook-search" placeholder="Cari sesuatu..">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div class="input-group input-group-sm" style="max-width:360px;">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
                             </div>
+                            <input type="text" class="form-control logbook-search" placeholder="Cari judul, deskripsi, atau tanggal...">
                         </div>
-                        <div class="col-md-2 mb-2 mb-md-0">
-                            <small class="text-muted d-block mb-1">Tampilkan</small>
-                            <select class="form-control form-control-sm logbook-perpage">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="document.querySelector('.logbook-search').value=''; applyLogbookFilters();" title="Refresh"><i class="fas fa-sync-alt"></i> Refresh</button>
+                            <a href="{{ route('kelompok.logbook.create') }}" class="btn btn-sm btn-primary"><i class="fas fa-plus mr-1"></i> Tambah Log Book</a>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center flex-wrap gap-2 mt-2 pt-2 border-top">
+                        <div class="d-flex align-items-center mr-3">
+                            <small class="text-muted mr-2">Tampilkan</small>
+                            <select class="form-control form-control-sm logbook-perpage" style="width:80px;">
                                 <option value="5">5</option>
                                 <option value="10" selected>10</option>
                                 <option value="25">25</option>
                                 <option value="50">50</option>
+                                <option value="100">100</option>
                             </select>
                         </div>
-                        <div class="col-md-3 mb-2 mb-md-0">
-                            <small class="text-muted d-block mb-1">Urutkan Berdasarkan</small>
-                            <select class="form-control form-control-sm logbook-sortby">
+                        <div class="d-flex align-items-center mr-3">
+                            <small class="text-muted mr-2">Urutkan</small>
+                            <select class="form-control form-control-sm logbook-sortby" style="width:130px;">
                                 <option value="tanggal">Tanggal</option>
                                 <option value="judul">Judul</option>
-                                <option value="status">Status</option>
+                                <option value="deskripsi">Deskripsi</option>
                             </select>
                         </div>
-                        <div class="col-md-2 mb-2 mb-md-0">
-                            <small class="text-muted d-block mb-1">Tipe Urutan</small>
-                            <select class="form-control form-control-sm logbook-order">
+                        <div class="d-flex align-items-center mr-3">
+                            <select class="form-control form-control-sm logbook-order" style="width:100px;">
                                 <option value="desc">Terbaru</option>
                                 <option value="asc">Terlama</option>
                             </select>
                         </div>
-                        <div class="col-md-1">
-                            <small class="text-muted d-block mb-1">Dokumen</small>
+                        <div class="d-flex align-items-center ml-auto">
+                            <small class="text-muted mr-2">Tampilkan Dokumen</small>
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input logbook-toggle-doc" id="logbookToggleDoc" checked>
-                                <label class="custom-control-label" for="logbookToggleDoc" style="font-size:12px;">Tampil</label>
+                                <label class="custom-control-label" for="logbookToggleDoc"></label>
                             </div>
                         </div>
                     </div>
@@ -639,9 +637,16 @@
 
             @forelse($logbookData as $pesertaId => $entries)
             @php $member = $entries->first()->pesertaKkn->mahasiswa->user; $validated = $entries->where('is_validated',true)->count(); $total = $entries->count(); @endphp
-            <div class="card mb-3 logbook-member-card">
-                <div class="card-header d-flex justify-content-between align-items-center" style="cursor:pointer;" onclick="toggleCollapse('lb-{{ $pesertaId }}')">
-                    <span><i class="fas fa-chevron-down mr-2" id="icon-lb-{{ $pesertaId }}"></i><strong>{{ $member->name ?? 'Unknown' }}</strong></span>
+            <div class="card border-0 shadow-sm mb-3 logbook-member-card">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center" style="cursor:pointer;" onclick="toggleCollapse('lb-{{ $pesertaId }}')">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-chevron-down mr-3 text-muted" id="icon-lb-{{ $pesertaId }}"></i>
+                        <img src="{{ asset('img/avatar/avatar-1.png') }}" class="rounded-circle mr-2" width="32" height="32" style="object-fit:cover;">
+                        <div>
+                            <strong class="d-block">{{ $member->name ?? 'Unknown' }}</strong>
+                            <small class="text-muted">{{ $total }} entri</small>
+                        </div>
+                    </div>
                     <div>
                         <span class="badge badge-{{ $validated >= 20 ? 'success' : 'warning' }} mr-2">{{ $validated }}/{{ $total }} Tervalidasi</span>
                         @if(($isDpl || $isAdmin) && $total > 0 && $validated < $total)
@@ -655,37 +660,51 @@
                 </div>
                 <div id="lb-{{ $pesertaId }}" style="display:block;">
                     <div class="table-responsive">
-                        <table class="table table-sm mb-0 logbook-table" data-peserta="{{ $pesertaId }}">
-                            <thead><tr><th class="lb-no">#</th><th class="lb-tanggal">Tanggal</th><th class="lb-judul">Judul</th><th class="lb-deskripsi">Deskripsi</th><th class="lb-berkas">Berkas</th><th class="lb-status">Status</th><th class="lb-aksi">Aksi</th></tr></thead>
+                        <table class="table table-striped table-hover align-middle mb-0 logbook-table" data-peserta="{{ $pesertaId }}" style="border-collapse:collapse;">
+                            <thead>
+                                <tr style="background:#2D3A8A;">
+                                    <th class="text-white py-2 lb-no" width="40">#</th>
+                                    <th class="text-white py-2 lb-tanggal" width="110">Tanggal</th>
+                                    <th class="text-white py-2 lb-judul" width="220">Judul</th>
+                                    <th class="text-white py-2 lb-deskripsi">Deskripsi</th>
+                                    <th class="text-white py-2 text-center lb-berkas" width="100">Berkas</th>
+                                    <th class="text-white py-2 text-center lb-status" width="100">Status</th>
+                                    <th class="text-white py-2 text-center lb-aksi" width="60">Aksi</th>
+                                </tr>
+                            </thead>
                             <tbody>
                                 @foreach($entries as $i => $lb)
-                                <tr class="logbook-row" data-judul="{{ strtolower($lb->judul) }}" data-tanggal="{{ $lb->tanggal->format('Ymd') }}" data-status="{{ $lb->is_validated ? 'tervalidasi' : 'belum' }}">
-                                    <td class="lb-no">{{ $i+1 }}</td>
+                                <tr class="logbook-row" data-judul="{{ strtolower($lb->judul) }}" data-deskripsi="{{ strtolower($lb->deskripsi) }}" data-tanggal="{{ $lb->tanggal->format('Ymd') }}" data-status="{{ $lb->is_validated ? 'tervalidasi' : 'belum' }}">
+                                    <td class="lb-no text-center text-muted small">{{ $i+1 }}</td>
                                     <td class="lb-tanggal"><small>{{ $lb->tanggal->format('d M Y') }}</small></td>
-                                    <td class="lb-judul"><small>{{ $lb->judul }}</small></td>
-                                    <td class="lb-deskripsi" style="max-width:250px;"><small class="d-block text-truncate">{{ $lb->deskripsi }}</small></td>
-                                    <td class="lb-berkas">
+                                    <td class="lb-judul"><strong class="d-block" style="font-size:13px;">{{ $lb->judul }}</strong></td>
+                                    <td class="lb-deskripsi" style="max-width:300px;"><small class="d-block text-truncate text-muted">{{ \Illuminate\Support\Str::limit($lb->deskripsi, 120) }}</small></td>
+                                    <td class="lb-berkas text-center">
                                         @if($lb->file_path)
-                                        <div class="d-flex align-items-center">
-                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-link logbook-download"><i class="fas fa-download"></i></a>
-                                            <div class="logbook-preview ml-1" style="display:none;">
-                                                @if(in_array(pathinfo($lb->file_path, PATHINFO_EXTENSION), ['jpg','jpeg','png','gif']))
-                                                <a href="{{ storage_url($lb->file_path) }}" target="_blank"><img src="{{ storage_url($lb->file_path) }}" style="max-width:60px;max-height:60px;border-radius:4px;"></a>
-                                                @elseif(in_array(pathinfo($lb->file_path, PATHINFO_EXTENSION), ['pdf']))
-                                                <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf"></i></a>
-                                                @else
-                                                <span class="text-muted" style="font-size:11px;"><i class="fas fa-file"></i></span>
-                                                @endif
-                                            </div>
+                                        <div class="logbook-download" style="display:inline;">
+                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Unduh"><i class="fas fa-download"></i></a>
                                         </div>
-                                        @else - @endif
+                                        <div class="logbook-preview" style="display:none;">
+                                            @if(in_array(pathinfo($lb->file_path, PATHINFO_EXTENSION), ['jpg','jpeg','png','gif']))
+                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" data-lightbox="lb-{{ $pesertaId }}">
+                                                <img src="{{ storage_url($lb->file_path) }}" class="rounded shadow-sm" style="max-width:70px;max-height:70px;object-fit:cover;">
+                                            </a>
+                                            @elseif(in_array(pathinfo($lb->file_path, PATHINFO_EXTENSION), ['pdf']))
+                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf fa-lg"></i></a>
+                                            @else
+                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file"></i></a>
+                                            @endif
+                                        </div>
+                                        @else <span class="text-muted">-</span> @endif
                                     </td>
-                                    <td class="lb-status">@if($lb->is_validated)<span class="badge badge-success">Tervalidasi</span>@else<span class="badge badge-warning">Belum</span>@endif</td>
-                                    <td class="lb-aksi">
+                                    <td class="lb-status text-center">
+                                        @if($lb->is_validated)<span class="badge badge-success">✅ Tervalidasi</span>@else<span class="badge badge-warning">Belum</span>@endif
+                                    </td>
+                                    <td class="lb-aksi text-center">
                                         @if(!$lb->is_validated && $lb->peserta_kkn_id === $myPesertaId)
-                                        <form action="{{ route('kelompok.logbook.destroy', $lb->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus log book ini?')">
+                                        <form action="{{ route('kelompok.logbook.destroy', $lb->id) }}" method="POST" class="d-inline">
                                             @csrf @method('DELETE')
-                                            <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                            <button class="btn btn-outline-danger btn-sm" onclick="return confirm('Hapus?')"><i class="fas fa-trash"></i></button>
                                         </form>
                                         @endif
                                     </td>
@@ -693,14 +712,14 @@
                                 @endforeach
                             </tbody>
                         </table>
-                        <div class="p-3">
+                        <div class="p-3 bg-light">
                             <small class="text-muted logbook-info">Menampilkan <span class="lb-showing">0</span> dari <span class="lb-total">0</span> entri</small>
                         </div>
                     </div>
                 </div>
             </div>
             @empty
-            <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">📖</span><h5>Belum ada log book</h5><p class="text-muted">Tambahkan catatan kegiatan harian KKN kamu.</p></div></div>
+            <div class="card border-0 shadow-sm"><div class="card-body text-center py-5"><span style="font-size:48px;">📖</span><h5>Belum ada log book</h5><p class="text-muted">Tambahkan catatan kegiatan harian KKN kamu.</p></div></div>
             @endforelse
         </div>
 
@@ -723,13 +742,12 @@
                     var showingEl = card.querySelector('.lb-showing');
                     var totalEl = card.querySelector('.lb-total');
 
-                    // Filter by search
                     var filtered = rows.filter(function(r) {
                         if (!search) return true;
-                        return (r.dataset.judul || '').includes(search);
+                        var text = (r.dataset.judul || '') + ' ' + (r.dataset.deskripsi || '') + ' ' + (r.dataset.tanggal || '');
+                        return text.includes(search);
                     });
 
-                    // Sort
                     filtered.sort(function(a, b) {
                         var valA, valB;
                         if (sortBy === 'tanggal') {
@@ -739,24 +757,23 @@
                             valA = a.dataset.judul || '';
                             valB = b.dataset.judul || '';
                         } else {
-                            valA = a.dataset.status || '';
-                            valB = b.dataset.status || '';
+                            valA = a.dataset.deskripsi || '';
+                            valB = b.dataset.deskripsi || '';
                         }
                         if (order === 'desc') return valA < valB ? 1 : -1;
                         return valA > valB ? 1 : -1;
                     });
 
-                    // Pagination
                     var totalFiltered = filtered.length;
                     var shown = filtered.slice(0, perPage);
 
-                    // Document preview toggle
                     rows.forEach(function(r) {
+                        var download = r.querySelector('.logbook-download');
                         var preview = r.querySelector('.logbook-preview');
-                        if (preview) preview.style.display = showDoc ? 'inline-block' : 'none';
+                        if (download) download.style.display = showDoc ? 'none' : 'inline';
+                        if (preview) preview.style.display = showDoc ? 'inline' : 'none';
                     });
 
-                    // Show/hide rows
                     rows.forEach(function(r) { r.style.display = 'none'; });
                     shown.forEach(function(r) { r.style.display = ''; });
 

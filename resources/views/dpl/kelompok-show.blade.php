@@ -326,19 +326,57 @@
                         @if($logbookData->count())
                         @foreach($logbookData as $pesertaId => $entries)
                         @php $member = $entries->first()->pesertaKkn->mahasiswa->user; $v = $entries->where('is_validated',true)->count(); @endphp
-                        <div class="card mb-2"><div class="card-header d-flex justify-content-between align-items-center">
-                            <strong>{{ $member->name ?? 'Unknown' }}</strong>
-                            <div><span class="badge badge-{{ $v>=20?'success':'warning' }} mr-2">{{ $v }}/{{ $entries->count() }}</span>
-                                <form action="{{ route('kelompok.logbook.validateAll') }}" method="POST" class="d-inline">@csrf
-                                    <input type="hidden" name="peserta_id" value="{{ $pesertaId }}">
-                                    <button class="btn btn-sm btn-warning" onclick="return confirm('Validasi semua?')">Validasi Semua</button>
-                                </form>
+                        <div class="card border-0 shadow-sm mb-2">
+                            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                                <strong>{{ $member->name ?? 'Unknown' }} <small class="text-muted ml-2">{{ $entries->count() }} entri</small></strong>
+                                <div>
+                                    <span class="badge badge-{{ $v>=20?'success':'warning' }} mr-2">{{ $v }}/{{ $entries->count() }}</span>
+                                    <form action="{{ route('kelompok.logbook.validateAll') }}" method="POST" class="d-inline">@csrf
+                                        <input type="hidden" name="peserta_id" value="{{ $pesertaId }}">
+                                        <button class="btn btn-sm btn-warning" onclick="return confirm('Validasi semua?')">Validasi Semua</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover align-middle mb-0" style="border-collapse:collapse;">
+                                        <thead>
+                                            <tr style="background:#2D3A8A;">
+                                                <th class="text-white py-2" width="40">#</th>
+                                                <th class="text-white py-2" width="110">Tanggal</th>
+                                                <th class="text-white py-2" width="220">Judul</th>
+                                                <th class="text-white py-2">Deskripsi</th>
+                                                <th class="text-white py-2 text-center" width="100">Berkas</th>
+                                                <th class="text-white py-2 text-center" width="100">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($entries as $i => $lb)
+                                            <tr>
+                                                <td class="text-center text-muted small">{{ $i+1 }}</td>
+                                                <td><small>{{ $lb->tanggal->format('d M Y') }}</small></td>
+                                                <td><strong style="font-size:13px;">{{ $lb->judul }}</strong></td>
+                                                <td style="max-width:250px;"><small class="d-block text-truncate text-muted">{{ \Illuminate\Support\Str::limit($lb->deskripsi, 120) }}</small></td>
+                                                <td class="text-center">
+                                                    @if($lb->file_path)
+                                                    @php $ext = pathinfo($lb->file_path, PATHINFO_EXTENSION); @endphp
+                                                    @if(in_array($ext, ['jpg','jpeg','png','gif']))
+                                                    <a href="{{ storage_url($lb->file_path) }}" target="_blank"><img src="{{ storage_url($lb->file_path) }}" class="rounded shadow-sm" style="max-width:60px;max-height:60px;object-fit:cover;"></a>
+                                                    @else
+                                                    <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></a>
+                                                    @endif
+                                                    @else <span class="text-muted">-</span> @endif
+                                                </td>
+                                                <td class="text-center">@if($lb->is_validated)<span class="badge badge-success">✅</span>@else<span class="badge badge-warning">Belum</span>@endif</td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                        <div class="card-body p-0"><table class="table table-sm mb-0"><thead><tr><th>Tanggal</th><th>Judul</th><th>Deskripsi</th><th>Status</th></tr></thead>
-                        <tbody>@foreach($entries as $lb)<tr><td>{{ $lb->tanggal->format('d M Y') }}</td><td>{{ $lb->judul }}</td><td style="max-width:200px;"><small class="d-block text-truncate">{{ $lb->deskripsi }}</small></td><td>{{ $lb->is_validated?'✅':'⏳' }}</td></tr>@endforeach</tbody></table></div></div>
                         @endforeach
-                        @else <div class="card"><div class="card-body text-muted text-center py-4">Belum ada log book.</div></div> @endif
+                        @else <div class="card border-0 shadow-sm"><div class="card-body text-center text-muted py-5"><span style="font-size:48px;">📖</span><h5>Belum Ada Log Book</h5></div></div> @endif
                     </div>
                     <div class="tab-content" id="tab-penilaian">
                         @if($komponenList->count())
