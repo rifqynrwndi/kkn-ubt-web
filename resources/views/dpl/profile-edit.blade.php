@@ -58,7 +58,7 @@
                         <label>Foto Profil</label>
                         @if($dpl->foto)
                             <div class="mb-2">
-                                <img src="{{ asset('storage/'.$dpl->foto) }}" class="rounded-circle" width="80" height="80" style="object-fit:cover;">
+                                <img src="{{ storage_url($dpl->foto) }}" class="rounded-circle" width="80" height="80" style="object-fit:cover;">
                             </div>
                         @else
                             <div class="mb-2">

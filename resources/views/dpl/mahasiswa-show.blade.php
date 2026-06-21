@@ -20,7 +20,7 @@
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-body text-center">
-                        <img src="{{ $m->foto ? asset('storage/'.$m->foto) : asset('img/avatar/avatar-1.png') }}"
+                        <img src="{{ $m->foto ? storage_url($m->foto) : asset('img/avatar/avatar-1.png') }}"
                              class="rounded-circle shadow mb-3"
                              width="120" height="120" style="object-fit:cover;">
                         <h5 class="font-weight-bold">{{ $m->user->name ?? '-' }}</h5>

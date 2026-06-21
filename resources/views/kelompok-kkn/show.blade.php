@@ -331,7 +331,7 @@
                     <table class="table table-sm mt-2"><tr><th>Judul</th><th>Oleh</th><th>Berkas</th><th>Status</th><th>Aksi</th></tr>
                     @foreach($t->submissions as $s)
                     <tr><td>{{ $s->judul }}</td><td>{{ $s->pesertaKkn->mahasiswa->user->name ?? '-' }}</td>
-                        <td><a href="{{ asset('storage/'.$s->file_path) }}" target="_blank" class="btn btn-sm btn-link"><i class="fas fa-download"></i></a></td>
+                        <td><a href="{{ storage_url($s->file_path) }}" target="_blank" class="btn btn-sm btn-link"><i class="fas fa-download"></i></a></td>
                         <td><span class="badge badge-{{ $s->status==='diterima'?'success':($s->status==='ditolak'?'danger':'info') }}">{{ $s->status }}</span></td>
                         <td><form action="{{ route('kelompok.tugas.review', $s->id) }}" method="POST" class="form-inline gap-1">@csrf
                             <input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;">
@@ -360,7 +360,7 @@
                     <table class="table table-sm mt-2"><tr><th>Judul</th><th>Oleh</th><th>Berkas</th><th>Status</th><th>Aksi</th></tr>
                     @foreach($t->submissions as $s)
                     <tr><td>{{ $s->judul }}</td><td>{{ $s->pesertaKkn->mahasiswa->user->name ?? '-' }}</td>
-                        <td><a href="{{ asset('storage/'.$s->file_path) }}" target="_blank" class="btn btn-sm btn-link"><i class="fas fa-download"></i></a></td>
+                        <td><a href="{{ storage_url($s->file_path) }}" target="_blank" class="btn btn-sm btn-link"><i class="fas fa-download"></i></a></td>
                         <td><span class="badge badge-{{ $s->status==='diterima'?'success':($s->status==='ditolak'?'danger':'info') }}">{{ $s->status }}</span></td>
                         <td><form action="{{ route('kelompok.tugas.review', $s->id) }}" method="POST" class="form-inline gap-1">@csrf
                             <input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;">

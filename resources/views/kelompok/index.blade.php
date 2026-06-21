@@ -90,7 +90,7 @@
             <div class="d-flex align-items-start flex-wrap gap-3" style="position:relative;z-index:1;">
                 <div class="group-photo-wrap">
                     @if($kelompok->foto_kelompok)
-                        <img src="{{ asset('storage/'.$kelompok->foto_kelompok) }}" alt="Foto Kelompok">
+                        <img src="{{ storage_url($kelompok->foto_kelompok) }}" alt="Foto Kelompok">
                     @else
                         <div class="d-flex align-items-center justify-content-center h-100" style="font-size:40px;">👥</div>
                     @endif
@@ -339,7 +339,7 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-3">
                         @if($kelompok->dosenPembimbingLapangan->foto)
-                            <img src="{{ asset('storage/'.$kelompok->dosenPembimbingLapangan->foto) }}" class="rounded-circle" width="50" height="50" style="object-fit:cover;flex-shrink:0;">
+                            <img src="{{ storage_url($kelompok->dosenPembimbingLapangan->foto) }}" class="rounded-circle" width="50" height="50" style="object-fit:cover;flex-shrink:0;">
                         @else
                             <img src="{{ asset('img/avatar/avatar-1.png') }}" class="rounded-circle" width="50" height="50" style="object-fit:cover;flex-shrink:0;">
                         @endif
@@ -384,7 +384,7 @@
                                     <tr>
                                         <td>{{ $index + 1 }}</td>
                                         <td>
-                                            <img src="{{ $m->foto ? asset('storage/'.$m->foto) : asset('img/avatar/avatar-1.png') }}"
+                                            <img src="{{ $m->foto ? storage_url($m->foto) : asset('img/avatar/avatar-1.png') }}"
                                                  class="rounded-circle" width="36" height="36" style="object-fit:cover;">
                                         </td>
                                         <td>
@@ -492,7 +492,7 @@
                                             <tr>
                                                 <td style="max-width:200px;"><small class="d-block text-truncate">{{ $sub->judul }}</small></td>
                                                 <td><small>{{ $sub->pesertaKkn->mahasiswa->user->name ?? '-' }}</small></td>
-                                                <td><a href="{{ asset('storage/'.$sub->file_path) }}" target="_blank" class="btn btn-sm btn-link"><i class="fas fa-download"></i> <small>{{ \Illuminate\Support\Str::limit($sub->file_name, 15) }}</small></a></td>
+                                                <td><a href="{{ storage_url($sub->file_path) }}" target="_blank" class="btn btn-sm btn-link"><i class="fas fa-download"></i> <small>{{ \Illuminate\Support\Str::limit($sub->file_name, 15) }}</small></a></td>
                                                 <td>@if($sub->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($sub->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@elseif($sub->status==='revisi')<span class="badge badge-warning">Revisi</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
                                                 <td><small class="text-muted">{{ $sub->komentar_dpl ?: '-' }}</small></td>
                                                 @if(($isDpl || $isAdmin) && !auth()->user()->hasRole('mahasiswa'))
@@ -551,7 +551,7 @@
                                             <tr>
                                                 <td style="max-width:200px;"><small class="d-block text-truncate">{{ $sub->judul }}</small></td>
                                                 <td><small>{{ $sub->pesertaKkn->mahasiswa->user->name ?? '-' }}</small></td>
-                                                <td><a href="{{ asset('storage/'.$sub->file_path) }}" target="_blank" class="btn btn-sm btn-link"><i class="fas fa-download"></i> <small>{{ \Illuminate\Support\Str::limit($sub->file_name, 15) }}</small></a></td>
+                                                <td><a href="{{ storage_url($sub->file_path) }}" target="_blank" class="btn btn-sm btn-link"><i class="fas fa-download"></i> <small>{{ \Illuminate\Support\Str::limit($sub->file_name, 15) }}</small></a></td>
                                                 <td>@if($sub->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($sub->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@elseif($sub->status==='revisi')<span class="badge badge-warning">Revisi</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
                                                 <td><small class="text-muted">{{ $sub->komentar_dpl ?: '-' }}</small></td>
                                                 @if(($isDpl || $isAdmin) && !auth()->user()->hasRole('mahasiswa'))
@@ -667,12 +667,12 @@
                                     <td class="lb-berkas">
                                         @if($lb->file_path)
                                         <div class="d-flex align-items-center">
-                                            <a href="{{ asset('storage/'.$lb->file_path) }}" target="_blank" class="btn btn-sm btn-link logbook-download"><i class="fas fa-download"></i></a>
+                                            <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-link logbook-download"><i class="fas fa-download"></i></a>
                                             <div class="logbook-preview ml-1" style="display:none;">
                                                 @if(in_array(pathinfo($lb->file_path, PATHINFO_EXTENSION), ['jpg','jpeg','png','gif']))
-                                                <a href="{{ asset('storage/'.$lb->file_path) }}" target="_blank"><img src="{{ asset('storage/'.$lb->file_path) }}" style="max-width:60px;max-height:60px;border-radius:4px;"></a>
+                                                <a href="{{ storage_url($lb->file_path) }}" target="_blank"><img src="{{ storage_url($lb->file_path) }}" style="max-width:60px;max-height:60px;border-radius:4px;"></a>
                                                 @elseif(in_array(pathinfo($lb->file_path, PATHINFO_EXTENSION), ['pdf']))
-                                                <a href="{{ asset('storage/'.$lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf"></i></a>
+                                                <a href="{{ storage_url($lb->file_path) }}" target="_blank" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf"></i></a>
                                                 @else
                                                 <span class="text-muted" style="font-size:11px;"><i class="fas fa-file"></i></span>
                                                 @endif
