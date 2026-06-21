@@ -37,27 +37,21 @@ class MigrateStorageToS3 extends Command
 
         $errors = [];
         $migrated = 0;
-        $skipped = 0;
 
         foreach ($allFiles as $filePath) {
             if ($filePath === '.gitignore') {
-                $skipped++;
                 $bar->advance();
                 continue;
             }
 
             try {
-                if (!Storage::disk($targetDisk)->exists($filePath)) {
-                    $contents = Storage::disk($sourceDisk)->get($filePath);
-                    $mimeType = Storage::disk($sourceDisk)->mimeType($filePath);
-                    Storage::disk($targetDisk)->put($filePath, $contents, [
-                        'visibility' => 'public',
-                        'ContentType' => $mimeType,
-                    ]);
-                    $migrated++;
-                } else {
-                    $skipped++;
-                }
+                $contents = Storage::disk($sourceDisk)->get($filePath);
+                $mimeType = Storage::disk($sourceDisk)->mimeType($filePath);
+                Storage::disk($targetDisk)->put($filePath, $contents, [
+                    'visibility' => 'public',
+                    'ContentType' => $mimeType,
+                ]);
+                $migrated++;
             } catch (\Throwable $e) {
                 $errors[] = "{$filePath}: {$e->getMessage()}";
             }
@@ -70,7 +64,6 @@ class MigrateStorageToS3 extends Command
 
         $this->info("Migrasi selesai.");
         $this->info("  Berhasil: {$migrated}");
-        $this->info("  Dilewati (sudah ada): {$skipped}");
         $this->info("  Gagal: " . count($errors));
 
         if (!empty($errors)) {
