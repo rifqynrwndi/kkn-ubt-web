@@ -20,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrap();
+        \Carbon\Carbon::setLocale('id');
 
         Mail::extend('resend', function (array $config) {
             return new ResendTransport(

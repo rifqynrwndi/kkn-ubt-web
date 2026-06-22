@@ -527,6 +527,14 @@
             document.getElementById('tab-' + this.dataset.tab).classList.add('active');
         });
     });
+    (function() {
+        var p = new URLSearchParams(window.location.search);
+        var tab = p.get('tab');
+        if (tab) {
+            var link = document.querySelector('.group-nav a[data-tab="' + tab + '"]');
+            if (link) link.click();
+        }
+    })();
     document.getElementById('anggotaSearch')?.addEventListener('keyup', function() {
         var q = this.value.toLowerCase();
         document.querySelectorAll('#anggotaTable tbody tr').forEach(function(row) {

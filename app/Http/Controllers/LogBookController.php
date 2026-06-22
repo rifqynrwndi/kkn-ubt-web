@@ -106,6 +106,7 @@ class LogBookController extends Controller
                 'validated_at' => now(),
             ]);
 
-        return back()->with('success', 'Semua log book anggota ini berhasil divalidasi.');
+        $url = url()->previous() . (str_contains(url()->previous(), '?') ? '&' : '?') . 'tab=logbook';
+        return redirect($url)->with('success', 'Semua log book anggota ini berhasil divalidasi.');
     }
 }
