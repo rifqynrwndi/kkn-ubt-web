@@ -901,6 +901,14 @@
             document.getElementById('tab-' + this.dataset.tab).classList.add('active');
         });
     });
+    (function() {
+        var p = new URLSearchParams(window.location.search);
+        var tab = p.get('tab');
+        if (tab) {
+            var link = document.querySelector('.group-nav a[data-tab="' + tab + '"]');
+            if (link) link.click();
+        }
+    })();
 
     // Proposal form toggle
     function toggleProposalEdit() {

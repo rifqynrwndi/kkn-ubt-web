@@ -635,7 +635,6 @@
             if (link) link.click();
         }
     })();
-    });
     function adminFilterLogbook() {
         var val = document.getElementById('logbook-member-select').value;
         document.querySelectorAll('.logbook-member-card').forEach(function(c) {

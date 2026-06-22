@@ -106,7 +106,19 @@ class LogBookController extends Controller
                 'validated_at' => now(),
             ]);
 
-        $url = url()->previous() . (str_contains(url()->previous(), '?') ? '&' : '?') . 'tab=logbook';
+        $previous = url()->previous();
+        $parsed = parse_url($previous);
+        if (!$parsed || !isset($parsed['host'])) {
+            return back()->with('success', 'Semua log book anggota ini berhasil divalidasi.');
+        }
+        $query = [];
+        if (isset($parsed['query'])) {
+            parse_str($parsed['query'], $query);
+        }
+        unset($query['tab']);
+        $query['tab'] = 'logbook';
+        $url = ($parsed['scheme'] ?? 'https') . '://' . ($parsed['host'] ?? '') . ($parsed['path'] ?? '/') . '?' . http_build_query($query);
+
         return redirect($url)->with('success', 'Semua log book anggota ini berhasil divalidasi.');
     }
 }
