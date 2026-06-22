@@ -424,6 +424,21 @@
                                         <option value="100">100</option>
                                     </select>
                                 </div>
+                                <div class="form-group mb-2">
+                                    <label class="small font-weight-bold">Urutkan</label>
+                                    <select class="form-control form-control-sm admin-logbook-sortby" style="width:110px;">
+                                        <option value="tanggal">Tanggal</option>
+                                        <option value="judul">Judul</option>
+                                        <option value="deskripsi">Deskripsi</option>
+                                    </select>
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label class="small font-weight-bold">Tipe</label>
+                                    <select class="form-control form-control-sm admin-logbook-order" style="width:90px;">
+                                        <option value="desc">DESC</option>
+                                        <option value="asc">ASC</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -622,6 +637,8 @@
     function applyAdminLogbookFilters() {
         var search = (document.querySelector('.admin-logbook-search')?.value || '').toLowerCase();
         var perPage = parseInt(document.querySelector('.admin-logbook-perpage')?.value || 25);
+        var sortBy = document.querySelector('.admin-logbook-sortby')?.value || 'tanggal';
+        var order = document.querySelector('.admin-logbook-order')?.value || 'desc';
         var showDoc = document.querySelector('.admin-logbook-toggle-doc')?.checked || false;
 
         document.querySelectorAll('.logbook-member-card').forEach(function(card) {
@@ -640,6 +657,11 @@
             });
 
             var total = filtered.length;
+            filtered.sort(function(a, b) {
+                var valA = a.dataset[sortBy] || '', valB = b.dataset[sortBy] || '';
+                if (order === 'desc') return valA < valB ? 1 : -1;
+                return valA > valB ? 1 : -1;
+            });
             var shown = filtered.slice(0, perPage);
 
             rows.forEach(function(r) {
@@ -659,6 +681,8 @@
     }
     document.querySelector('.admin-logbook-search')?.addEventListener('keyup', applyAdminLogbookFilters);
     document.querySelector('.admin-logbook-perpage')?.addEventListener('change', applyAdminLogbookFilters);
+    document.querySelector('.admin-logbook-sortby')?.addEventListener('change', applyAdminLogbookFilters);
+    document.querySelector('.admin-logbook-order')?.addEventListener('change', applyAdminLogbookFilters);
     document.querySelector('.admin-logbook-toggle-doc')?.addEventListener('change', applyAdminLogbookFilters);
     setTimeout(applyAdminLogbookFilters, 100);
     document.getElementById('anggotaSearch')?.addEventListener('keyup', function() {
