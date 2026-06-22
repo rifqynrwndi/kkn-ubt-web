@@ -83,16 +83,22 @@ class LogBookController extends Controller
 
     public function validateAll(Request $request): RedirectResponse
     {
-        $kelompokId = $this->getKelompokId();
-        abort_if(!$kelompokId, 404);
+        $pesertaId = $request->peserta_id;
+        $peserta = \App\Models\PesertaKkn::with('kelompokKkn')->findOrFail($pesertaId);
 
         $dpl = auth()->user()->dosenPembimbingLapangan;
-        abort_if(!$dpl, 403);
+        $isAdmin = auth()->user()->hasRole('superadmin');
 
-        $pesertaId = $request->peserta_id;
+        if ($dpl) {
+            abort_if($peserta->kelompokKkn->dosen_pembimbing_lapangan_id !== $dpl->id, 403);
+        } elseif ($isAdmin) {
+            // admin can validate any
+        } else {
+            $kelompokId = $this->getKelompokId();
+            abort_if(!$kelompokId || $peserta->kelompok_kkn_id !== $kelompokId, 403);
+        }
 
         LogBook::where('peserta_kkn_id', $pesertaId)
-            ->where('kelompok_kkn_id', $kelompokId)
             ->where('is_validated', false)
             ->update([
                 'is_validated' => true,

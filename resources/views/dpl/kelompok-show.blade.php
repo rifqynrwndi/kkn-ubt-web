@@ -354,6 +354,21 @@
                                                     <option value="100">100</option>
                                                 </select>
                                             </div>
+                                            <div class="form-group mb-2">
+                                                <label class="small font-weight-bold">Urutkan</label>
+                                                <select class="form-control form-control-sm dpl-logbook-sortby" style="width:110px;">
+                                                    <option value="tanggal">Tanggal</option>
+                                                    <option value="judul">Judul</option>
+                                                    <option value="deskripsi">Deskripsi</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group mb-2">
+                                                <label class="small font-weight-bold">Tipe</label>
+                                                <select class="form-control form-control-sm dpl-logbook-order" style="width:90px;">
+                                                    <option value="desc">DESC</option>
+                                                    <option value="asc">ASC</option>
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -513,6 +528,8 @@
         function applyDplLogbookFilters() {
             var search = (document.querySelector('.dpl-logbook-search')?.value || '').toLowerCase();
             var perPage = parseInt(document.querySelector('.dpl-logbook-perpage')?.value || 25);
+            var sortBy = document.querySelector('.dpl-logbook-sortby')?.value || 'tanggal';
+            var order = document.querySelector('.dpl-logbook-order')?.value || 'desc';
             var showDoc = document.querySelector('.dpl-logbook-toggle-doc')?.checked || false;
             document.querySelectorAll('.logbook-member-card').forEach(function(card) {
                 var tbody = card.querySelector('tbody');
@@ -524,6 +541,11 @@
                 var filtered = rows.filter(function(r) {
                     if (!search) return true;
                     return (r.dataset.judul + ' ' + r.dataset.deskripsi + ' ' + r.dataset.tanggal).includes(search);
+                });
+                filtered.sort(function(a, b) {
+                    var valA = a.dataset[sortBy] || '', valB = b.dataset[sortBy] || '';
+                    if (order === 'desc') return valA < valB ? 1 : -1;
+                    return valA > valB ? 1 : -1;
                 });
                 var total = filtered.length;
                 var shown = filtered.slice(0, perPage);
@@ -542,6 +564,8 @@
         }
         document.querySelector('.dpl-logbook-search')?.addEventListener('keyup', applyDplLogbookFilters);
         document.querySelector('.dpl-logbook-perpage')?.addEventListener('change', applyDplLogbookFilters);
+        document.querySelector('.dpl-logbook-sortby')?.addEventListener('change', applyDplLogbookFilters);
+        document.querySelector('.dpl-logbook-order')?.addEventListener('change', applyDplLogbookFilters);
         document.querySelector('.dpl-logbook-toggle-doc')?.addEventListener('change', applyDplLogbookFilters);
         setTimeout(applyDplLogbookFilters, 100);
     })();
