@@ -346,6 +346,15 @@
                                     <div class="col-md-7">
                                         <div class="d-flex flex-wrap gap-2 justify-content-end">
                                             <div class="form-group mb-2">
+                                                <label class="small font-weight-bold">Pilih Anggota</label>
+                                                <select id="dpl-logbook-member" class="form-control form-control-sm" onchange="dplFilterMember(); applyDplLogbookFilters();" style="min-width:160px;">
+                                                    <option value="">Semua Anggota</option>
+                                                    @foreach($kelompok->pesertaKkn as $p)
+                                                    <option value="card-{{ $p->id }}">{{ $p->mahasiswa->user->name ?? 'Unknown' }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="form-group mb-2">
                                                 <label class="small font-weight-bold">Tampilkan</label>
                                                 <select class="form-control form-control-sm dpl-logbook-perpage" style="width:80px;">
                                                     <option value="10">10</option>
@@ -385,7 +394,7 @@
                         </div>
                         @foreach($logbookData as $pesertaId => $entries)
                         @php $member = $entries->first()->pesertaKkn->mahasiswa->user; $v = $entries->where('is_validated',true)->count(); @endphp
-                        <div class="card border-0 shadow-sm mb-3 logbook-member-card">
+                        <div class="card border-0 shadow-sm mb-3 logbook-member-card" id="card-{{ $pesertaId }}">
                             <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
                                 <strong>{{ $member->name ?? 'Unknown' }} <small class="text-muted ml-2">{{ $entries->count() }} entri</small></strong>
                                 <div>
@@ -525,6 +534,12 @@
         });
     });
     (function() {
+        function dplFilterMember() {
+            var val = document.getElementById('dpl-logbook-member')?.value;
+            document.querySelectorAll('.logbook-member-card').forEach(function(c) {
+                c.style.display = val ? (c.id === val ? '' : 'none') : '';
+            });
+        }
         function applyDplLogbookFilters() {
             var search = (document.querySelector('.dpl-logbook-search')?.value || '').toLowerCase();
             var perPage = parseInt(document.querySelector('.dpl-logbook-perpage')?.value || 25);
