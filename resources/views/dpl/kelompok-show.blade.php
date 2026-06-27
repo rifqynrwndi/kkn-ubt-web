@@ -276,17 +276,26 @@
                             @if($items->count())
                             <div class="px-3 py-1 task-cat-header border-bottom"><small class="font-weight-bold">{{ $katLabels[$kat] ?? $kat }}</small></div>
                             @foreach($items as $t)
-                            <div class="px-3 py-2 border-bottom"><strong class="small">{{ $t->nama_tugas }}</strong> <span class="badge badge-danger" style="font-size:9px;">Wajib</span>
+                            <div class="px-3 py-2 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="small">{{ $t->nama_tugas }}</strong>
+                                    <span class="badge badge-danger" style="font-size:9px;">Wajib</span>
+                                </div>
                                 @if($t->submissions->count())
-                                <table class="table table-sm mb-0"><tr><th>Judul</th><th>Oleh</th><th>Status</th><th>Aksi</th></tr>
-                                @foreach($t->submissions as $s)
-                                <tr><td>{{ $s->judul }}</td><td>{{ $s->pesertaKkn->mahasiswa->user->name ?? '-' }}</td><td><span class="badge badge-{{ $s->status==='diterima'?'success':'info' }}">{{ $s->status }}</span></td>
-                                    <td><form action="{{ route('kelompok.tugas.review', $s->id) }}" method="POST" class="form-inline gap-1">@csrf
-                                        <input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;">
-                                        <button name="status" value="diterima" class="btn btn-sm btn-success">✓</button>
-                                        <button name="status" value="ditolak" class="btn btn-sm btn-danger">✗</button>
-                                    </form></td></tr>
-                                @endforeach</table>
+                                <table class="table table-striped table-sm mb-0">
+                                    <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="100">Status</th><th class="text-white text-center" width="60">Aksi</th></tr></thead>
+                                    <tbody>
+                                        @foreach($t->submissions as $i => $s)
+                                        <tr>
+                                            <td class="text-center">{{ $i+1 }}</td>
+                                            <td>{{ $s->judul }}</td>
+                                            <td><small>{{ $s->pesertaKkn->mahasiswa->user->name ?? '-' }}</small></td>
+                                            <td class="text-center">@if($s->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($s->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
+                                            <td class="text-center"><button class="btn btn-info btn-sm" onclick='showTugas(@json($s->id), @json($s->judul), @json($s->pesertaKkn->mahasiswa->user->name ?? "-"), @json($s->status), @json($s->komentar_dpl ?? ""), @json($s->file_path ? storage_url($s->file_path) : ""), @json($s->file_name ?? ""))'><i class="fas fa-eye"></i> Show</button></td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                                 @else <p class="text-muted small px-3 pb-2">Belum ada pengumpulan</p> @endif
                             </div>
                             @endforeach
@@ -301,17 +310,23 @@
                             @if($items->count())
                             <div class="px-3 py-1 task-cat-header border-bottom"><small class="font-weight-bold">{{ $katLabels[$kat] ?? $kat }}</small></div>
                             @foreach($items as $t)
-                            <div class="px-3 py-2 border-bottom"><strong class="small">{{ $t->nama_tugas }}</strong>
+                            <div class="px-3 py-2 border-bottom">
+                                <strong class="small">{{ $t->nama_tugas }}</strong>
                                 @if($t->submissions->count())
-                                <table class="table table-sm mb-0"><tr><th>Judul</th><th>Oleh</th><th>Status</th><th>Aksi</th></tr>
-                                @foreach($t->submissions as $s)
-                                <tr><td>{{ $s->judul }}</td><td>{{ $s->pesertaKkn->mahasiswa->user->name ?? '-' }}</td><td><span class="badge badge-{{ $s->status==='diterima'?'success':'info' }}">{{ $s->status }}</span></td>
-                                    <td><form action="{{ route('kelompok.tugas.review', $s->id) }}" method="POST" class="form-inline gap-1">@csrf
-                                        <input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;">
-                                        <button name="status" value="diterima" class="btn btn-sm btn-success">✓</button>
-                                        <button name="status" value="ditolak" class="btn btn-sm btn-danger">✗</button>
-                                    </form></td></tr>
-                                @endforeach</table>
+                                <table class="table table-striped table-sm mb-0">
+                                    <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="100">Status</th><th class="text-white text-center" width="60">Aksi</th></tr></thead>
+                                    <tbody>
+                                        @foreach($t->submissions as $i => $s)
+                                        <tr>
+                                            <td class="text-center">{{ $i+1 }}</td>
+                                            <td>{{ $s->judul }}</td>
+                                            <td><small>{{ $s->pesertaKkn->mahasiswa->user->name ?? '-' }}</small></td>
+                                            <td class="text-center">@if($s->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($s->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
+                                            <td class="text-center"><button class="btn btn-info btn-sm" onclick='showTugas(@json($s->id), @json($s->judul), @json($s->pesertaKkn->mahasiswa->user->name ?? "-"), @json($s->status), @json($s->komentar_dpl ?? ""), @json($s->file_path ? storage_url($s->file_path) : ""), @json($s->file_name ?? ""))'><i class="fas fa-eye"></i> Show</button></td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                                 @else <p class="text-muted small px-3 pb-2">Belum ada pengumpulan</p> @endif
                             </div>
                             @endforeach
@@ -515,6 +530,37 @@
         </div>
     </div>
 </section>
+
+                    {{-- MODAL TUGAS DPL --}}
+                    <div class="modal fade" id="tugasModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header" style="background:#2D3A8A;color:#fff;">
+                                    <h5 class="modal-title">Detail Pengumpulan</h5>
+                                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                                </div>
+                                <div class="modal-body">
+                                    <table class="table table-bordered">
+                                        <tr><th width="140">Judul</th><td id="tug-mod-judul">-</td></tr>
+                                        <tr><th>Oleh</th><td id="tug-mod-oleh">-</td></tr>
+                                        <tr><th>Status</th><td id="tug-mod-status">-</td></tr>
+                                        <tr><th>Komentar DPL</th><td id="tug-mod-komentar">-</td></tr>
+                                        <tr><th>Berkas</th><td id="tug-mod-berkas">-</td></tr>
+                                    </table>
+                                    <hr>
+                                    <div id="tug-mod-review">
+                                        <form id="tug-mod-review-form" method="POST" action="">
+                                            @csrf
+                                            <input name="komentar_dpl" class="form-control form-control-sm mb-2" placeholder="Komentar...">
+                                            <button name="status" value="diterima" class="btn btn-success btn-sm mr-1"><i class="fas fa-check mr-1"></i> Terima</button>
+                                            <button name="status" value="ditolak" class="btn btn-danger btn-sm"><i class="fas fa-times mr-1"></i> Tolak</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
 @endsection
 
 @push('scripts')
@@ -541,6 +587,18 @@
             row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
         });
     });
+    function showTugas(id, judul, oleh, status, komentar, fileUrl, fileName) {
+        document.getElementById('tug-mod-judul').textContent = judul;
+        document.getElementById('tug-mod-oleh').textContent = oleh;
+        document.getElementById('tug-mod-status').innerHTML = status === 'diterima' ? '<span class="badge badge-success">Diterima</span>' : status === 'ditolak' ? '<span class="badge badge-danger">Ditolak</span>' : '<span class="badge badge-info">Menunggu</span>';
+        document.getElementById('tug-mod-komentar').textContent = komentar || '-';
+        if (fileUrl) {
+            document.getElementById('tug-mod-berkas').innerHTML = '<a href="'+fileUrl+'" target="_blank" class="btn btn-outline-primary btn-sm"><i class="fas fa-download mr-1"></i>' + fileName + '</a>';
+        } else { document.getElementById('tug-mod-berkas').textContent = '-'; }
+        document.getElementById('tug-mod-review-form').action = "/kelompok/tugas/submission/" + id + "/review";
+        document.getElementById('tug-mod-review').style.display = (status === 'diterima' || status === 'ditolak') ? 'none' : '';
+        $('#tugasModal').modal('show');
+    }
     (function() {
         function dplFilterMember() {
             var val = document.getElementById('dpl-logbook-member')?.value;
