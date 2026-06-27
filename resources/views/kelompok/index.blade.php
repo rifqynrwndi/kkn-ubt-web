@@ -349,11 +349,8 @@
                             <br><small class="text-muted">{{ $kelompok->dosenPembimbingLapangan->fakultas->nama_fakultas ?? '-' }}</small>
                             @if($kelompok->dosenPembimbingLapangan->no_hp)
                                 <br><small class="text-muted"><i class="fas fa-phone mr-1"></i>{{ $kelompok->dosenPembimbingLapangan->no_hp }}</small>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @endif
+        </div>
             @endif
 
             {{-- MEMBERS TABLE --}}
@@ -484,20 +481,17 @@
                             </div>
                             <div id="{{ $taskId }}" style="display:none;">
                                 @if($subs->count())
-                                <div class="table-responsive px-3">
-                                    <table class="table table-sm">
-                                        <thead><tr><th>Judul</th><th>Oleh</th><th>Berkas</th><th>Status</th><th>Komentar</th>@if(($isDpl || $isAdmin) && !auth()->user()->hasRole('mahasiswa'))<th width="160">Aksi</th>@endif</tr></thead>
+                                <div class="table-responsive px-3 pb-2">
+                                    <table class="table table-striped table-sm mb-0">
+                                        <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="110">Status</th><th class="text-white text-center" width="60">Aksi</th></tr></thead>
                                         <tbody>
-                                            @foreach($subs as $sub)
+                                            @foreach($subs as $i => $sub)
                                             <tr>
-                                                <td style="max-width:200px;"><small class="d-block text-truncate">{{ $sub->judul }}</small></td>
+                                                <td class="text-center">{{ $i+1 }}</td>
+                                                <td><small>{{ $sub->judul }}</small></td>
                                                 <td><small>{{ $sub->pesertaKkn->mahasiswa->user->name ?? '-' }}</small></td>
-                                                <td><a href="{{ storage_url($sub->file_path) }}" target="_blank" class="btn btn-sm btn-link"><i class="fas fa-download"></i> <small>{{ \Illuminate\Support\Str::limit($sub->file_name, 15) }}</small></a></td>
-                                                <td>@if($sub->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($sub->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@elseif($sub->status==='revisi')<span class="badge badge-warning">Revisi</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
-                                                <td><small class="text-muted">{{ $sub->komentar_dpl ?: '-' }}</small></td>
-                                                @if(($isDpl || $isAdmin) && !auth()->user()->hasRole('mahasiswa'))
-                                                <td><form action="{{ route('kelompok.tugas.review', $sub->id) }}" method="POST" class="form-inline gap-1">@csrf<input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;font-size:11px;"><input name="nilai" class="form-control form-control-sm" placeholder="Nilai" min="0" max="100" step="0.01" style="width:55px;font-size:11px;"><button name="status" value="diterima" class="btn btn-success btn-sm" title="Terima">✓</button><button name="status" value="ditolak" class="btn btn-danger btn-sm" title="Tolak">✗</button></form></td>
-                                                @endif
+                                                <td class="text-center">@if($sub->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($sub->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@elseif($sub->status==='revisi')<span class="badge badge-warning">Revisi</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
+                                                <td class="text-center"><button class="btn btn-info btn-sm" onclick='tugasModal(@json($sub->id), @json($sub->judul), @json($sub->pesertaKkn->mahasiswa->user->name ?? "-"), @json($sub->status), @json($sub->komentar_dpl ?? ""), @json($sub->file_path ? storage_url($sub->file_path) : ""), @json($sub->file_name ?? ""))'><i class="fas fa-eye"></i> Show</button></td>
                                             </tr>
                                             @endforeach
                                         </tbody>
@@ -543,20 +537,17 @@
                             </div>
                             <div id="{{ $taskId }}" style="display:none;">
                                 @if($subs->count())
-                                <div class="table-responsive px-3">
-                                    <table class="table table-sm">
-                                        <thead><tr><th>Judul</th><th>Oleh</th><th>Berkas</th><th>Status</th><th>Komentar</th>@if(($isDpl || $isAdmin) && !auth()->user()->hasRole('mahasiswa'))<th width="160">Aksi</th>@endif</tr></thead>
+                                <div class="table-responsive px-3 pb-2">
+                                    <table class="table table-striped table-sm mb-0">
+                                        <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="110">Status</th><th class="text-white text-center" width="60">Aksi</th></tr></thead>
                                         <tbody>
-                                            @foreach($subs as $sub)
+                                            @foreach($subs as $i => $sub)
                                             <tr>
-                                                <td style="max-width:200px;"><small class="d-block text-truncate">{{ $sub->judul }}</small></td>
+                                                <td class="text-center">{{ $i+1 }}</td>
+                                                <td><small>{{ $sub->judul }}</small></td>
                                                 <td><small>{{ $sub->pesertaKkn->mahasiswa->user->name ?? '-' }}</small></td>
-                                                <td><a href="{{ storage_url($sub->file_path) }}" target="_blank" class="btn btn-sm btn-link"><i class="fas fa-download"></i> <small>{{ \Illuminate\Support\Str::limit($sub->file_name, 15) }}</small></a></td>
-                                                <td>@if($sub->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($sub->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@elseif($sub->status==='revisi')<span class="badge badge-warning">Revisi</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
-                                                <td><small class="text-muted">{{ $sub->komentar_dpl ?: '-' }}</small></td>
-                                                @if(($isDpl || $isAdmin) && !auth()->user()->hasRole('mahasiswa'))
-                                                <td><form action="{{ route('kelompok.tugas.review', $sub->id) }}" method="POST" class="form-inline gap-1">@csrf<input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;font-size:11px;"><input name="nilai" class="form-control form-control-sm" placeholder="Nilai" min="0" max="100" step="0.01" style="width:55px;font-size:11px;"><button name="status" value="diterima" class="btn btn-success btn-sm" title="Terima">✓</button><button name="status" value="ditolak" class="btn btn-danger btn-sm" title="Tolak">✗</button></form></td>
-                                                @endif
+                                                <td class="text-center">@if($sub->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($sub->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@elseif($sub->status==='revisi')<span class="badge badge-warning">Revisi</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
+                                                <td class="text-center"><button class="btn btn-info btn-sm" onclick='tugasModal(@json($sub->id), @json($sub->judul), @json($sub->pesertaKkn->mahasiswa->user->name ?? "-"), @json($sub->status), @json($sub->komentar_dpl ?? ""), @json($sub->file_path ? storage_url($sub->file_path) : ""), @json($sub->file_name ?? ""))'><i class="fas fa-eye"></i> Show</button></td>
                                             </tr>
                                             @endforeach
                                         </tbody>
@@ -887,6 +878,39 @@
 
     </div>
 </section>
+
+        {{-- MODAL TUGAS --}}
+        <div class="modal fade" id="tgsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header" style="background:#2D3A8A;color:#fff;">
+                        <h5 class="modal-title">Detail Pengumpulan</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-bordered">
+                            <tr><th width="140">Judul</th><td id="tgs-judul">-</td></tr>
+                            <tr><th>Oleh</th><td id="tgs-oleh">-</td></tr>
+                            <tr><th>Status</th><td id="tgs-status">-</td></tr>
+                            <tr><th>Komentar DPL</th><td id="tgs-komentar">-</td></tr>
+                            <tr><th>Berkas</th><td id="tgs-berkas">-</td></tr>
+                        </table>
+                        @if(($isDpl || $isAdmin) && !auth()->user()->hasRole('mahasiswa'))
+                        <hr>
+                        <div id="tgs-review">
+                            <form id="tgs-review-form" method="POST" action="">
+                                @csrf
+                                <input name="komentar_dpl" class="form-control form-control-sm mb-2" placeholder="Komentar...">
+                                <button name="status" value="diterima" class="btn btn-success btn-sm mr-1"><i class="fas fa-check mr-1"></i> Terima</button>
+                                <button name="status" value="ditolak" class="btn btn-danger btn-sm"><i class="fas fa-times mr-1"></i> Tolak</button>
+                            </form>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+
 @endsection
 
 @push('scripts')
@@ -958,6 +982,22 @@
         if (icon) {
             icon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
         }
+    }
+    function tugasModal(id, judul, oleh, status, komentar, fileUrl, fileName) {
+        document.getElementById('tgs-judul').textContent = judul;
+        document.getElementById('tgs-oleh').textContent = oleh;
+        document.getElementById('tgs-status').innerHTML = status === 'diterima' ? '<span class="badge badge-success">Diterima</span>' : status === 'ditolak' ? '<span class="badge badge-danger">Ditolak</span>' : status === 'revisi' ? '<span class="badge badge-warning">Revisi</span>' : '<span class="badge badge-info">Menunggu</span>';
+        document.getElementById('tgs-komentar').textContent = komentar || '-';
+        if (fileUrl) {
+            document.getElementById('tgs-berkas').innerHTML = '<a href="'+fileUrl+'" target="_blank" class="btn btn-outline-primary btn-sm"><i class="fas fa-download mr-1"></i>' + fileName + '</a>';
+        } else { document.getElementById('tgs-berkas').textContent = '-'; }
+        var reviewForm = document.getElementById('tgs-review-form');
+        if (reviewForm) {
+            reviewForm.action = "/kelompok/tugas/submission/" + id + "/review";
+            var reviewDiv = document.getElementById('tgs-review');
+            if (reviewDiv) reviewDiv.style.display = (status === 'diterima' || status === 'ditolak') ? 'none' : '';
+        }
+        $('#tgsModal').modal('show');
     }
     document.getElementById('anggotaSearch')?.addEventListener('keyup', function() {
         var q = this.value.toLowerCase();

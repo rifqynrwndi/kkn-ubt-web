@@ -323,61 +323,81 @@
             @endphp
 
             @if($wajibTasks->sum(fn($g) => $g->count()) > 0)
-            <div class="card mb-3 border-danger"><div class="card-header bg-danger text-white py-2"><h5 class="mb-0"><i class="fas fa-star mr-2"></i>Tugas Wajib</h5></div>
-            <div class="card-body p-0">
-                @foreach($wajibTasks as $kat => $items)
-                @if($items->count())<div class="border-bottom"><div class="px-3 py-2 text-white" style="background:#6777ef;"><small class="font-weight-bold">{{ $katLabels[$kat] ?? $kat }}</small></div>
-                @foreach($items as $t)
-                <div class="border-bottom p-3">
-                    <strong>{{ $t->nama_tugas }}</strong>
-                    @if($t->submissions->count())
-                    <table class="table table-sm mt-2"><tr><th>Judul</th><th>Oleh</th><th>Berkas</th><th>Status</th><th>Aksi</th></tr>
-                    @foreach($t->submissions as $s)
-                    <tr><td>{{ $s->judul }}</td><td>{{ $s->pesertaKkn->mahasiswa->user->name ?? '-' }}</td>
-                        <td><a href="{{ storage_url($s->file_path) }}" target="_blank" class="btn btn-sm btn-link"><i class="fas fa-download"></i></a></td>
-                        <td><span class="badge badge-{{ $s->status==='diterima'?'success':($s->status==='ditolak'?'danger':'info') }}">{{ $s->status }}</span></td>
-                        <td><form action="{{ route('kelompok.tugas.review', $s->id) }}" method="POST" class="form-inline gap-1">@csrf
-                            <input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;">
-                            <input name="nilai" class="form-control form-control-sm" placeholder="Nilai" min="0" max="100" step="0.01" style="width:60px;">
-                            <button name="status" value="diterima" class="btn btn-sm btn-success">✓</button>
-                            <button name="status" value="ditolak" class="btn btn-sm btn-danger">✗</button>
-                        </form></td></tr>
-                    @endforeach</table>
-                    @else <p class="text-muted small">Belum ada pengumpulan</p> @endif
+             <div class="card mb-3 border-danger">
+                <div class="card-header bg-danger text-white py-2"><h5 class="mb-0"><i class="fas fa-star mr-2"></i>Tugas Wajib</h5></div>
+                <div class="card-body p-0">
+                    @foreach($wajibTasks as $kat => $items)
+                    @if($items->count())
+                    <div class="border-bottom"><div class="px-3 py-2 text-white" style="background:#6777ef;"><small class="font-weight-bold">{{ $katLabels[$kat] ?? $kat }}</small></div>
+                    @foreach($items as $t)
+                    <div class="border-bottom p-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>{{ $t->nama_tugas }}</strong>
+                            <span class="badge badge-danger">Wajib</span>
+                        </div>
+                        @if($t->submissions->count())
+                        <table class="table table-striped table-sm mt-2 mb-0">
+                            <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="110">Status</th><th class="text-white text-center" width="60">Aksi</th></tr></thead>
+                            <tbody>
+                                @foreach($t->submissions as $i => $s)
+                                <tr>
+                                    <td class="text-center">{{ $i+1 }}</td>
+                                    <td>{{ $s->judul }}</td>
+                                    <td><small>{{ $s->pesertaKkn->mahasiswa->user->name ?? '-' }}</small></td>
+                                    <td class="text-center">
+                                        @if($s->status==='diterima')<span class="badge badge-success">Diterima</span>
+                                        @elseif($s->status==='ditolak')<span class="badge badge-danger">Ditolak</span>
+                                        @elseif($s->status==='revisi')<span class="badge badge-warning">Revisi</span>
+                                        @else<span class="badge badge-info">Menunggu</span>@endif
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="btn btn-info btn-sm" onclick='showSubmission(@json($s->id), @json($s->judul), @json($s->pesertaKkn->mahasiswa->user->name ?? "-"), @json($s->status), @json($s->komentar_dpl ?? ""), @json($s->file_path ? storage_url($s->file_path) : ""), @json($s->file_name ?? ""))'><i class="fas fa-eye"></i> Show</button>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        @else <p class="text-muted small px-2 py-2">Belum ada pengumpulan</p> @endif
+                    </div>
+                    @endforeach
+                    </div>@endif
+                    @endforeach
                 </div>
-                @endforeach
-                </div>@endif
-                @endforeach
-            </div></div>
+            </div>
             @endif
 
             @if($otherTasks->sum(fn($g) => $g->count()) > 0)
-            <div class="card mb-3"><div class="card-header py-2"><h5 class="mb-0"><i class="fas fa-list mr-2"></i>Tugas Lainnya</h5></div>
-            <div class="card-body p-0">
-                @foreach($otherTasks as $kat => $items)
-                @if($items->count())<div class="border-bottom"><div class="px-3 py-2 text-white" style="background:#6777ef;"><small class="font-weight-bold">{{ $katLabels[$kat] ?? $kat }}</small></div>
-                @foreach($items as $t)
-                <div class="border-bottom p-3">
-                    <strong>{{ $t->nama_tugas }}</strong>
-                    @if($t->submissions->count())
-                    <table class="table table-sm mt-2"><tr><th>Judul</th><th>Oleh</th><th>Berkas</th><th>Status</th><th>Aksi</th></tr>
-                    @foreach($t->submissions as $s)
-                    <tr><td>{{ $s->judul }}</td><td>{{ $s->pesertaKkn->mahasiswa->user->name ?? '-' }}</td>
-                        <td><a href="{{ storage_url($s->file_path) }}" target="_blank" class="btn btn-sm btn-link"><i class="fas fa-download"></i></a></td>
-                        <td><span class="badge badge-{{ $s->status==='diterima'?'success':($s->status==='ditolak'?'danger':'info') }}">{{ $s->status }}</span></td>
-                        <td><form action="{{ route('kelompok.tugas.review', $s->id) }}" method="POST" class="form-inline gap-1">@csrf
-                            <input name="komentar_dpl" class="form-control form-control-sm" placeholder="Komentar" style="width:80px;">
-                            <input name="nilai" class="form-control form-control-sm" placeholder="Nilai" min="0" max="100" step="0.01" style="width:60px;">
-                            <button name="status" value="diterima" class="btn btn-sm btn-success">✓</button>
-                            <button name="status" value="ditolak" class="btn btn-sm btn-danger">✗</button>
-                        </form></td></tr>
-                    @endforeach</table>
-                    @else <p class="text-muted small">Belum ada pengumpulan</p> @endif
+            <div class="card mb-3">
+                <div class="card-header py-2"><h5 class="mb-0"><i class="fas fa-list mr-2"></i>Tugas Lainnya</h5></div>
+                <div class="card-body p-0">
+                    @foreach($otherTasks as $kat => $items)
+                    @if($items->count())
+                    <div class="border-bottom"><div class="px-3 py-2 text-white" style="background:#6777ef;"><small class="font-weight-bold">{{ $katLabels[$kat] ?? $kat }}</small></div>
+                    @foreach($items as $t)
+                    <div class="border-bottom p-2">
+                        <strong>{{ $t->nama_tugas }}</strong>
+                        @if($t->submissions->count())
+                        <table class="table table-striped table-sm mt-2 mb-0">
+                            <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="110">Status</th><th class="text-white text-center" width="60">Aksi</th></tr></thead>
+                            <tbody>
+                                @foreach($t->submissions as $i => $s)
+                                <tr>
+                                    <td class="text-center">{{ $i+1 }}</td>
+                                    <td>{{ $s->judul }}</td>
+                                    <td><small>{{ $s->pesertaKkn->mahasiswa->user->name ?? '-' }}</small></td>
+                                    <td class="text-center">@if($s->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($s->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@elseif($s->status==='revisi')<span class="badge badge-warning">Revisi</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
+                                    <td class="text-center"><button class="btn btn-info btn-sm" onclick='showSubmission(@json($s->id), @json($s->judul), @json($s->pesertaKkn->mahasiswa->user->name ?? "-"), @json($s->status), @json($s->komentar_dpl ?? ""), @json($s->file_path ? storage_url($s->file_path) : ""), @json($s->file_name ?? ""))'><i class="fas fa-eye"></i> Show</button></td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        @else <p class="text-muted small px-2 py-2">Belum ada pengumpulan</p> @endif
+                    </div>
+                    @endforeach
+                    </div>@endif
+                    @endforeach
                 </div>
-                @endforeach
-                </div>@endif
-                @endforeach
-            </div></div>
+            </div>
             @endif
 
             @if($wajibTasks->sum(fn($g) => $g->count()) == 0 && $otherTasks->sum(fn($g) => $g->count()) == 0)
@@ -615,6 +635,37 @@
         </div>
     </div>
 </section>
+
+        {{-- MODAL SUBMISSION --}}
+        <div class="modal fade" id="submissionModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header" style="background:#2D3A8A;color:#fff;">
+                        <h5 class="modal-title">Detail Pengumpulan</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-bordered">
+                            <tr><th width="140">Judul</th><td id="mod-judul">-</td></tr>
+                            <tr><th>Oleh</th><td id="mod-oleh">-</td></tr>
+                            <tr><th>Status</th><td id="mod-status">-</td></tr>
+                            <tr><th>Komentar DPL</th><td id="mod-komentar">-</td></tr>
+                            <tr><th>Berkas</th><td id="mod-berkas">-</td></tr>
+                        </table>
+                        <hr>
+                        <div id="mod-review">
+                            <form id="mod-review-form" method="POST" action="">
+                                @csrf
+                                <input name="komentar_dpl" class="form-control form-control-sm mb-2" placeholder="Komentar...">
+                                <button name="status" value="diterima" class="btn btn-success btn-sm mr-1"><i class="fas fa-check mr-1"></i> Terima</button>
+                                <button name="status" value="ditolak" class="btn btn-danger btn-sm"><i class="fas fa-times mr-1"></i> Tolak</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 @endsection
 
 @push('scripts')
@@ -699,5 +750,17 @@
             row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
         });
     });
+    function showSubmission(id, judul, oleh, status, komentar, fileUrl, fileName) {
+        document.getElementById('mod-judul').textContent = judul;
+        document.getElementById('mod-oleh').textContent = oleh;
+        document.getElementById('mod-status').innerHTML = status === 'diterima' ? '<span class="badge badge-success">Diterima</span>' : status === 'ditolak' ? '<span class="badge badge-danger">Ditolak</span>' : status === 'revisi' ? '<span class="badge badge-warning">Revisi</span>' : '<span class="badge badge-info">Menunggu</span>';
+        document.getElementById('mod-komentar').textContent = komentar || '-';
+        if (fileUrl) {
+            document.getElementById('mod-berkas').innerHTML = '<a href="'+fileUrl+'" target="_blank" class="btn btn-outline-primary btn-sm"><i class="fas fa-download mr-1"></i>' + fileName + '</a>';
+        } else { document.getElementById('mod-berkas').textContent = '-'; }
+        document.getElementById('mod-review-form').action = "/kelompok/tugas/submission/" + id + "/review";
+        document.getElementById('mod-review').style.display = (status === 'diterima' || status === 'ditolak') ? 'none' : '';
+        $('#submissionModal').modal('show');
+    }
 </script>
 @endpush

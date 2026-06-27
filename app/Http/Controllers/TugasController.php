@@ -72,7 +72,6 @@ class TugasController extends Controller
     {
         $request->validate([
             'status'=>'required|in:diterima,ditolak,revisi',
-            'nilai'=>'nullable|numeric|min:0|max:100',
         ]);
 
         $updateData = [
@@ -82,8 +81,12 @@ class TugasController extends Controller
             'reviewed_at' => now(),
         ];
 
-        if ($request->user()->hasRole('superadmin')) {
-            $updateData['nilai'] = $request->nilai;
+        if ($request->user()?->hasRole('superadmin')) {
+            if ($request->status === 'diterima') {
+                $updateData['nilai'] = 100;
+            } elseif ($request->status === 'ditolak') {
+                $updateData['nilai'] = null;
+            }
         }
 
         $submission->update($updateData);
