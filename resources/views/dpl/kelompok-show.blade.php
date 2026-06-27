@@ -425,7 +425,7 @@
                                                     <small class="text-muted d-block">{{ $lb->tanggal->format('d F Y') }}</small>
                                                     <strong>{{ $lb->judul }}</strong>
                                                 </td>
-                                                <td class="text-justify" style="max-width:300px;"><small>{{ \Illuminate\Support\Str::limit($lb->deskripsi, 200) }}</small></td>
+                                                <td class="text-justify"><small>{{ $lb->deskripsi }}</small></td>
                                                 <td class="text-center">
                                                     @if($lb->file_path)
                                                     <div class="logbook-download" style="display:none;">
