@@ -176,6 +176,7 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
             Route::post('/{tugas}/submit', [TugasController::class, 'submit'])->name('submit');
             Route::get('/submit', [TugasController::class, 'create'])->name('create');
             Route::post('/submission/{submission}/review', [TugasController::class, 'review'])->name('review');
+            Route::delete('/submission/{submission}', [TugasController::class, 'destroySubmission'])->name('submission.destroy');
         });
 
         Route::prefix('logbook')->name('logbook.')->group(function () {
@@ -317,6 +318,8 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
         Route::put('kelompok-kkn/{kelompok_kkn}/tutup',[KelompokKknController::class, 'tutup'])->name('kelompok-kkn.tutup');
         Route::put('kelompok-kkn/{kelompok_kkn}/ketua/{peserta}',[KelompokKknController::class, 'setKetua'])->name('kelompok-kkn.ketua');
         Route::get('kelompok-kkn-export', [KelompokKknController::class, 'exportXlsx'])->name('kelompok-kkn.export');
+        Route::post('kelompok-kkn/{kelompok_kkn}/laporan', [KelompokKknController::class, 'laporanStore'])->name('kelompok-kkn.laporan.store');
+        Route::delete('kelompok-kkn/{kelompok_kkn}/laporan/{laporan}', [KelompokKknController::class, 'laporanDestroy'])->name('kelompok-kkn.laporan.destroy');
 
         /*
         |--------------------------------------------------------------------------

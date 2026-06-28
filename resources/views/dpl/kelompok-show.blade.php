@@ -306,7 +306,7 @@
                         @endif
 
                         @if($otherTasks->sum(fn($g) => $g->count()) > 0)
-                        <div class="card"><div class="card-header py-1"><strong><i class="fas fa-list mr-1"></i>Tugas Lainnya</strong></div><div class="card-body p-0">
+                        <div class="card"><div class="card-header py-1"><strong>Tugas Lainnya</strong></div><div class="card-body p-0">
                             @foreach($otherTasks as $kat => $items)
                             @if($items->count())
                             <div class="px-3 py-1 task-cat-header border-bottom"><small class="font-weight-bold">{{ $katLabels[$kat] ?? $kat }}</small></div>
@@ -532,7 +532,7 @@
                         @php $jenisLabels = ['monev'=>'Laporan Monev','artikel'=>'Artikel','haki'=>'HAKI']; @endphp
                         <div class="card border-0 shadow-sm mb-3">
                             <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-                                <h4 class="mb-0"><i class="fas fa-file-upload mr-2"></i>Upload Laporan</h4>
+                                <h4 class="mb-0">Upload Laporan</h4>
                             </div>
                             <div class="card-body">
                                 <form action="{{ route('dpl.laporan.store', $kelompok->id) }}" method="POST" enctype="multipart/form-data">
@@ -573,7 +573,7 @@
 
                         <div class="card border-0 shadow-sm">
                             <div class="card-header bg-transparent">
-                                <h4 class="mb-0"><i class="fas fa-list mr-2"></i>Daftar Laporan</h4>
+                                <h4 class="mb-0">Daftar Laporan</h4>
                             </div>
                             <div class="card-body p-0">
                                 @if(isset($laporans) && $laporans->count())

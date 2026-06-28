@@ -349,8 +349,11 @@
                             <br><small class="text-muted">{{ $kelompok->dosenPembimbingLapangan->fakultas->nama_fakultas ?? '-' }}</small>
                             @if($kelompok->dosenPembimbingLapangan->no_hp)
                                 <br><small class="text-muted"><i class="fas fa-phone mr-1"></i>{{ $kelompok->dosenPembimbingLapangan->no_hp }}</small>
-            @endif
-        </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
             @endif
 
             {{-- MEMBERS TABLE --}}
@@ -445,7 +448,7 @@
             @endif
 
             {{-- Kumpulkan Tugas Button --}}
-            @if($allTasksFlat->count())
+            @if($isKetua && $allTasksFlat->count())
             <div class="mb-3">
                 <a href="{{ route('kelompok.tugas.create') }}" class="btn btn-success">
                     <i class="fas fa-upload mr-1"></i> Kumpulkan Tugas
@@ -483,7 +486,7 @@
                                 @if($subs->count())
                                 <div class="table-responsive px-3 pb-2">
                                     <table class="table table-striped table-sm mb-0">
-                                        <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="110">Status</th><th class="text-white text-center" width="60">Aksi</th></tr></thead>
+                                        <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="110">Status</th><th class="text-white text-center" width="100">Aksi</th></tr></thead>
                                         <tbody>
                                             @foreach($subs as $i => $sub)
                                             <tr>
@@ -491,7 +494,17 @@
                                                 <td><small>{{ $sub->judul }}</small></td>
                                                 <td><small>{{ $sub->pesertaKkn->mahasiswa->user->name ?? '-' }}</small></td>
                                                 <td class="text-center">@if($sub->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($sub->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@elseif($sub->status==='revisi')<span class="badge badge-warning">Revisi</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
-                                                <td class="text-center"><button class="btn btn-info btn-sm" onclick='tugasModal(@json($sub->id), @json($sub->judul), @json($sub->pesertaKkn->mahasiswa->user->name ?? "-"), @json($sub->status), @json($sub->komentar_dpl ?? ""), @json($sub->file_path ? storage_url($sub->file_path) : ""), @json($sub->file_name ?? ""))'><i class="fas fa-eye"></i> Show</button></td>
+                                                <td class="text-center">
+                                                    <div class="d-flex justify-content-center gap-1">
+                                                        <button class="btn btn-info btn-sm" onclick='tugasModal(@json($sub->id), @json($sub->judul), @json($sub->pesertaKkn->mahasiswa->user->name ?? "-"), @json($sub->status), @json($sub->komentar_dpl ?? ""), @json($sub->file_path ? storage_url($sub->file_path) : ""), @json($sub->file_name ?? ""))'><i class="fas fa-eye"></i></button>
+                                                        @if($sub->status === 'menunggu' && $sub->peserta_kkn_id === $peserta->id)
+                                                        <form action="{{ route('kelompok.tugas.submission.destroy', $sub->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus pengumpulan ini?')">
+                                                            @csrf @method('DELETE')
+                                                            <button class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                                        </form>
+                                                        @endif
+                                                    </div>
+                                                </td>
                                             </tr>
                                             @endforeach
                                         </tbody>
@@ -539,7 +552,7 @@
                                 @if($subs->count())
                                 <div class="table-responsive px-3 pb-2">
                                     <table class="table table-striped table-sm mb-0">
-                                        <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="110">Status</th><th class="text-white text-center" width="60">Aksi</th></tr></thead>
+                                        <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="110">Status</th><th class="text-white text-center" width="100">Aksi</th></tr></thead>
                                         <tbody>
                                             @foreach($subs as $i => $sub)
                                             <tr>
@@ -547,7 +560,17 @@
                                                 <td><small>{{ $sub->judul }}</small></td>
                                                 <td><small>{{ $sub->pesertaKkn->mahasiswa->user->name ?? '-' }}</small></td>
                                                 <td class="text-center">@if($sub->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($sub->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@elseif($sub->status==='revisi')<span class="badge badge-warning">Revisi</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
-                                                <td class="text-center"><button class="btn btn-info btn-sm" onclick='tugasModal(@json($sub->id), @json($sub->judul), @json($sub->pesertaKkn->mahasiswa->user->name ?? "-"), @json($sub->status), @json($sub->komentar_dpl ?? ""), @json($sub->file_path ? storage_url($sub->file_path) : ""), @json($sub->file_name ?? ""))'><i class="fas fa-eye"></i> Show</button></td>
+                                                <td class="text-center">
+                                                    <div class="d-flex justify-content-center gap-1">
+                                                        <button class="btn btn-info btn-sm" onclick='tugasModal(@json($sub->id), @json($sub->judul), @json($sub->pesertaKkn->mahasiswa->user->name ?? "-"), @json($sub->status), @json($sub->komentar_dpl ?? ""), @json($sub->file_path ? storage_url($sub->file_path) : ""), @json($sub->file_name ?? ""))'><i class="fas fa-eye"></i></button>
+                                                        @if($sub->status === 'menunggu' && $sub->peserta_kkn_id === $peserta->id)
+                                                        <form action="{{ route('kelompok.tugas.submission.destroy', $sub->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus pengumpulan ini?')">
+                                                            @csrf @method('DELETE')
+                                                            <button class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                                        </form>
+                                                        @endif
+                                                    </div>
+                                                </td>
                                             </tr>
                                             @endforeach
                                         </tbody>
