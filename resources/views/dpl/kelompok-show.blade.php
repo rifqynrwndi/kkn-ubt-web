@@ -147,6 +147,7 @@
                     <a data-tab="tugas"><i class="fas fa-upload"></i> Tugas</a>
                     <a data-tab="logbook"><i class="fas fa-book"></i> Log Book</a>
                     <a data-tab="penilaian"><i class="fas fa-star"></i> Penilaian</a>
+                    <a data-tab="laporan"><i class="fas fa-file-upload"></i> Laporan</a>
                 </div>
 
                 <div class="tab-content active" id="tab-status">
@@ -305,7 +306,7 @@
                         @endif
 
                         @if($otherTasks->sum(fn($g) => $g->count()) > 0)
-                        <div class="card"><div class="card-header py-1"><strong><i class="fas fa-list mr-1"></i>Tugas Lainnya</strong></div><div class="card-body p-0">
+                        <div class="card"><div class="card-header py-1"><strong>Tugas Lainnya</strong></div><div class="card-body p-0">
                             @foreach($otherTasks as $kat => $items)
                             @if($items->count())
                             <div class="px-3 py-1 task-cat-header border-bottom"><small class="font-weight-bold">{{ $katLabels[$kat] ?? $kat }}</small></div>
@@ -525,6 +526,108 @@
                         <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">⭐</span><h5>Belum Ada Komponen Penilaian</h5><p class="text-muted">Jalankan seeder PenilaianKomponenSeeder terlebih dahulu.</p></div></div>
                         @endif
                     </div>
+
+                    {{-- TAB: LAPORAN --}}
+                    <div class="tab-content" id="tab-laporan">
+                        @php $jenisLabels = ['monev'=>'Laporan Monev','artikel'=>'Artikel','haki'=>'HAKI']; @endphp
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                                <h4 class="mb-0">Upload Laporan</h4>
+                            </div>
+                            <div class="card-body">
+                                <form action="{{ route('dpl.laporan.store', $kelompok->id) }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="font-weight-bold">Jenis</label>
+                                                <select name="jenis" class="form-control" required>
+                                                    <option value="monev">Laporan Monev</option>
+                                                    <option value="artikel">Artikel</option>
+                                                    <option value="haki">HAKI</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="font-weight-bold">Judul</label>
+                                                <input name="judul" class="form-control" placeholder="Judul laporan..." required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="font-weight-bold">File</label>
+                                                <input type="file" name="file" class="form-control-file mt-2">
+                                                <small class="text-muted">PDF, DOC, JPG, PNG — Maks 10MB</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="font-weight-bold">Deskripsi (Opsional)</label>
+                                        <textarea name="deskripsi" class="form-control" rows="2" placeholder="Keterangan singkat..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary"><i class="fas fa-upload mr-1"></i> Upload</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-transparent">
+                                <h4 class="mb-0">Daftar Laporan</h4>
+                            </div>
+                            <div class="card-body p-0">
+                                @if(isset($laporans) && $laporans->count())
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-center" width="50">#</th>
+                                                <th width="80">Jenis</th>
+                                                <th>Judul</th>
+                                                <th>Deskripsi</th>
+                                                <th width="100">Berkas</th>
+                                                <th width="100">Tanggal</th>
+                                                <th width="60">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($laporans->sortKeys() as $jenis => $items)
+                                                @foreach($items as $i => $l)
+                                                <tr>
+                                                    <td class="text-center">{{ $loop->parent->iteration }}.{{ $i+1 }}</td>
+                                                    <td><span class="badge badge-{{ $jenis==='monev'?'primary':($jenis==='artikel'?'info':'success') }}">{{ $jenisLabels[$jenis] ?? $jenis }}</span></td>
+                                                    <td><strong>{{ $l->judul }}</strong></td>
+                                                    <td><small class="text-muted">{{ $l->deskripsi ?: '-' }}</small></td>
+                                                    <td>
+                                                        @if($l->file_path)
+                                                        <a href="{{ storage_url($l->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></a>
+                                                        @else -
+                                                        @endif
+                                                    </td>
+                                                    <td><small>{{ $l->created_at->format('d M Y') }}</small></td>
+                                                    <td>
+                                                        <form action="{{ route('dpl.laporan.destroy', [$kelompok->id, $l->id]) }}" method="POST" onsubmit="return confirm('Hapus?')">
+                                                            @csrf @method('DELETE')
+                                                            <button class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                                @endforeach
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                                @else
+                                <div class="text-center py-5 text-muted">
+                                    <span style="font-size:48px;">📄</span>
+                                    <h5>Belum Ada Laporan</h5>
+                                    <p>Upload laporan monev, artikel, atau HAKI di form di atas.</p>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>

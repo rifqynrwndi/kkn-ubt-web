@@ -216,6 +216,7 @@
             <a data-tab="admin-tugas"><i class="fas fa-upload mr-1"></i> Tugas</a>
             <a data-tab="admin-logbook"><i class="fas fa-book mr-1"></i> Log Book</a>
             <a data-tab="admin-penilaian"><i class="fas fa-star mr-1"></i> Penilaian</a>
+            <a data-tab="admin-laporan"><i class="fas fa-file-upload mr-1"></i> Laporan</a>
         </div>
 
         {{-- TAB: PROPOSAL --}}
@@ -368,7 +369,7 @@
 
             @if($otherTasks->sum(fn($g) => $g->count()) > 0)
             <div class="card mb-3">
-                <div class="card-header py-2"><h5 class="mb-0"><i class="fas fa-list mr-2"></i>Tugas Lainnya</h5></div>
+                <div class="card-header py-2"><h5 class="mb-0">Tugas Lainnya</h5></div>
                 <div class="card-body p-0">
                     @foreach($otherTasks as $kat => $items)
                     @if($items->count())
@@ -633,6 +634,86 @@
             <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">⭐</span><h5>Belum Ada Komponen Penilaian</h5><p class="text-muted">Jalankan seeder PenilaianKomponenSeeder terlebih dahulu.</p></div></div>
             @endif
         </div>
+
+        {{-- TAB: LAPORAN --}}
+        <div class="tab-content" id="tab-admin-laporan">
+            @php $jenisLabels = ['monev'=>'Laporan Monev','artikel'=>'Artikel','haki'=>'HAKI']; @endphp
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="fas fa-file-upload mr-2"></i>Upload Laporan</h4>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('kelompok-kkn.laporan.store', $kelompok_kkn->id) }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="font-weight-bold">Jenis</label>
+                                    <select name="jenis" class="form-control" required>
+                                        <option value="monev">Laporan Monev</option>
+                                        <option value="artikel">Artikel</option>
+                                        <option value="haki">HAKI</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="font-weight-bold">Judul</label>
+                                    <input name="judul" class="form-control" placeholder="Judul laporan..." required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="font-weight-bold">File</label>
+                                    <input type="file" name="file" class="form-control-file mt-2">
+                                    <small class="text-muted">PDF, DOC, JPG, PNG — Maks 10MB</small>
+                                </div>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary mb-3 w-100"><i class="fas fa-upload mr-1"></i> Upload</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <textarea name="deskripsi" class="form-control" rows="2" placeholder="Deskripsi (opsional)..."></textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent"><h4 class="mb-0"><i class="fas fa-list mr-2"></i>Daftar Laporan</h4></div>
+                <div class="card-body p-0">
+                    @if(isset($laporans) && $laporans->count())
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead><tr><th class="text-center" width="50">#</th><th width="80">Jenis</th><th>Judul</th><th width="100">Berkas</th><th width="100">Tanggal</th><th width="60">Aksi</th></tr></thead>
+                            <tbody>
+                                @foreach($laporans->sortKeys() as $jenis => $items)
+                                    @foreach($items as $i => $l)
+                                    <tr>
+                                        <td class="text-center">{{ $loop->parent->iteration }}.{{ $i+1 }}</td>
+                                        <td><span class="badge badge-{{ $jenis==='monev'?'primary':($jenis==='artikel'?'info':'success') }}">{{ $jenisLabels[$jenis] }}</span></td>
+                                        <td><strong>{{ $l->judul }}</strong></td>
+                                        <td>@if($l->file_path)<a href="{{ storage_url($l->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></a>@else - @endif</td>
+                                        <td><small>{{ $l->created_at->format('d M Y') }}</small></td>
+                                        <td>
+                                            <form action="{{ route('kelompok-kkn.laporan.destroy', [$kelompok_kkn->id, $l->id]) }}" method="POST" onsubmit="return confirm('Hapus?')">
+                                                @csrf @method('DELETE')
+                                                <button class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @else
+                    <div class="text-center py-5 text-muted"><span style="font-size:48px;">📄</span><h5>Belum Ada Laporan</h5></div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
     </div>
 </section>
 

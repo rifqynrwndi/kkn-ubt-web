@@ -14,6 +14,7 @@
         <div class="card">
             <div class="card-header"><h4>Form Pengumpulan Tugas</h4></div>
             <div class="card-body">
+                @if($tugasList->sum(fn($g) => $g->count()) > 0)
                 <form id="tugas-form" action="{{ route('kelompok.tugas.submit', 0) }}" method="POST" enctype="multipart/form-data" onsubmit="return setAction(this)">
                     @csrf
                     <div class="form-group">
@@ -47,6 +48,14 @@
                         <a href="{{ route('kelompok.index', ['tab' => 'tugas']) }}" class="btn btn-secondary">Batal</a>
                     </div>
                 </form>
+                @else
+                <div class="text-center py-5">
+                    <span style="font-size:48px;">✅</span>
+                    <h5>Semua Tugas Sudah Dikumpulkan</h5>
+                    <p class="text-muted">Semua tugas yang tersedia sudah diupload. Tunggu review dari DPL atau admin.</p>
+                    <a href="{{ route('kelompok.index', ['tab' => 'tugas']) }}" class="btn btn-secondary">Kembali</a>
+                </div>
+                @endif
             </div>
         </div>
     </div>

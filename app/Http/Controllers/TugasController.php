@@ -16,7 +16,12 @@ class TugasController extends Controller
         $mhs = auth()->user()->mahasiswa;
         abort_if(!$mhs, 404);
         $peserta = \App\Models\PesertaKkn::where('mahasiswa_id', $mhs->user_id)->whereNotNull('kelompok_kkn_id')->firstOrFail();
-        $tugasList = TugasKelompok::where('kelompok_kkn_id', $peserta->kelompok_kkn_id)->get()->groupBy('kategori');
+        abort_if($peserta->id !== $peserta->kelompokKkn->ketua_peserta_id, 403, 'Hanya ketua yang dapat mengumpulkan tugas.');
+        $tugasList = TugasKelompok::where('kelompok_kkn_id', $peserta->kelompok_kkn_id)
+            ->with(['submissions' => fn($q) => $q->where('peserta_kkn_id', $peserta->id)->whereIn('status', ['menunggu', 'diterima'])])
+            ->get()
+            ->filter(fn($t) => $t->submissions->isEmpty())
+            ->groupBy('kategori');
 
         return view('kelompok.tugas.submit', compact('tugasList'));
     }
@@ -51,6 +56,7 @@ class TugasController extends Controller
         $mhs = auth()->user()->mahasiswa;
         $peserta = \App\Models\PesertaKkn::where('mahasiswa_id',$mhs->user_id)
             ->where('kelompok_kkn_id', $tugas->kelompok_kkn_id)->firstOrFail();
+        abort_if($peserta->id !== $tugas->kelompokKkn->ketua_peserta_id, 403, 'Hanya ketua yang dapat mengumpulkan tugas.');
 
         $file = $request->file('file');
         $path = $file->store('tugas/'.$tugas->id, 'public');
@@ -92,5 +98,22 @@ class TugasController extends Controller
         $submission->update($updateData);
 
         return back()->with('success','Tugas di-review.');
+    }
+
+    public function destroySubmission(TugasSubmission $submission): RedirectResponse
+    {
+        $mhs = auth()->user()->mahasiswa;
+        abort_if(!$mhs, 404);
+        $peserta = \App\Models\PesertaKkn::where('mahasiswa_id', $mhs->user_id)
+            ->where('kelompok_kkn_id', $submission->tugasKelompok->kelompok_kkn_id)->firstOrFail();
+        abort_if($peserta->id !== $submission->peserta_kkn_id, 403);
+        abort_if($submission->status !== 'menunggu', 403, 'Hanya submission berstatus menunggu yang dapat dihapus.');
+
+        if ($submission->file_path) {
+            Storage::disk('public')->delete($submission->file_path);
+        }
+        $submission->delete();
+
+        return redirect()->route('kelompok.index', ['tab' => 'tugas'])->with('success', 'Tugas dihapus.');
     }
 }

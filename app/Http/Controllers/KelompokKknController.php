@@ -6,6 +6,7 @@ use App\Models\DesaGelombang;
 use App\Models\DosenPembimbingLapangan;
 use App\Models\KelompokKkn;
 use App\Models\KelompokKuota;
+use App\Models\LaporanDpl;
 use App\Models\PesertaKkn;
 use App\Models\ProgramStudi;
 use Illuminate\Http\Request;
@@ -193,10 +194,11 @@ class KelompokKknController extends Controller
         $dplFinal = $this->calcScore($komponenList->where('kategori','dpl'), $penilaianData);
         $lppmFinal = $this->calcScore($komponenList->where('kategori','lppm'), $penilaianData);
         $finalScore = $dplFinal && $lppmFinal ? round(($dplFinal * 60 + $lppmFinal * 40) / 100, 2) : null;
+        $laporans = \App\Models\LaporanDpl::where('kelompok_kkn_id', $kelompok_kkn->id)->latest()->get()->groupBy('jenis');
 
         return view(
             'kelompok-kkn.show',
-            compact('kelompok_kkn', 'proposal', 'statusStages', 'statusCurrent', 'statusHistory', 'tugasList', 'logbookData', 'komponenList', 'penilaianData', 'dplFinal', 'lppmFinal', 'finalScore')
+            compact('kelompok_kkn', 'proposal', 'statusStages', 'statusCurrent', 'statusHistory', 'tugasList', 'logbookData', 'komponenList', 'penilaianData', 'dplFinal', 'lppmFinal', 'finalScore', 'laporans')
         );
     }
 
@@ -595,5 +597,36 @@ class KelompokKknController extends Controller
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
+    }
+
+    public function laporanStore(Request $request, KelompokKkn $kelompok_kkn): RedirectResponse
+    {
+        $request->validate([
+            'jenis' => 'required|in:monev,artikel,haki',
+            'judul' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'file' => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:10240',
+        ]);
+
+        $data = [
+            'kelompok_kkn_id' => $kelompok_kkn->id,
+            'dpl_id' => $kelompok_kkn->dosen_pembimbing_lapangan_id,
+            'jenis' => $request->jenis,
+            'judul' => $request->judul,
+            'deskripsi' => $request->deskripsi,
+        ];
+        if ($request->hasFile('file')) {
+            $data['file_path'] = $request->file('file')->store('laporan-dpl', 'public');
+            $data['file_name'] = $request->file('file')->getClientOriginalName();
+        }
+        LaporanDpl::create($data);
+        return back()->with('success', 'Laporan berhasil diupload.');
+    }
+
+    public function laporanDestroy(KelompokKkn $kelompok_kkn, LaporanDpl $laporan): RedirectResponse
+    {
+        if ($laporan->file_path) \Illuminate\Support\Facades\Storage::disk('public')->delete($laporan->file_path);
+        $laporan->delete();
+        return back()->with('success', 'Laporan dihapus.');
     }
 }

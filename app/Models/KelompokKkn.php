@@ -77,6 +77,11 @@ class KelompokKkn extends Model
         }
     }
 
+    public function tugasKelompok()
+    {
+        return $this->hasMany(TugasKelompok::class);
+    }
+
     public function kuotaFakultas()
     {
         return $this->hasMany(KelompokKuota::class);
