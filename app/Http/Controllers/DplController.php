@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\KelompokKkn;
+use App\Models\LaporanDpl;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -41,6 +42,8 @@ class DplController extends Controller
             ])
             ->where('dosen_pembimbing_lapangan_id', $dpl->id)
             ->withCount('pesertaKkn')
+            ->withCount(['tugasKelompok as total_tugas'])
+            ->withCount(['tugasKelompok as submitted_tugas' => fn($q) => $q->whereHas('submissions')])
             ->orderBy('nama_kelompok')
             ->get();
 
@@ -76,8 +79,9 @@ class DplController extends Controller
         $komponenList = \App\Models\PenilaianKomponen::orderBy('urutan')->get();
         $penilaianData = \App\Models\PenilaianKelompok::where('kelompok_kkn_id', $kelompok->id)->with('komponen')->get()->keyBy('komponen_id');
         $penilaianIndividu = \App\Models\PenilaianIndividu::where('kelompok_kkn_id', $kelompok->id)->get()->groupBy('peserta_kkn_id')->map(fn($g) => $g->keyBy('komponen_id'));
+        $laporans = \App\Models\LaporanDpl::where('kelompok_kkn_id', $kelompok->id)->latest()->get()->groupBy('jenis');
 
-        return view('dpl.kelompok-show', compact('kelompok', 'proposal', 'statusStages', 'statusCurrent', 'statusHistory', 'tugasList', 'logbookData', 'komponenList', 'penilaianData', 'penilaianIndividu'));
+        return view('dpl.kelompok-show', compact('kelompok', 'proposal', 'statusStages', 'statusCurrent', 'statusHistory', 'tugasList', 'logbookData', 'komponenList', 'penilaianData', 'penilaianIndividu', 'laporans'));
     }
 
     /*
@@ -147,5 +151,42 @@ class DplController extends Controller
         $dpl->update($dplData);
 
         return redirect()->route('dpl.profile.edit')->with('success', 'Profil berhasil diperbarui.');
+    }
+
+    public function laporanStore(Request $request, KelompokKkn $kelompok): RedirectResponse
+    {
+        abort_if($kelompok->dosen_pembimbing_lapangan_id !== $this->getDpl()?->id, 403);
+
+        $request->validate([
+            'jenis' => 'required|in:monev,artikel,haki',
+            'judul' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'file' => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:10240',
+        ]);
+
+        $data = [
+            'kelompok_kkn_id' => $kelompok->id,
+            'dpl_id' => $this->getDpl()->id,
+            'jenis' => $request->jenis,
+            'judul' => $request->judul,
+            'deskripsi' => $request->deskripsi,
+        ];
+
+        if ($request->hasFile('file')) {
+            $data['file_path'] = $request->file('file')->store('laporan-dpl', 'public');
+            $data['file_name'] = $request->file('file')->getClientOriginalName();
+        }
+
+        LaporanDpl::create($data);
+
+        return back()->with('success', 'Laporan berhasil diupload.');
+    }
+
+    public function laporanDestroy(LaporanDpl $laporan): RedirectResponse
+    {
+        abort_if($laporan->dpl_id !== $this->getDpl()?->id, 403);
+        if ($laporan->file_path) Storage::disk('public')->delete($laporan->file_path);
+        $laporan->delete();
+        return back()->with('success', 'Laporan dihapus.');
     }
 }

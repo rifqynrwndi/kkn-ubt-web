@@ -151,6 +151,8 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
         Route::get('/mahasiswa/{peserta}', [DplController::class, 'mahasiswaShow'])->name('mahasiswa.show');
         Route::get('/profile/edit', [DplController::class, 'profileEdit'])->name('profile.edit');
         Route::put('/profile/update', [DplController::class, 'profileUpdate'])->name('profile.update');
+        Route::post('/kelompok/{kelompok}/laporan', [DplController::class, 'laporanStore'])->name('laporan.store');
+        Route::delete('/kelompok/{kelompok}/laporan/{laporan}', [DplController::class, 'laporanDestroy'])->name('laporan.destroy');
     });
 
     Route::prefix('kelompok')->name('kelompok.')->group(function () {
