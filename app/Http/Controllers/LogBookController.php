@@ -179,6 +179,20 @@ class LogBookController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Log book di-review.');
+        $previous = url()->previous();
+        $parsed = parse_url($previous);
+        if (!$parsed || !isset($parsed['host'])) {
+            return back()->with('success', 'Log book di-review.');
+        }
+        $query = [];
+        if (isset($parsed['query'])) {
+            parse_str($parsed['query'], $query);
+        }
+        $tab = str_contains($parsed['path'] ?? '', '/kelompok-kkn/') ? 'admin-logbook' : 'logbook';
+        $query['tab'] = $tab;
+        $port = isset($parsed['port']) ? ':' . $parsed['port'] : '';
+        $url = ($parsed['scheme'] ?? 'https') . '://' . ($parsed['host'] ?? '') . $port . ($parsed['path'] ?? '/') . '?' . http_build_query($query);
+
+        return redirect($url)->with('success', 'Log book di-review.');
     }
 }
