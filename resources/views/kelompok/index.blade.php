@@ -745,10 +745,18 @@
                                         </div>
                                         @else <span class="text-muted">-</span> @endif
                                     </td>
-                    <td class="text-center">@if($lb->is_validated)<span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i> Tervalidasi</span>@else<span class="badge badge-warning">Belum</span>@endif</td>
                     <td class="text-center">
-                        @if(!$lb->is_validated && $lb->peserta_kkn_id === $myPesertaId)
-                        <form action="{{ route('kelompok.logbook.destroy', $lb->id) }}" method="POST" class="d-inline">
+                        @if($lb->status === 'tervalidasi')<span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i> Tervalidasi</span>
+                        @elseif($lb->status === 'ditolak')<span class="badge badge-danger"><i class="fas fa-times-circle mr-1"></i> Ditolak</span>
+                        @else<span class="badge badge-warning">Menunggu</span>@endif
+                        @if($lb->komentar_dpl)<br><small class="text-muted" style="font-size:10px;">"{{ \Illuminate\Support\Str::limit($lb->komentar_dpl, 40) }}"</small>@endif
+                    </td>
+                    <td class="text-center">
+                        @if($lb->status === 'ditolak' && $lb->peserta_kkn_id === $myPesertaId)
+                        <a href="{{ route('kelompok.logbook.create') }}?edit={{ $lb->id }}" class="btn btn-outline-warning btn-sm" title="Edit ulang"><i class="fas fa-edit"></i></a>
+                        @endif
+                        @if($lb->status !== 'tervalidasi' && $lb->peserta_kkn_id === $myPesertaId)
+                        <form action="{{ route('kelompok.logbook.destroy', $lb->id) }}" method="POST" class="d-inline ml-1">
                             @csrf @method('DELETE')
                             <button class="btn btn-outline-danger btn-sm" onclick="return confirm('Hapus?')"><i class="fas fa-trash"></i></button>
                         </form>

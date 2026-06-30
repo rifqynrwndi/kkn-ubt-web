@@ -16,10 +16,20 @@ class LogBookController extends Controller
         return \App\Models\PesertaKkn::where('mahasiswa_id', $mhs->user_id)->whereNotNull('kelompok_kkn_id')->value('kelompok_kkn_id');
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         abort_if(!$this->getKelompokId(), 404);
-        return view('kelompok.logbook.create');
+
+        $editing = null;
+        if ($request->has('edit')) {
+            $editing = LogBook::where('id', $request->edit)
+                ->where('status', 'ditolak')
+                ->whereHas('pesertaKkn', fn($q) => $q->where('mahasiswa_id', auth()->user()->mahasiswa->user_id))
+                ->first();
+            abort_if(!$editing, 404);
+        }
+
+        return view('kelompok.logbook.create', compact('editing'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -58,22 +68,33 @@ class LogBookController extends Controller
 
     public function update(Request $request, LogBook $logbook): RedirectResponse
     {
-        abort_if($logbook->is_validated, 403, 'Log book yang sudah divalidasi tidak dapat diedit.');
+        abort_if($logbook->status === 'tervalidasi', 403, 'Log book yang sudah divalidasi tidak dapat diedit.');
 
         $request->validate([
             'tanggal' => 'required|date|before_or_equal:today',
             'judul' => 'required|string|max:255',
             'deskripsi' => 'required|string|min:50|max:2000',
+            'file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
-        $logbook->update($request->only(['tanggal','judul','deskripsi']));
+        $data = $request->only(['tanggal','judul','deskripsi']);
+        $data['status'] = 'menunggu';
+        $data['komentar_dpl'] = null;
 
-        return back()->with('success', 'Log book diperbarui.');
+        if ($request->hasFile('file')) {
+            if ($logbook->file_path) Storage::disk('public')->delete($logbook->file_path);
+            $data['file_path'] = $request->file('file')->store('logbook', 'public');
+            $data['file_name'] = $request->file('file')->getClientOriginalName();
+        }
+
+        $logbook->update($data);
+
+        return redirect()->route('kelompok.index', ['tab' => 'logbook'])->with('success', 'Log book diperbarui dan menunggu validasi ulang.');
     }
 
     public function destroy(LogBook $logbook): RedirectResponse
     {
-        if ($logbook->is_validated) {
+        if ($logbook->status === 'tervalidasi') {
             return back()->with('error', 'Log book yang sudah divalidasi tidak dapat dihapus.');
         }
         if ($logbook->file_path) Storage::disk('public')->delete($logbook->file_path);
@@ -99,8 +120,9 @@ class LogBookController extends Controller
         }
 
         LogBook::where('peserta_kkn_id', $pesertaId)
-            ->where('is_validated', false)
+            ->where('status', 'menunggu')
             ->update([
+                'status' => 'tervalidasi',
                 'is_validated' => true,
                 'validated_by' => auth()->id(),
                 'validated_at' => now(),
@@ -121,5 +143,42 @@ class LogBookController extends Controller
         $url = ($parsed['scheme'] ?? 'https') . '://' . ($parsed['host'] ?? '') . $port . ($parsed['path'] ?? '/') . '?' . http_build_query($query);
 
         return redirect($url)->with('success', 'Semua log book anggota ini berhasil divalidasi.');
+    }
+
+    public function review(Request $request, LogBook $logbook): RedirectResponse
+    {
+        $request->validate([
+            'action' => 'required|in:terima,tolak',
+            'komentar_dpl' => 'nullable|string',
+        ]);
+
+        $dpl = auth()->user()->dosenPembimbingLapangan;
+        $isAdmin = auth()->user()->hasRole('superadmin');
+
+        if ($dpl) {
+            abort_if($logbook->pesertaKkn->kelompokKkn->dosen_pembimbing_lapangan_id !== $dpl->id, 403);
+        } elseif (!$isAdmin) {
+            abort(403);
+        }
+
+        if ($request->action === 'terima') {
+            $logbook->update([
+                'status' => 'tervalidasi',
+                'is_validated' => true,
+                'validated_by' => auth()->id(),
+                'validated_at' => now(),
+                'komentar_dpl' => $request->komentar_dpl,
+            ]);
+        } else {
+            $logbook->update([
+                'status' => 'ditolak',
+                'is_validated' => false,
+                'komentar_dpl' => $request->komentar_dpl,
+                'validated_by' => auth()->id(),
+                'validated_at' => now(),
+            ]);
+        }
+
+        return back()->with('success', 'Log book di-review.');
     }
 }
