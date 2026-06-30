@@ -338,7 +338,7 @@
                         </div>
                         @if($t->submissions->count())
                         <table class="table table-striped table-sm mt-2 mb-0">
-                            <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="110">Status</th><th class="text-white text-center" width="60">Aksi</th></tr></thead>
+                            <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th>                <th class="text-white text-center" width="100">Status</th><th class="text-white text-center" width="50">Aksi</th></tr></thead>
                             <tbody>
                                 @foreach($t->submissions as $i => $s)
                                 <tr>
@@ -349,9 +349,9 @@
                                         @if($s->status==='diterima')<span class="badge badge-success">Diterima</span>
                                         @elseif($s->status==='ditolak')<span class="badge badge-danger">Ditolak</span>
                                         @elseif($s->status==='revisi')<span class="badge badge-warning">Revisi</span>
-                                        @else<span class="badge badge-info">Menunggu</span>@endif
-                                    </td>
-                                    <td class="text-center">
+@else<span class="badge badge-info">Menunggu</span>@endif
+                    </td>
+                    <td class="text-center">
                                         <button class="btn btn-info btn-sm" onclick='showSubmission(@json($s->id), @json($s->judul), @json($s->pesertaKkn->mahasiswa->user->name ?? "-"), @json($s->status), @json($s->komentar_dpl ?? ""), @json($s->file_path ? storage_url($s->file_path) : ""), @json($s->file_name ?? ""))'><i class="fas fa-eye"></i> Show</button>
                                     </td>
                                 </tr>
@@ -379,7 +379,7 @@
                         <strong>{{ $t->nama_tugas }}</strong>
                         @if($t->submissions->count())
                         <table class="table table-striped table-sm mt-2 mb-0">
-                            <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="110">Status</th><th class="text-white text-center" width="60">Aksi</th></tr></thead>
+                            <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th>                <th class="text-white text-center" width="100">Status</th><th class="text-white text-center" width="50">Aksi</th></tr></thead>
                             <tbody>
                                 @foreach($t->submissions as $i => $s)
                                 <tr>

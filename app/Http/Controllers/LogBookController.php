@@ -117,7 +117,8 @@ class LogBookController extends Controller
         }
         unset($query['tab']);
         $query['tab'] = 'logbook';
-        $url = ($parsed['scheme'] ?? 'https') . '://' . ($parsed['host'] ?? '') . ($parsed['path'] ?? '/') . '?' . http_build_query($query);
+        $port = isset($parsed['port']) ? ':' . $parsed['port'] : '';
+        $url = ($parsed['scheme'] ?? 'https') . '://' . ($parsed['host'] ?? '') . $port . ($parsed['path'] ?? '/') . '?' . http_build_query($query);
 
         return redirect($url)->with('success', 'Semua log book anggota ini berhasil divalidasi.');
     }

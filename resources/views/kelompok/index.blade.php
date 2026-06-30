@@ -486,7 +486,7 @@
                                 @if($subs->count())
                                 <div class="table-responsive px-3 pb-2">
                                     <table class="table table-striped table-sm mb-0">
-                                        <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="110">Status</th><th class="text-white text-center" width="100">Aksi</th></tr></thead>
+                                        <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="100">Status</th><th class="text-white">Komentar</th><th class="text-white text-center" width="100">Aksi</th></tr></thead>
                                         <tbody>
                                             @foreach($subs as $i => $sub)
                                             <tr>
@@ -494,6 +494,7 @@
                                                 <td><small>{{ $sub->judul }}</small></td>
                                                 <td><small>{{ $sub->pesertaKkn->mahasiswa->user->name ?? '-' }}</small></td>
                                                 <td class="text-center">@if($sub->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($sub->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@elseif($sub->status==='revisi')<span class="badge badge-warning">Revisi</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
+                                                <td><small class="text-muted">{{ $sub->komentar_dpl ?: '-' }}</small></td>
                                                 <td class="text-center">
                                                     <div class="d-flex justify-content-center gap-1">
                                                         <button class="btn btn-info btn-sm" onclick='tugasModal(@json($sub->id), @json($sub->judul), @json($sub->pesertaKkn->mahasiswa->user->name ?? "-"), @json($sub->status), @json($sub->komentar_dpl ?? ""), @json($sub->file_path ? storage_url($sub->file_path) : ""), @json($sub->file_name ?? ""))'><i class="fas fa-eye"></i></button>
@@ -552,7 +553,7 @@
                                 @if($subs->count())
                                 <div class="table-responsive px-3 pb-2">
                                     <table class="table table-striped table-sm mb-0">
-                                        <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="110">Status</th><th class="text-white text-center" width="100">Aksi</th></tr></thead>
+                                        <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="100">Status</th><th class="text-white">Komentar</th><th class="text-white text-center" width="100">Aksi</th></tr></thead>
                                         <tbody>
                                             @foreach($subs as $i => $sub)
                                             <tr>
@@ -560,6 +561,7 @@
                                                 <td><small>{{ $sub->judul }}</small></td>
                                                 <td><small>{{ $sub->pesertaKkn->mahasiswa->user->name ?? '-' }}</small></td>
                                                 <td class="text-center">@if($sub->status==='diterima')<span class="badge badge-success">Diterima</span>@elseif($sub->status==='ditolak')<span class="badge badge-danger">Ditolak</span>@elseif($sub->status==='revisi')<span class="badge badge-warning">Revisi</span>@else<span class="badge badge-info">Menunggu</span>@endif</td>
+                                                <td><small class="text-muted">{{ $sub->komentar_dpl ?: '-' }}</small></td>
                                                 <td class="text-center">
                                                     <div class="d-flex justify-content-center gap-1">
                                                         <button class="btn btn-info btn-sm" onclick='tugasModal(@json($sub->id), @json($sub->judul), @json($sub->pesertaKkn->mahasiswa->user->name ?? "-"), @json($sub->status), @json($sub->komentar_dpl ?? ""), @json($sub->file_path ? storage_url($sub->file_path) : ""), @json($sub->file_name ?? ""))'><i class="fas fa-eye"></i></button>
@@ -683,21 +685,20 @@
 
             {{-- LOGBOOK CARDS PER MEMBER --}}
             @forelse($logbookData as $pesertaId => $entries)
-            @php $member = $entries->first()->pesertaKkn->mahasiswa->user; $validated = $entries->where('is_validated',true)->count(); $total = $entries->count(); @endphp
+            @php $member = $entries->first()->pesertaKkn->mahasiswa; $user = $member->user; $validated = $entries->where('is_validated',true)->count(); $total = $entries->count(); @endphp
             <div class="card border-0 shadow-sm mb-3 logbook-member-card">
-                <div class="card-header bg-transparent d-flex justify-content-between align-items-center" style="cursor:pointer;" onclick="toggleCollapse('lb-{{ $pesertaId }}')">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
-                        <i class="fas fa-chevron-down mr-3 text-muted" id="icon-lb-{{ $pesertaId }}"></i>
-                        <img src="{{ asset('img/avatar/avatar-1.png') }}" class="rounded-circle mr-2" width="32" height="32" style="object-fit:cover;">
+                        <img src="{{ $member->foto ? storage_url($member->foto) : asset('img/avatar/avatar-1.png') }}" class="rounded-circle mr-2" width="32" height="32" style="object-fit:cover;">
                         <div>
-                            <strong class="d-block">{{ $member->name ?? 'Unknown' }}</strong>
+                            <strong class="d-block">{{ $user->name ?? 'Unknown' }}</strong>
                             <small class="text-muted">{{ $total }} entri</small>
                         </div>
                     </div>
                     <div class="d-flex align-items-center">
                         <span class="badge badge-{{ $validated >= 20 ? 'success' : 'warning' }} mr-2">{{ $validated }}/{{ $total }} Tervalidasi</span>
                         @if(($isDpl || $isAdmin) && $total > 0 && $validated < $total)
-                        <form action="{{ route('kelompok.logbook.validateAll') }}" method="POST" class="d-inline" onclick="event.stopPropagation()">
+                        <form action="{{ route('kelompok.logbook.validateAll') }}" method="POST" class="d-inline">
                             @csrf
                             <input type="hidden" name="peserta_id" value="{{ $pesertaId }}">
                             <button class="btn btn-warning btn-sm" onclick="return confirm('Validasi semua?')"><i class="fas fa-check-double mr-1"></i> Validasi Semua</button>
@@ -705,7 +706,7 @@
                         @endif
                     </div>
                 </div>
-                <div id="lb-{{ $pesertaId }}" style="display:block;">
+                <div class="card-body p-0">
                     <div class="table-responsive rounded-bottom">
                         <table class="table table-bordered table-hover align-middle mb-0 logbook-table" data-peserta="{{ $pesertaId }}" style="border-collapse:collapse;">
                             <thead style="background:#2D3A8A;">
@@ -713,9 +714,9 @@
                                     <th class="text-white py-2 text-center" width="50">#</th>
                                     <th class="text-white py-2" width="250">Judul</th>
                                     <th class="text-white py-2">Deskripsi</th>
-                                    <th class="text-white py-2 text-center" style="width:20%;">Berkas</th>
-                                    <th class="text-white py-2 text-center" width="100">Status</th>
-                                    <th class="text-white py-2 text-center" width="60">Aksi</th>
+                        <th class="text-white py-2 text-center" style="width:20%;">Berkas</th>
+                        <th class="text-white py-2 text-center" width="100">Status</th>
+                        <th class="text-white py-2 text-center" width="50">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -744,15 +745,15 @@
                                         </div>
                                         @else <span class="text-muted">-</span> @endif
                                     </td>
-                                    <td class="text-center">@if($lb->is_validated)<span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i> Tervalidasi</span>@else<span class="badge badge-warning">Belum</span>@endif</td>
-                                    <td class="text-center">
-                                        @if(!$lb->is_validated && $lb->peserta_kkn_id === $myPesertaId)
-                                        <form action="{{ route('kelompok.logbook.destroy', $lb->id) }}" method="POST" class="d-inline">
-                                            @csrf @method('DELETE')
-                                            <button class="btn btn-outline-danger btn-sm" onclick="return confirm('Hapus?')"><i class="fas fa-trash"></i></button>
-                                        </form>
-                                        @endif
-                                    </td>
+                    <td class="text-center">@if($lb->is_validated)<span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i> Tervalidasi</span>@else<span class="badge badge-warning">Belum</span>@endif</td>
+                    <td class="text-center">
+                        @if(!$lb->is_validated && $lb->peserta_kkn_id === $myPesertaId)
+                        <form action="{{ route('kelompok.logbook.destroy', $lb->id) }}" method="POST" class="d-inline">
+                            @csrf @method('DELETE')
+                            <button class="btn btn-outline-danger btn-sm" onclick="return confirm('Hapus?')"><i class="fas fa-trash"></i></button>
+                        </form>
+                        @endif
+                    </td>
                                 </tr>
                                 @endforeach
                             </tbody>

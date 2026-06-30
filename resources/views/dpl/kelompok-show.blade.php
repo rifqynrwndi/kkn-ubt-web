@@ -284,7 +284,7 @@
                                 </div>
                                 @if($t->submissions->count())
                                 <table class="table table-striped table-sm mb-0">
-                                    <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="100">Status</th><th class="text-white text-center" width="60">Aksi</th></tr></thead>
+                                    <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="80">Status</th><th class="text-white text-center" width="50">Aksi</th></tr></thead>
                                     <tbody>
                                         @foreach($t->submissions as $i => $s)
                                         <tr>
@@ -315,7 +315,7 @@
                                 <strong class="small">{{ $t->nama_tugas }}</strong>
                                 @if($t->submissions->count())
                                 <table class="table table-striped table-sm mb-0">
-                                    <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="100">Status</th><th class="text-white text-center" width="60">Aksi</th></tr></thead>
+                                    <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="80">Status</th><th class="text-white text-center" width="50">Aksi</th></tr></thead>
                                     <tbody>
                                         @foreach($t->submissions as $i => $s)
                                         <tr>
