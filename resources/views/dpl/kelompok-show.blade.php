@@ -284,7 +284,7 @@
                                 </div>
                                 @if($t->submissions->count())
                                 <table class="table table-striped table-sm mb-0">
-                                    <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="100">Status</th><th class="text-white text-center" width="60">Aksi</th></tr></thead>
+                                    <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="80">Status</th><th class="text-white text-center" width="50">Aksi</th></tr></thead>
                                     <tbody>
                                         @foreach($t->submissions as $i => $s)
                                         <tr>
@@ -315,7 +315,7 @@
                                 <strong class="small">{{ $t->nama_tugas }}</strong>
                                 @if($t->submissions->count())
                                 <table class="table table-striped table-sm mb-0">
-                                    <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="100">Status</th><th class="text-white text-center" width="60">Aksi</th></tr></thead>
+                                    <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th><th class="text-white text-center" width="80">Status</th><th class="text-white text-center" width="50">Aksi</th></tr></thead>
                                     <tbody>
                                         @foreach($t->submissions as $i => $s)
                                         <tr>
@@ -431,6 +431,7 @@
                                                 <th class="text-white py-2">Deskripsi</th>
                                                 <th class="text-white py-2 text-center" style="width:20%;">Berkas</th>
                                                 <th class="text-white py-2 text-center" width="100">Status</th>
+                                                <th class="text-white py-2 text-center" width="120">Aksi</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -459,7 +460,22 @@
                                                     </div>
                                                     @else <span class="text-muted">-</span> @endif
                                                 </td>
-                                                <td class="text-center">@if($lb->is_validated)<span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i></span>@else<span class="badge badge-warning">Belum</span>@endif</td>
+                                                <td class="text-center">
+                                                    @if($lb->status === 'tervalidasi')<span class="badge badge-success">✅</span>
+                                                    @elseif($lb->status === 'ditolak')<span class="badge badge-danger">❌ Ditolak</span>
+                                                    @else<span class="badge badge-warning">Menunggu</span>@endif
+                                                    @if($lb->komentar_dpl)<br><small class="text-muted" style="font-size:10px;">"{{ \Illuminate\Support\Str::limit($lb->komentar_dpl, 50) }}"</small>@endif
+                                                </td>
+                                                <td class="text-center">
+                                                    @if($lb->status === 'menunggu')
+                                                    <form action="{{ route('kelompok.logbook.review', $lb->id) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        <input name="komentar_dpl" class="form-control form-control-sm mb-1" placeholder="Komentar..." style="width:100px;font-size:11px;">
+                                                        <button name="action" value="terima" class="btn btn-success btn-sm"><i class="fas fa-check"></i></button>
+                                                        <button name="action" value="tolak" class="btn btn-danger btn-sm"><i class="fas fa-times"></i></button>
+                                                    </form>
+                                                    @endif
+                                                </td>
                                             </tr>
                                             @endforeach
                                         </tbody>

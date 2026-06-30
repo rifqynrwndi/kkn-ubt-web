@@ -78,6 +78,47 @@
             </div>
         </div>
 
+        {{-- KELOMPOK BINAAN --}}
+        @if(isset($kelompoks) && $kelompoks->count())
+        <div class="card shadow-sm mt-3">
+            <div class="card-header">
+                <h4>Kelompok Binaan ({{ $kelompoks->count() }})</h4>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th width="40">No</th>
+                                <th>Kelompok</th>
+                                <th>Desa</th>
+                                <th>Kecamatan</th>
+                                <th>Kabupaten</th>
+                                <th class="text-center" width="80">Anggota</th>
+                                <th class="text-center" width="80">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($kelompoks as $index => $k)
+                            <tr>
+                                <td class="text-center">{{ $index + 1 }}</td>
+                                <td><strong>{{ $k->nama_kelompok }}</strong></td>
+                                <td>{{ $k->desaGelombang->desa->nama_desa ?? '-' }}</td>
+                                <td>{{ $k->desaGelombang->desa->kecamatan->nama_kecamatan ?? '-' }}</td>
+                                <td>{{ $k->desaGelombang->desa->kecamatan->kabupaten ?? '-' }}</td>
+                                <td class="text-center">{{ $k->peserta_kkn_count }} / {{ $k->kuota }}</td>
+                                <td class="text-center">
+                                    <a href="{{ route('kelompok-kkn.show', $k->id) }}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i> Detail</a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        @endif
+
     </div>
 </section>
 @endsection

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\RedirectResponse;
 use App\Models\DosenPembimbingLapangan;
+use App\Models\KelompokKkn;
 
 class DosenPembimbingLapanganController extends Controller
 {
@@ -100,10 +101,17 @@ class DosenPembimbingLapanganController extends Controller
     {
         $dpl = DosenPembimbingLapangan::with([
             'user',
-            'fakultas'
+            'fakultas',
+            'kelompokKkn.desaGelombang.desa.kecamatan',
         ])->findOrFail($id);
 
-        return view('pembimbing.show', compact('dpl'));
+        $kelompoks = KelompokKkn::with(['desaGelombang.desa.kecamatan'])
+            ->where('dosen_pembimbing_lapangan_id', $dpl->id)
+            ->withCount('pesertaKkn')
+            ->orderBy('nama_kelompok')
+            ->get();
+
+        return view('pembimbing.show', compact('dpl', 'kelompoks'));
     }
 
     public function edit($id): View

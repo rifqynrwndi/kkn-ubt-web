@@ -185,6 +185,7 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
             Route::put('/{logbook}', [LogBookController::class, 'update'])->name('update');
             Route::delete('/{logbook}', [LogBookController::class, 'destroy'])->name('destroy');
             Route::post('/validate-all', [LogBookController::class, 'validateAll'])->name('validateAll');
+            Route::post('/{logbook}/review', [LogBookController::class, 'review'])->name('review');
         });
 
         Route::prefix('penilaian')->name('penilaian.')->group(function () {
