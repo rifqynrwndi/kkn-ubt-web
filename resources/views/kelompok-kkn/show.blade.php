@@ -497,6 +497,7 @@
                                     <th class="text-white py-2">Deskripsi</th>
                                     <th class="text-white py-2 text-center" style="width:20%;">Berkas</th>
                                     <th class="text-white py-2 text-center" width="100">Status</th>
+                    <th class="text-white py-2 text-center" width="140">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
