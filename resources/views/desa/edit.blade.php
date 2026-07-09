@@ -91,6 +91,15 @@
                             </div>
                         </div>
 
+                        {{-- KABUPATEN --}}
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Kabupaten</label>
+                                <input type="text" name="kabupaten" class="form-control @error('kabupaten') is-invalid @enderror" value="{{ old('kabupaten', $desa->kecamatan->kabupaten ?? '') }}" placeholder="Nama kabupaten">
+                                @error('kabupaten')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+
                     </div>
 
                     <hr>
