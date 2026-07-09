@@ -68,4 +68,28 @@ class TugasAdminController extends Controller
         }
         return back()->with('success', "Tugas \"{$nama}\" dihapus dari {$count} kelompok.");
     }
+
+    public function edit(Request $request): View
+    {
+        $nama = $request->query('nama_tugas');
+        $tugas = TugasKelompok::where('nama_tugas', $nama)->firstOrFail();
+        return view('tugas-admin.edit', compact('tugas'));
+    }
+
+    public function updateByNama(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'old_nama' => 'required|string',
+            'nama_tugas' => 'required|string|max:255',
+            'kategori' => 'required|in:tugas_kelompok,luaran_wajib,luaran_lain,laporan',
+        ]);
+
+        $count = TugasKelompok::where('nama_tugas', $request->old_nama)->update([
+            'nama_tugas' => $request->nama_tugas,
+            'kategori' => $request->kategori,
+        ]);
+
+        return redirect()->route('admin.tugas.index')
+            ->with('success', "Tugas \"{$request->nama_tugas}\" diupdate pada {$count} kelompok.");
+    }
 }

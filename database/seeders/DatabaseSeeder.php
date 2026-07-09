@@ -32,6 +32,9 @@ class DatabaseSeeder extends Seeder
 
             // ── Slot WAR (jika ada sesi WAR) ──
             WarFacultySeeder::class,
+
+            // ── Template tugas untuk semua kelompok ──
+            TugasTemplateSeeder::class,
         ]);
     }
 }

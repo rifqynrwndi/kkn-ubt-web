@@ -396,22 +396,13 @@ class PendaftaranKknController extends Controller
         | Cek Sudah Daftar
         |--------------------------------------------------------------------------
         */
-        $alreadyRegistered = PesertaKkn::where(
-                'mahasiswa_id',
-                $user->id
-            )
-            ->where(
-                'gelombang_id',
-                $gelombangAktif->id
-            )
-            ->exists();
-
-        if ($alreadyRegistered) {
-
-            return back()->with(
-                'error',
-                'Anda sudah terdaftar pada gelombang ini.'
-            );
+        $alreadyInAny = PesertaKkn::where('mahasiswa_id', $user->id)->exists();
+        if ($alreadyInAny) {
+            $existing = PesertaKkn::where('mahasiswa_id', $user->id)->first();
+            $msg = $existing->gelombang_id === $gelombangAktif->id
+                ? 'Anda sudah terdaftar pada gelombang ini.'
+                : 'Anda sudah terdaftar di gelombang "' . ($existing->gelombang->nama_gelombang ?? 'lain') . '". Tidak dapat mendaftar di gelombang ini.';
+            return back()->with('error', $msg);
         }
 
         /*

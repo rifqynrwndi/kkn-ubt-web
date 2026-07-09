@@ -217,6 +217,7 @@ class DesaController extends Controller
             'nama_desa' => 'required|string|max:255',
             'alamat' => 'nullable|string',
             'aktif' => 'required|boolean',
+            'kabupaten' => 'nullable|string|max:255',
 
             'gelombang_id' => 'nullable|exists:gelombang,id',
             'kuota_total' => 'nullable|integer|min:1',
@@ -233,6 +234,11 @@ class DesaController extends Controller
             'alamat' => $validated['alamat'] ?? null,
             'aktif' => $validated['aktif'],
         ]);
+
+        if ($request->filled('kabupaten')) {
+            \App\Models\Kecamatan::where('id', $validated['kecamatan_id'])
+                ->update(['kabupaten' => $validated['kabupaten']]);
+        }
 
         /*
         |--------------------------------------------------------------------------

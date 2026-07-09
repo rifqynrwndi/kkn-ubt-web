@@ -69,11 +69,23 @@ class WarAllocationService
                 throw new \RuntimeException('Giliran WAR untuk fakultas kamu sudah berakhir.');
             }
 
-            $kelompokKuota = KelompokKuota::where('kelompok_kkn_id', $kelompokLocked->id)
+            $kelompokKuotaQ = KelompokKuota::where('kelompok_kkn_id', $kelompokLocked->id)
                 ->where('fakultas_id', $fakultasId)
                 ->orderBy('id')
-                ->lockForUpdate()
-                ->firstOrFail();
+                ->lockForUpdate();
+
+            $kelompokKuota = $kelompokKuotaQ->first();
+
+            if (! $kelompokKuota) {
+                KelompokKuota::create([
+                    'kelompok_kkn_id' => $kelompokLocked->id,
+                    'fakultas_id' => $fakultasId,
+                    'kuota' => $kelompokLocked->kuota,
+                    'kuota_laki' => 0,
+                    'kuota_perempuan' => 0,
+                ]);
+                $kelompokKuota = $kelompokKuotaQ->firstOrFail();
+            }
 
             $currentMembers = PesertaKkn::where('kelompok_kkn_id', $kelompokLocked->id)
                 ->with(['mahasiswa.prodi'])

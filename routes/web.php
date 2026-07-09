@@ -448,6 +448,8 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
             Route::get('/', [TugasAdminController::class, 'index'])->name('index');
             Route::get('/create', [TugasAdminController::class, 'create'])->name('create');
             Route::post('/', [TugasAdminController::class, 'store'])->name('store');
+            Route::get('/edit', [TugasAdminController::class, 'edit'])->name('edit');
+            Route::put('/update', [TugasAdminController::class, 'updateByNama'])->name('updateByNama');
             Route::delete('/destroy-by-nama', [TugasAdminController::class, 'destroyByNama'])->name('destroyByNama');
         });
 
