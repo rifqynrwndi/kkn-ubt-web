@@ -32,15 +32,18 @@
                     </div>
                     <div class="form-group">
                         <label>Judul Pengumpulan</label>
-                        <input name="judul" class="form-control" placeholder="Masukkan judul pengumpulan..." required>
+                        <input name="judul" class="form-control @error('judul') is-invalid @enderror" placeholder="Masukkan judul pengumpulan..." value="{{ old('judul') }}" required>
+                        @error('judul') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
                     <div class="form-group">
                         <label>Deskripsi (Opsional)</label>
-                        <textarea name="deskripsi" class="form-control" rows="3" placeholder="Deskripsi singkat..."></textarea>
+                        <textarea name="deskripsi" class="form-control @error('deskripsi') is-invalid @enderror" rows="3" placeholder="Deskripsi singkat...">{{ old('deskripsi') }}</textarea>
+                        @error('deskripsi') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
                     <div class="form-group">
                         <label>Berkas</label>
-                        <input type="file" name="file" class="form-control-file" required>
+                        <input type="file" name="file" class="form-control-file @error('file') is-invalid @enderror" required>
+                        @error('file') <small class="text-danger d-block">{{ $message }}</small> @enderror
                         <small class="text-muted d-block mt-1">PDF, DOC, DOCX, ZIP, JPG, PNG — Maks 10MB</small>
                     </div>
                     <div class="d-flex gap-2">
