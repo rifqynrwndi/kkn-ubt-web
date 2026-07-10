@@ -158,7 +158,25 @@ class KelompokKknController extends Controller
             . ' - ' .
             $desaGelombang->gelombang->nama_gelombang;
 
-        KelompokKkn::create($validated);
+        $kelompok = KelompokKkn::create($validated);
+
+        $templates = [
+            ['kategori' => 'tugas_kelompok', 'nama_tugas' => 'Program Kerja'],
+            ['kategori' => 'luaran_wajib', 'nama_tugas' => 'Video Profil Desa', 'is_wajib' => true],
+            ['kategori' => 'luaran_wajib', 'nama_tugas' => 'Draft Artikel', 'is_wajib' => true],
+            ['kategori' => 'luaran_lain', 'nama_tugas' => 'Poster'],
+            ['kategori' => 'luaran_lain', 'nama_tugas' => 'Video Dokumentasi Pelaksanaan KKN'],
+            ['kategori' => 'luaran_lain', 'nama_tugas' => 'Materi Presentasi Akhir'],
+            ['kategori' => 'laporan', 'nama_tugas' => 'Laporan Program KKN'],
+        ];
+        foreach ($templates as $t) {
+            \App\Models\TugasKelompok::create([
+                'kelompok_kkn_id' => $kelompok->id,
+                'kategori' => $t['kategori'],
+                'nama_tugas' => $t['nama_tugas'],
+                'is_wajib' => $t['is_wajib'] ?? false,
+            ]);
+        }
 
         return redirect()
             ->route('kelompok-kkn.index')
