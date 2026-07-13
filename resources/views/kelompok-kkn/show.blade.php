@@ -530,7 +530,7 @@
                                         @if($lb->status === 'tervalidasi')<span class="badge badge-success">✅</span>
                                         @elseif($lb->status === 'ditolak')<span class="badge badge-danger">❌ Ditolak</span>
                                         @else<span class="badge badge-warning">Menunggu</span>@endif
-                                        @if($lb->komentar_dpl)<br><small class="text-muted" style="font-size:10px;">"{{ \Illuminate\Support\Str::limit($lb->komentar_dpl, 50) }}"</small>@endif
+                                        @if($lb->komentar_dpl)<br><small class="text-muted" style="font-size:10px;">"{{ $lb->komentar_dpl }}"</small>@endif
                                     </td>
                                     <td class="text-center">
                                         @if($lb->status === 'menunggu')
