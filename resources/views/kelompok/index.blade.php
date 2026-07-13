@@ -749,7 +749,7 @@
                         @if($lb->status === 'tervalidasi')<span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i> Tervalidasi</span>
                         @elseif($lb->status === 'ditolak')<span class="badge badge-danger"><i class="fas fa-times-circle mr-1"></i> Ditolak</span>
                         @else<span class="badge badge-warning">Menunggu</span>@endif
-                        @if($lb->komentar_dpl)<br><small class="text-muted" style="font-size:10px;">"{{ \Illuminate\Support\Str::limit($lb->komentar_dpl, 40) }}"</small>@endif
+                        @if($lb->komentar_dpl)<br><small class="text-muted" style="font-size:10px;">"{{ $lb->komentar_dpl }}"</small>@endif
                     </td>
                     <td class="text-center">
                         @if($lb->status === 'ditolak' && $lb->peserta_kkn_id === $myPesertaId)
