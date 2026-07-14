@@ -56,10 +56,10 @@
             </div>
         </div>
 
-        @if(isset($rekap) && $wajibTasks->count() > 0)
+        @if(isset($rekap) && isset($semuaTasks) && $semuaTasks->unique('nama_tugas')->count() > 0)
         <div class="card border-0 shadow-sm mt-3">
             <div class="card-header bg-transparent">
-                <h4 class="mb-0">Rekap Pengumpulan Tugas Wajib <small class="text-muted">({{ $rekap->count() }} kelompok)</small></h4>
+                <h4 class="mb-0">Rekap Pengumpulan Tugas <small class="text-muted">({{ $rekap->count() }} kelompok)</small></h4>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive" style="max-height:600px;overflow-y:auto;">
@@ -67,7 +67,7 @@
                         <thead style="background:#2D3A8A;position:sticky;top:0;z-index:1;">
                             <tr>
                                 <th class="text-white" width="220">Kelompok</th>
-                                @foreach($wajibTasks->unique('nama_tugas') as $wt)
+                                @foreach($semuaTasks->unique('nama_tugas') as $wt)
                                 <th class="text-white text-center" width="80" style="font-size:10px;">{{ $wt->nama_tugas }}</th>
                                 @endforeach
                                 <th class="text-white text-center" width="70">Total</th>
@@ -78,7 +78,7 @@
                             <tr>
                                 <td><small>{{ $kel->nama_kelompok }}</small></td>
                                 @php $done = 0; @endphp
-                                @foreach($wajibTasks->unique('nama_tugas') as $wt)
+                                @foreach($semuaTasks->unique('nama_tugas') as $wt)
                                 @php
                                     $tugas = $kel->tugasKelompok->firstWhere('nama_tugas', $wt->nama_tugas);
                                     $submitted = $tugas && $tugas->submissions->isNotEmpty();
@@ -90,8 +90,8 @@
                                 </td>
                                 @endforeach
                                 <td class="text-center font-weight-bold">
-                                    <span class="badge badge-{{ $done == $wajibTasks->unique('nama_tugas')->count() ? 'success' : 'danger' }}">
-                                        {{ $done }}/{{ $wajibTasks->unique('nama_tugas')->count() }}
+                                    <span class="badge badge-{{ $done == $semuaTasks->unique('nama_tugas')->count() ? 'success' : 'danger' }}">
+                                        {{ $done }}/{{ $semuaTasks->unique('nama_tugas')->count() }}
                                     </span>
                                 </td>
                             </tr>

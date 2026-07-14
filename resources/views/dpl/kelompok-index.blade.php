@@ -80,10 +80,10 @@
             </div>
         </div>
 
-        @if($wajibTasks->count() > 0)
+        @if(isset($semuaTasks) && $semuaTasks->unique('nama_tugas')->count() > 0)
         <div class="card mt-3 border-0 shadow-sm">
             <div class="card-header bg-transparent">
-                <h4 class="mb-0">Rekap Tugas Wajib <small class="text-muted">({{ $kelompoks->count() }} kelompok)</small></h4>
+                <h4 class="mb-0">Rekap Tugas <small class="text-muted">({{ $kelompoks->count() }} kelompok)</small></h4>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive" style="max-height:500px;overflow-y:auto;">
@@ -91,7 +91,7 @@
                         <thead style="background:#2D3A8A;position:sticky;top:0;z-index:1;">
                             <tr>
                                 <th class="text-white" width="220">Kelompok</th>
-                                @foreach($wajibTasks->unique('nama_tugas') as $wt)
+                                @foreach($semuaTasks->unique('nama_tugas') as $wt)
                                 <th class="text-white text-center" width="80" style="font-size:10px;">{{ $wt->nama_tugas }}</th>
                                 @endforeach
                                 <th class="text-white text-center" width="60">Total</th>
@@ -101,8 +101,8 @@
                             @foreach($kelompoks as $k)
                             <tr>
                                 <td><small>{{ $k->nama_kelompok }}</small></td>
-                                @php $done = 0; $totalW = $wajibTasks->unique('nama_tugas')->count(); @endphp
-                                @foreach($wajibTasks->unique('nama_tugas') as $wt)
+                                @php $done = 0; $totalW = $semuaTasks->unique('nama_tugas')->count(); @endphp
+                                @foreach($semuaTasks->unique('nama_tugas') as $wt)
                                 @php $t = $k->tugasKelompok->firstWhere('nama_tugas', $wt->nama_tugas); $submitted = $t && $t->submissions->isNotEmpty(); if($submitted) $done++; @endphp
                                 <td class="text-center">@if($submitted)<span class="badge badge-success">✅</span>@else<span class="badge badge-danger">❌</span>@endif</td>
                                 @endforeach
