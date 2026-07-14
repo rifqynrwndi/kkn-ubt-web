@@ -58,19 +58,25 @@
 
         @if(isset($rekap) && isset($semuaTasks) && $semuaTasks->unique('nama_tugas')->count() > 0)
         <div class="card border-0 shadow-sm mt-3">
-            <div class="card-header bg-transparent">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">Rekap Pengumpulan Tugas <small class="text-muted">({{ $rekap->count() }} kelompok)</small></h4>
+                <div class="input-group input-group-sm" style="max-width:280px;">
+                    <div class="input-group-prepend"><span class="input-group-text"><i class="fas fa-search"></i></span></div>
+                    <input type="text" class="form-control" id="rekap-search" placeholder="Cari kelompok..." onkeyup="filterRekap()">
+                </div>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive" style="max-height:600px;overflow-y:auto;">
-                    <table class="table table-striped table-hover mb-0" style="border-collapse:collapse;">
+                    <table class="table table-striped table-hover mb-0" id="rekap-table" style="border-collapse:collapse;">
                         <thead style="background:#2D3A8A;position:sticky;top:0;z-index:1;">
                             <tr>
-                                <th class="text-white" width="220">Kelompok</th>
+                                <th class="text-white" width="220" style="cursor:pointer;" onclick="sortRekap('kelompok')">Kelompok <i class="fas fa-sort ml-1"></i></th>
+                                @php $ci = 0; @endphp
                                 @foreach($semuaTasks->unique('nama_tugas') as $wt)
-                                <th class="text-white text-center" width="80" style="font-size:10px;">{{ $wt->nama_tugas }}</th>
+                                <th class="text-white text-center" width="80" style="font-size:10px;cursor:pointer;" onclick="sortRekap({{ $ci }})">{{ $wt->nama_tugas }} <i class="fas fa-sort ml-1"></i></th>
+                                @php $ci++; @endphp
                                 @endforeach
-                                <th class="text-white text-center" width="70">Total</th>
+                                <th class="text-white text-center" width="70" style="cursor:pointer;" onclick="sortRekap('total')">Total <i class="fas fa-sort ml-1"></i></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -106,3 +112,47 @@
     </div>
 </section>
 @endsection
+@push('scripts')
+<script>
+var rekapSortDir = {};
+
+function filterRekap() {
+    var q = (document.getElementById('rekap-search')?.value || '').toLowerCase();
+    var tbody = document.querySelector('#rekap-table tbody');
+    if (!tbody) return;
+    tbody.querySelectorAll('tr').forEach(function(row) {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+
+function sortRekap(col) {
+    var tbody = document.querySelector('#rekap-table tbody');
+    if (!tbody) return;
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+    var dir = rekapSortDir[col] = !rekapSortDir[col];
+
+    rows.sort(function(a, b) {
+        var valA, valB;
+        var ca = a.querySelectorAll('td');
+        var cb = b.querySelectorAll('td');
+
+        if (col === 'kelompok') {
+            valA = ca[0].textContent.trim().toLowerCase();
+            valB = cb[0].textContent.trim().toLowerCase();
+        } else if (col === 'total') {
+            valA = parseInt(ca[ca.length-1].textContent.match(/\d+/)?.[0] || 0);
+            valB = parseInt(cb[cb.length-1].textContent.match(/\d+/)?.[0] || 0);
+        } else {
+            valA = ca[col+1].textContent.includes('✅') ? 1 : 0;
+            valB = cb[col+1].textContent.includes('✅') ? 1 : 0;
+        }
+
+        if (valA < valB) return dir ? 1 : -1;
+        if (valA > valB) return dir ? -1 : 1;
+        return 0;
+    });
+
+    rows.forEach(function(r) { tbody.appendChild(r); });
+}
+</script>
+@endpush
