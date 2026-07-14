@@ -856,7 +856,8 @@
             document.getElementById('mod-berkas').innerHTML = '<a href="'+fileUrl+'" target="_blank" class="btn btn-outline-primary btn-sm"><i class="fas fa-download mr-1"></i>' + fileName + '</a>';
         } else { document.getElementById('mod-berkas').textContent = '-'; }
         document.getElementById('mod-review-form').action = "/kelompok/tugas/submission/" + id + "/review";
-        document.getElementById('mod-review').style.display = (status === 'diterima' || status === 'ditolak') ? 'none' : '';
+            document.getElementById('mod-review').style.display = (status === 'ditolak') ? 'none' : '';
+            document.getElementById('mod-review').querySelector('button[value="diterima"]').style.display = (status === 'diterima') ? 'none' : '';
         $('#submissionModal').modal('show');
     }
 </script>

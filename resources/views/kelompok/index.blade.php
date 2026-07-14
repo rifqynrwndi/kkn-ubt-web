@@ -1027,7 +1027,7 @@
         if (reviewForm) {
             reviewForm.action = "/kelompok/tugas/submission/" + id + "/review";
             var reviewDiv = document.getElementById('tgs-review');
-            if (reviewDiv) reviewDiv.style.display = (status === 'diterima' || status === 'ditolak') ? 'none' : '';
+            if (reviewDiv) { reviewDiv.style.display = (status === 'ditolak') ? 'none' : ''; reviewDiv.querySelector('button[value="diterima"]').style.display = (status === 'diterima') ? 'none' : ''; }
         }
         $('#tgsModal').modal('show');
     }
