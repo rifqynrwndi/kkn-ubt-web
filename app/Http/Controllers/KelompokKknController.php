@@ -211,12 +211,14 @@ class KelompokKknController extends Controller
 
         $dplFinal = $this->calcScore($komponenList->where('kategori','dpl'), $penilaianData);
         $lppmFinal = $this->calcScore($komponenList->where('kategori','lppm'), $penilaianData);
-        $finalScore = $dplFinal && $lppmFinal ? round(($dplFinal * 60 + $lppmFinal * 40) / 100, 2) : null;
+        $desaScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai Pelaksanaan KKN UBT')?->nilai;
+        $dplScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Logbook')?->nilai;
+        $finalScore = $desaScore && $dplScore && $lppmFinal ? round(($desaScore * 0.30 + $dplScore * 0.50 + $lppmFinal * 0.20), 2) : null;
         $laporans = \App\Models\LaporanDpl::where('kelompok_kkn_id', $kelompok_kkn->id)->latest()->get()->groupBy('jenis');
 
         return view(
             'kelompok-kkn.show',
-            compact('kelompok_kkn', 'proposal', 'statusStages', 'statusCurrent', 'statusHistory', 'tugasList', 'logbookData', 'komponenList', 'penilaianData', 'dplFinal', 'lppmFinal', 'finalScore', 'laporans')
+            compact('kelompok_kkn', 'proposal', 'statusStages', 'statusCurrent', 'statusHistory', 'tugasList', 'logbookData', 'komponenList', 'penilaianData', 'desaScore', 'dplScore', 'lppmFinal', 'finalScore', 'laporans')
         );
     }
 

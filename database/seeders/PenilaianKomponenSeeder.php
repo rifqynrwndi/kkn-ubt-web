@@ -8,10 +8,9 @@ class PenilaianKomponenSeeder extends Seeder
     public function run(): void
     {
         $components = [
-            ['nama_komponen'=>'Logbook', 'deskripsi'=>'Nilai dari kualitas dan kelengkapan Logbook harian KKN', 'kategori'=>'dpl', 'bobot'=>20, 'urutan'=>1],
-            ['nama_komponen'=>'Nilai Pelaksanaan KKN UBT', 'deskripsi'=>'Nilai dari evaluasi Kepala Desa/Lurah atau DPL terkait pelaksanaan KKN', 'kategori'=>'dpl', 'bobot'=>20, 'urutan'=>2],
-            ['nama_komponen'=>'Pembekalan KKN UBT', 'deskripsi'=>'Nilai dari partisipasi dan evaluasi pembekalan KKN UBT', 'kategori'=>'lppm', 'bobot'=>20, 'urutan'=>3],
-            ['nama_komponen'=>'Seminar Hasil', 'deskripsi'=>'Nilai dari evaluasi laporan dan luaran oleh LPPM', 'kategori'=>'lppm', 'bobot'=>20, 'urutan'=>4],
+            ['nama_komponen'=>'Logbook', 'deskripsi'=>'Nilai dari kualitas dan kelengkapan Logbook harian KKN', 'kategori'=>'dpl', 'bobot'=>50, 'urutan'=>1],
+            ['nama_komponen'=>'Nilai Pelaksanaan KKN UBT', 'deskripsi'=>'Nilai Pelaksanaan KKN UBT', 'kategori'=>'dpl', 'bobot'=>30, 'urutan'=>2],
+            ['nama_komponen'=>'Video dan Program Kerja', 'deskripsi'=>'Nilai Luaran Video dan Program Kerja', 'kategori'=>'lppm', 'bobot'=>20, 'urutan'=>3],
         ];
 
         foreach ($components as $c) {

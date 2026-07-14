@@ -839,72 +839,56 @@
 
         {{-- TAB: PENILAIAN --}}
         <div class="tab-content" id="tab-penilaian">
-            <div class="card">
-                <div class="card-header"><h5><i class="fas fa-star mr-2"></i> Penilaian Kelompok</h5></div>
-                <div class="card-body p-0"><div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead><tr><th width="50">#</th><th>Komponen Penilaian</th><th width="100">Bobot</th><th width="120">Nilai</th><th width="100">Aksi</th></tr></thead>
-                        <tbody>
-                            <tr class="bg-light"><td colspan="5"><strong>Dosen Pembimbing Lapangan (DPL)</strong></td></tr>
-                            @foreach($komponenList->where('kategori','dpl') as $k)
-                            @php $nilai = $penilaianData[$k->id]->nilai ?? null; @endphp
-                            <tr>
-                                <td>{{ $k->urutan }}</td>
-                                <td><strong>{{ $k->nama_komponen }}</strong><br><small class="text-muted">{{ $k->deskripsi }}</small></td>
-                                <td><span class="badge badge-primary">{{ $k->bobot }}%</span></td>
-                                <td>
-                                    @if($nilai!==null)<span class="font-weight-bold {{ $nilai>=75?'text-success':($nilai>=60?'text-warning':'text-danger') }}">{{ number_format($nilai,2) }}</span>
-                                    @else<span class="text-muted">-</span>@endif
-                                </td>
-                                <td>
-                                    @if($isDpl)
-                                    <form action="{{ route('kelompok.penilaian.input') }}" method="POST" class="form-inline gap-1">
-                                        @csrf
-                                        <input type="hidden" name="kelompok_kkn_id" value="{{ $kelompok->id }}">
-                                        <input type="hidden" name="komponen_id" value="{{ $k->id }}">
-                                        <input type="number" name="nilai" class="form-control form-control-sm" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $nilai }}" style="width:80px;">
-                                        <button class="btn btn-primary btn-sm"><i class="fas fa-save"></i></button>
-                                    </form>
-                                    @endif
-                                </td>
-                            </tr>
-                            @endforeach
-                            @if($dplFinal)<tr class="bg-light"><td colspan="5" class="text-right font-weight-bold">Nilai Akhir DPL: {{ number_format($dplFinal,2) }}</td></tr>@endif
-
-                            <tr class="bg-light"><td colspan="5"><strong>LPPM</strong></td></tr>
-                            @foreach($komponenList->where('kategori','lppm') as $k)
-                            @php $nilai = $penilaianData[$k->id]->nilai ?? null; @endphp
-                            <tr>
-                                <td>{{ $k->urutan }}</td>
-                                <td><strong>{{ $k->nama_komponen }}</strong><br><small class="text-muted">{{ $k->deskripsi }}</small></td>
-                                <td><span class="badge badge-primary">{{ $k->bobot }}%</span></td>
-                                <td>
-                                    @if($nilai!==null)<span class="font-weight-bold {{ $nilai>=75?'text-success':($nilai>=60?'text-warning':'text-danger') }}">{{ number_format($nilai,2) }}</span>
-                                    @else<span class="text-muted">-</span>@endif
-                                </td>
-                                <td>
-                                    @if($isAdmin)
-                                    <form action="{{ route('kelompok.penilaian.input') }}" method="POST" class="form-inline gap-1">
-                                        @csrf
-                                        <input type="hidden" name="kelompok_kkn_id" value="{{ $kelompok->id }}">
-                                        <input type="hidden" name="komponen_id" value="{{ $k->id }}">
-                                        <input type="number" name="nilai" class="form-control form-control-sm" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $nilai }}" style="width:80px;">
-                                        <button class="btn btn-primary btn-sm"><i class="fas fa-save"></i></button>
-                                    </form>
-                                    @endif
-                                </td>
-                            </tr>
-                            @endforeach
-                            @if($lppmFinal)<tr class="bg-light"><td colspan="5" class="text-right font-weight-bold">Nilai Akhir LPPM: {{ number_format($lppmFinal,2) }}</td></tr>@endif
-
-                            @if($finalScore)
-                            <tr class="final-score-row"><td colspan="5" class="text-center font-weight-bold" style="font-size:1.2rem;">
-                                NILAI AKHIR TOTAL: <span class="{{ $finalScore>=75?'text-success':($finalScore>=60?'text-warning':'text-danger') }}">{{ number_format($finalScore,2) }}</span>
-                            </td></tr>
-                            @endif
-                        </tbody>
-                    </table>
-                </div></div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent">
+                    <h4 class="mb-0"><i class="fas fa-star mr-2"></i>Penilaian Kelompok</h4>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead style="background:#2D3A8A;">
+                                <tr>
+                                    <th class="text-white py-3" width="250">Komponen Penilaian</th>
+                                    <th class="text-white text-center py-3" width="120">Nilai</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+<tr>
+    <td class="py-3"><strong>Desa</strong></td>
+    <td class="text-center py-3">
+        @if($desaScore !== null)
+        <span class="font-weight-bold {{ $desaScore>=75?'text-success':($desaScore>=60?'text-warning':'text-danger') }}" style="font-size:1.1rem;">{{ number_format($desaScore, 2) }}</span>
+        @else<span class="text-muted">-</span>@endif
+    </td>
+</tr>
+<tr>
+    <td class="py-3"><strong>Dosen Pembimbing Lapangan (DPL)</strong></td>
+    <td class="text-center py-3">
+        @if($dplScore !== null)
+        <span class="font-weight-bold {{ $dplScore>=75?'text-success':($dplScore>=60?'text-warning':'text-danger') }}" style="font-size:1.1rem;">{{ number_format($dplScore, 2) }}</span>
+        @else<span class="text-muted">-</span>@endif
+    </td>
+</tr>
+<tr>
+    <td class="py-3"><strong>LPPM</strong></td>
+    <td class="text-center py-3">
+        @if($lppmScore !== null)
+        <span class="font-weight-bold {{ $lppmScore>=75?'text-success':($lppmScore>=60?'text-warning':'text-danger') }}" style="font-size:1.1rem;">{{ number_format($lppmScore, 2) }}</span>
+        @else<span class="text-muted">-</span>@endif
+    </td>
+</tr>
+                                <tr style="background:#2D3A8A;">
+                                    <td class="text-white font-weight-bold py-3" style="font-size:1.1rem;">Nilai Akhir</td>
+                                    <td class="text-center py-3">
+                                        @if($finalScore !== null)
+                                        <span class="font-weight-bold text-white" style="font-size:1.2rem;">{{ number_format($finalScore, 2) }}</span>
+                                        @else<span class="text-white">-</span>@endif
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1027,7 +1011,7 @@
         if (reviewForm) {
             reviewForm.action = "/kelompok/tugas/submission/" + id + "/review";
             var reviewDiv = document.getElementById('tgs-review');
-            if (reviewDiv) reviewDiv.style.display = (status === 'diterima' || status === 'ditolak') ? 'none' : '';
+            if (reviewDiv) { reviewDiv.style.display = (status === 'ditolak') ? 'none' : ''; reviewDiv.querySelector('button[value="diterima"]').style.display = (status === 'diterima') ? 'none' : ''; }
         }
         $('#tgsModal').modal('show');
     }

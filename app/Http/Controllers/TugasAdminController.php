@@ -24,7 +24,14 @@ class TugasAdminController extends Controller
             ->sortBy('kategori')
             ->values();
 
-        return view('tugas-admin.index', compact('tugasList'));
+        $wn = ['Program Kerja','Video Profil Desa','Draft Artikel','Laporan Program KKN'];
+        $semuaTasks = TugasKelompok::whereIn('nama_tugas', $wn)->get();
+        $kelompoks = KelompokKkn::with(['desaGelombang.desa.kecamatan',
+            'tugasKelompok' => fn($q) => $q->whereIn('nama_tugas', $wn)]);
+
+        $rekap = $kelompoks->orderBy('nama_kelompok')->get();
+
+        return view('tugas-admin.index', compact('tugasList', 'rekap', 'semuaTasks'));
     }
 
     public function create(): View

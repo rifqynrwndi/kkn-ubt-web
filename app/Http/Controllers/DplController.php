@@ -47,7 +47,20 @@ class DplController extends Controller
             ->orderBy('nama_kelompok')
             ->get();
 
-        return view('dpl.kelompok-index', compact('dpl', 'kelompoks'));
+        $wajibTasks = \App\Models\TugasKelompok::where('is_wajib', true)
+            ->whereHas('kelompokKkn', fn($q) => $q->where('dosen_pembimbing_lapangan_id', $dpl->id))
+            ->get();
+
+        $wn = ['Program Kerja','Video Profil Desa','Draft Artikel','Laporan Program KKN'];
+        $semuaTasks = \App\Models\TugasKelompok::whereIn('nama_tugas', $wn)
+            ->whereHas('kelompokKkn', fn($q) => $q->where('dosen_pembimbing_lapangan_id', $dpl->id))
+            ->get();
+
+        $kelompoks->each(function ($k) use ($wn) {
+            $k->load(['tugasKelompok' => fn($q) => $q->whereIn('nama_tugas', $wn)->with('submissions')]);
+        });
+
+        return view('dpl.kelompok-index', compact('dpl', 'kelompoks', 'semuaTasks'));
     }
 
     /*
