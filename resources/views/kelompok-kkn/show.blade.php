@@ -602,10 +602,6 @@
                                     </td>
                                 </tr>
                                 @endforeach
-                                <tr style="background:#eef1f8;">
-                                    <td colspan="4" class="text-right font-weight-bold py-2">Nilai Akhir dari Dosen Pembimbing Lapangan</td>
-                                    <td class="text-center font-weight-bold py-2">{{ $dplFinal ? number_format($dplFinal, 2) : '-' }}</td>
-                                </tr>
 
                                 {{-- LPPM SECTION --}}
                                 <tr class="bg-light">
@@ -631,10 +627,6 @@
                                     </td>
                                 </tr>
                                 @endforeach
-                                <tr style="background:#eef1f8;">
-                                    <td colspan="4" class="text-right font-weight-bold py-2">Nilai Akhir dari LPPM UBT</td>
-                                    <td class="text-center font-weight-bold py-2">{{ $lppmFinal ? number_format($lppmFinal, 2) : '-' }}</td>
-                                </tr>
 
                                 {{-- FINAL SCORE --}}
                                 <tr style="background:#2D3A8A;">
