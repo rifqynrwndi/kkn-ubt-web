@@ -65,14 +65,17 @@ class KelompokController extends Controller
         $penilaianData = \App\Models\PenilaianKelompok::where('kelompok_kkn_id', $kelompok->id)
             ->with('komponen')->get()->keyBy('komponen_id');
 
-        $dplFinal = $this->calcScore($komponenList->where('kategori','dpl'), $penilaianData);
-        $lppmFinal = $this->calcScore($komponenList->where('kategori','lppm'), $penilaianData);
-        $finalScore = $dplFinal && $lppmFinal ? round(($dplFinal * 60 + $lppmFinal * 40) / 100, 2) : null;
+        $desaScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai Pelaksanaan KKN UBT')?->nilai;
+        $dplScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Logbook')?->nilai;
+        $lppmScore = $this->calcScore($komponenList->where('kategori','lppm'), $penilaianData);
+        $finalScore = $desaScore && $dplScore && $lppmScore
+            ? round(($desaScore * 0.30 + $dplScore * 0.50 + $lppmScore * 0.20), 2)
+            : null;
 
         return view('kelompok.index', compact(
             'kelompok', 'peserta', 'isKetua', 'isDpl', 'proposal',
             'statusCurrent', 'statusHistory', 'statusStages', 'isAdmin', 'tugasList',
-            'logbookData', 'members', 'komponenList', 'penilaianData', 'dplFinal', 'lppmFinal', 'finalScore'
+            'logbookData', 'members', 'desaScore', 'dplScore', 'lppmScore', 'finalScore'
         ));
     }
 
