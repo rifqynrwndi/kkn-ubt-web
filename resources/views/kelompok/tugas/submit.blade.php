@@ -44,7 +44,7 @@
                         <label>Berkas</label>
                         <input type="file" name="file" class="form-control-file @error('file') is-invalid @enderror" required>
                         @error('file') <small class="text-danger d-block">{{ $message }}</small> @enderror
-                        <small class="text-muted d-block mt-1">PDF, DOC, DOCX, ZIP, JPG, PNG — Maks 10MB</small>
+                        <small class="text-muted d-block mt-1">Semua format file — Maks 10MB</small>
                     </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-success"><i class="fas fa-paper-plane mr-1"></i> Kumpulkan</button>
