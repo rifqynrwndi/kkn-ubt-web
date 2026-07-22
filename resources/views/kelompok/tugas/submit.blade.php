@@ -15,14 +15,14 @@
             <div class="card-header"><h4>Form Pengumpulan Tugas</h4></div>
             <div class="card-body">
                 @if($tugasList->sum(fn($g) => $g->count()) > 0)
-                <form id="tugas-form" action="{{ route('kelompok.tugas.submit', 0) }}" method="POST" enctype="multipart/form-data" onsubmit="return setAction(this)">
+                <form id="tugas-form" action="#" method="POST" enctype="multipart/form-data" onsubmit="if(!document.getElementById('tugas-select').value){alert('Pilih tugas terlebih dahulu');return false}">
                     @csrf
                     <div class="form-group">
                         <label>Pilih Tugas</label>
-                        <select name="tugas_id" id="tugas-select" class="form-control" required>
+                        <select id="tugas-select" class="form-control" required onchange="document.getElementById('tugas-form').action='/kelompok/tugas/'+this.value+'/submit'">
                             <option value="">-- Pilih Tugas --</option>
                             @foreach($tugasList as $kat => $items)
-                            <optgroup label="{{ ['tugas_kelompok'=>'Tugas Kelompok','luaran_wajib'=>'Luaran Wajib','luaran_lain'=>'Luaran Lain','laporan'=>'Laporan'][$kat] ?? $kat }}">
+                            <optgroup label="{{ ['tugas_kelompok'=>'Tugas Kelompok','luaran_wajib'=>'Luaran Wajib','luaran_lain'=>'Luaran Tambahan','laporan'=>'Laporan'][$kat] ?? $kat }}">
                                 @foreach($items as $t)
                                 <option value="{{ $t->id }}">{{ $t->nama_tugas }}</option>
                                 @endforeach
@@ -64,13 +64,3 @@
     </div>
 </section>
 @endsection
-@push('scripts')
-<script>
-function setAction(form) {
-    var val = document.getElementById('tugas-select').value;
-    if (!val) { iziToast.warning({title:'Pilih Tugas', message:'Silakan pilih tugas terlebih dahulu.', position:'topRight'}); return false; }
-    form.action = "/kelompok/tugas/" + val + "/submit";
-    return true;
-}
-</script>
-@endpush
