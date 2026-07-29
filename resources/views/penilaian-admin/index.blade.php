@@ -6,56 +6,72 @@
 <section class="section">
     <div class="section-header d-flex justify-content-between align-items-center">
         <h1>Penilaian Kelompok</h1>
-        <div>
-            <a href="{{ route('penilaian.admin.export', ['gelombang_id' => $selectedGelombang]) }}" class="btn btn-success">
-                <i class="fas fa-file-excel mr-1"></i> Export Excel
-            </a>
-        </div>
+        @if($selectedGelombang)
+        <a href="{{ route('penilaian.admin.export', ['gelombang_id' => $selectedGelombang]) }}" class="btn btn-success">
+            <i class="fas fa-file-excel mr-1"></i> Export Excel
+        </a>
+        @endif
     </div>
 
     <div class="section-body">
-        {{-- GELOMBANG SELECTOR --}}
-        <div class="card border-0 shadow-sm mb-3">
-            <div class="card-body py-3">
-                <form method="GET" class="form-inline">
-                    <label class="font-weight-bold mr-2">Pilih Gelombang:</label>
-                    <select name="gelombang_id" class="form-control mr-3" onchange="this.form.submit()">
-                        @foreach($gelombangs as $g)
-                        <option value="{{ $g->id }}" {{ $g->id == $selectedGelombang ? 'selected' : '' }}>
-                            {{ $g->nama_gelombang ?? 'Gelombang ' . $g->id }}
-                        </option>
-                        @endforeach
-                    </select>
-                    <div class="input-group" style="min-width:200px;">
+
+        {{-- Gelombang Selector --}}
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <form method="GET" class="row align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label font-weight-bold">Pilih Gelombang</label>
+                        <select name="gelombang_id" class="form-control" onchange="this.form.submit()">
+                            <option value="">-- Pilih Gelombang --</option>
+                            @foreach($gelombangs as $g)
+                            <option value="{{ $g->id }}" {{ $g->id == $selectedGelombang ? 'selected' : '' }}>
+                                {{ $g->nama_gelombang ?? 'Gelombang ' . $g->id }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label font-weight-bold">Cari</label>
                         <input type="text" name="search" class="form-control" placeholder="Cari kelompok, desa, DPL..." value="{{ request('search') }}">
-                        <div class="input-group-append">
-                            <button class="btn btn-primary"><i class="fas fa-search"></i></button>
-                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-filter mr-1"></i> Filter
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+        @if(!$selectedGelombang)
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <span style="font-size:48px;display:block;margin-bottom:16px;">📋</span>
+                <h5 class="font-weight-bold mb-2">Pilih Gelombang Terlebih Dahulu</h5>
+                <p class="text-muted mb-0">Silakan pilih gelombang KKN untuk melihat daftar penilaian kelompok.</p>
+            </div>
+        </div>
+        @else
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <h4 class="mb-0">Daftar Nilai Kelompok</h4>
                 <span class="text-muted">{{ $kelompoks->total() ?? 0 }} kelompok</span>
             </div>
             <div class="card-body p-0">
                 @if($kelompoks->count())
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle mb-0">
+                    <table class="table table-hover mb-0">
                         <thead style="background:#2D3A8A;">
                             <tr>
-                                <th class="text-white text-center py-3" width="40">No</th>
-                                <th class="text-white py-3">Kelompok</th>
-                                <th class="text-white py-3">Desa</th>
-                                <th class="text-white py-3">DPL</th>
-                                <th class="text-white text-center py-3" width="90">Nilai DPL</th>
-                                <th class="text-white text-center py-3" width="90">Nilai Desa</th>
-                                <th class="text-white text-center py-3" width="90">Nilai LPPM</th>
-                                <th class="text-white text-center py-3" width="90">Nilai Akhir</th>
-                                <th class="text-white text-center py-3" width="100">Aksi</th>
+                                <th class="text-white text-center" width="40">No</th>
+                                <th class="text-white">Kelompok</th>
+                                <th class="text-white">Desa</th>
+                                <th class="text-white">DPL</th>
+                                <th class="text-white text-center" width="90">Nilai DPL</th>
+                                <th class="text-white text-center" width="90">Nilai Desa</th>
+                                <th class="text-white text-center" width="90">Nilai LPPM</th>
+                                <th class="text-white text-center" width="90">Nilai Akhir</th>
+                                <th class="text-white text-center" width="100">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -97,18 +113,22 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="p-3 d-flex justify-content-center">
-                    {{ $kelompoks->links() }}
-                </div>
                 @else
                 <div class="text-center text-muted py-5">Tidak ada kelompok untuk gelombang yang dipilih.</div>
                 @endif
             </div>
+            @if(method_exists($kelompoks, 'links'))
+            <div class="card-footer">
+                {{ $kelompoks->links() }}
+            </div>
+            @endif
         </div>
+        @endif
     </div>
 </section>
 
 {{-- MODALS --}}
+@if($selectedGelombang)
 @foreach($kelompoks as $k)
 @php
     $pd = \App\Models\PenilaianKelompok::where('kelompok_kkn_id', $k->id)->get()->keyBy('komponen_id');
@@ -142,4 +162,5 @@
     </div>
 </div>
 @endforeach
+@endif
 @endsection
