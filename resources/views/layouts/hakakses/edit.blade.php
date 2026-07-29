@@ -61,7 +61,7 @@
                                     <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-save"></i> Save Changes
                                     </button>
-                                    <a href="{{ route('hakakses.index') }}" class="btn btn-secondary text-bg-dark">
+                                    <a href="{{ route('hakakses.index') }}" class="btn btn-outline-secondary text-bg-dark">
                                         Cancel
                                     </a>
                                 </div>

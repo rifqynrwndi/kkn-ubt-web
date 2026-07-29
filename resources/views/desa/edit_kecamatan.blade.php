@@ -22,7 +22,7 @@
                         <input type="text" name="kabupaten" value="{{ old('kabupaten', $kecamatan->kabupaten) }}" class="form-control" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Simpan</button>
-                    <a href="{{ route('desa.index') }}" class="btn btn-secondary">Batal</a>
+                    <a href="{{ route('desa.index') }}" class="btn btn-outline-secondary">Batal</a>
                 </form>
             </div>
         </div>

@@ -58,7 +58,7 @@ class PenilaianAdminController extends Controller
         $kelompok->load('pesertaKkn.mahasiswa.user', 'desaGelombang.desa.kecamatan', 'dosenPembimbingLapangan.user');
         $komponenList = PenilaianKomponen::orderBy('urutan')->get();
         $penilaianKelompok = PenilaianKelompok::where('kelompok_kkn_id', $kelompok->id)->get()->keyBy('komponen_id');
-        $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $kelompok->id)->get()->groupBy('peserta_kkn_id');
+        $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $kelompok->id)->get()->groupBy('peserta_kkn_id')->map(fn($g) => $g->keyBy('komponen_id'));
 
         return view('penilaian-admin.edit', compact('kelompok', 'komponenList', 'penilaianKelompok', 'penilaianIndividu'));
     }

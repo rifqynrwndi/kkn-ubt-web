@@ -6,7 +6,7 @@
 <section class="section">
     <div class="section-header d-flex justify-content-between align-items-center">
         <h1>Input Nilai Kelompok</h1>
-        <a href="{{ route('penilaian.admin.index', request()->only(['gelombang_id', 'search', 'page'])) }}" class="btn btn-secondary">Kembali</a>
+        <a href="{{ route('penilaian.admin.index', request()->only(['gelombang_id', 'search', 'page'])) }}" class="btn btn-outline-secondary">Kembali</a>
     </div>
 
     <div class="section-body">
