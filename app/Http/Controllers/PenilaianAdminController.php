@@ -57,19 +57,43 @@ class PenilaianAdminController extends Controller
     {
         $request->validate([
             'kelompok_kkn_id' => 'required|exists:kelompok_kkn,id',
-            'komponen_id' => 'required|array',
+            'komponen_id' => 'nullable|array',
             'komponen_id.*' => 'exists:penilaian_komponen,id',
             'nilai' => 'nullable|array',
             'nilai.*' => 'nullable|numeric|min:0|max:100',
+            'desa_peserta_kkn_id' => 'nullable|array',
+            'desa_peserta_kkn_id.*' => 'exists:peserta_kkn,id',
+            'desa_nilai' => 'nullable|array',
+            'desa_nilai.*' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        foreach ($request->komponen_id as $i => $komponenId) {
-            $nilai = $request->nilai[$i] ?? null;
-            if ($nilai !== null && $nilai !== '') {
-                PenilaianKelompok::updateOrCreate(
-                    ['kelompok_kkn_id' => $request->kelompok_kkn_id, 'komponen_id' => $komponenId],
-                    ['nilai' => $nilai, 'input_by' => auth()->id(), 'input_at' => now()]
-                );
+        $desaKom = PenilaianKomponen::where('nama_komponen', 'Nilai Desa')->first();
+
+        if ($desaKom && $request->filled('desa_peserta_kkn_id')) {
+            foreach ($request->desa_peserta_kkn_id as $i => $pesertaId) {
+                $nilai = $request->desa_nilai[$i] ?? null;
+                if ($nilai !== null && $nilai !== '') {
+                    PenilaianIndividu::updateOrCreate(
+                        [
+                            'kelompok_kkn_id' => $request->kelompok_kkn_id,
+                            'peserta_kkn_id' => $pesertaId,
+                            'komponen_id' => $desaKom->id,
+                        ],
+                        ['nilai' => $nilai, 'input_by' => auth()->id()]
+                    );
+                }
+            }
+        }
+
+        if ($request->filled('komponen_id')) {
+            foreach ($request->komponen_id as $i => $komponenId) {
+                $nilai = $request->nilai[$i] ?? null;
+                if ($nilai !== null && $nilai !== '') {
+                    PenilaianKelompok::updateOrCreate(
+                        ['kelompok_kkn_id' => $request->kelompok_kkn_id, 'komponen_id' => $komponenId],
+                        ['nilai' => $nilai, 'input_by' => auth()->id(), 'input_at' => now()]
+                    );
+                }
             }
         }
 
@@ -86,6 +110,7 @@ class PenilaianAdminController extends Controller
         $kelompoks = KelompokKkn::with([
             'desaGelombang.desa.kecamatan',
             'dosenPembimbingLapangan.user',
+            'pesertaKkn.mahasiswa.user',
         ])->whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $gelombangId))
             ->orderBy('nama_kelompok')->get();
 
@@ -93,47 +118,51 @@ class PenilaianAdminController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Nilai Akhir');
 
-        $headers = ['No', 'Kelompok', 'Desa', 'Kecamatan', 'Kabupaten', 'DPL', 'Nilai DPL', 'Nilai Desa', 'Nilai LPPM', 'Nilai Akhir'];
+        $headers = ['No', 'Kelompok', 'Mahasiswa', 'NPM', 'Desa', 'Kecamatan', 'Kabupaten', 'DPL', 'Nilai DPL', 'Nilai Desa', 'Nilai LPPM', 'Nilai Akhir'];
 
-        foreach (range('A', 'J') as $i => $c) {
+        foreach (range('A', 'L') as $i => $c) {
             $sheet->setCellValue($c . '1', $headers[$i]);
         }
 
         $row = 2;
-        foreach ($kelompoks as $i => $k) {
+        $no = 1;
+        foreach ($kelompoks as $k) {
             $penilaianData = PenilaianKelompok::where('kelompok_kkn_id', $k->id)->get()->keyBy('komponen_id');
-            $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $k->id)->get();
+            $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $k->id)->get()->groupBy('peserta_kkn_id');
 
-            $dplKomponen = $komponenList->firstWhere('nama_komponen', 'Nilai DPL');
-            $dplScores = $penilaianIndividu->where('komponen_id', $dplKomponen?->id)->pluck('nilai');
-            $dplScore = $dplScores->isNotEmpty() ? round($dplScores->avg(), 2) : null;
-
-            $desaKomponen = $komponenList->firstWhere('nama_komponen', 'Nilai Desa');
-            $desaScores = $penilaianIndividu->where('komponen_id', $desaKomponen?->id)->pluck('nilai');
-            $desaScore = $desaScores->isNotEmpty() ? round($desaScores->avg(), 2) : null;
             $lppmScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai LPPM')?->nilai;
 
-            $finalScore = (!is_null($dplScore) && !is_null($desaScore) && !is_null($lppmScore))
-                ? round($dplScore * 0.40 + $desaScore * 0.30 + $lppmScore * 0.30, 2)
-                : null;
+            foreach ($k->pesertaKkn as $p) {
+                $dplKom = $komponenList->firstWhere('nama_komponen', 'Nilai DPL');
+                $dplScore = $penilaianIndividu[$p->id][$dplKom?->id]->nilai ?? null;
 
-            $sheet->setCellValue('A' . $row, $i + 1);
-            $sheet->setCellValue('B' . $row, $k->nama_kelompok);
-            $sheet->setCellValue('C' . $row, $k->desaGelombang?->desa?->nama_desa ?? '-');
-            $sheet->setCellValue('D' . $row, $k->desaGelombang?->desa?->kecamatan?->nama_kecamatan ?? '-');
-            $sheet->setCellValue('E' . $row, $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? '-');
-            $sheet->setCellValue('F' . $row, $k->dosenPembimbingLapangan?->user?->name ?? '-');
-            $sheet->setCellValue('G' . $row, $dplScore ?? '-');
-            $sheet->setCellValue('H' . $row, $desaScore ?? '-');
-            $sheet->setCellValue('I' . $row, $lppmScore ?? '-');
-            $sheet->setCellValue('J' . $row, $finalScore ?? '-');
-            $row++;
+                $desaKom = $komponenList->firstWhere('nama_komponen', 'Nilai Desa');
+                $desaScore = $penilaianIndividu[$p->id][$desaKom?->id]->nilai ?? null;
+
+                $finalScore = (!is_null($dplScore) && !is_null($desaScore) && !is_null($lppmScore))
+                    ? round($dplScore * 0.40 + $desaScore * 0.30 + $lppmScore * 0.30, 2)
+                    : null;
+
+                $sheet->setCellValue('A' . $row, $no++);
+                $sheet->setCellValue('B' . $row, $k->nama_kelompok);
+                $sheet->setCellValue('C' . $row, $p->mahasiswa?->user?->name ?? '-');
+                $sheet->setCellValue('D' . $row, $p->mahasiswa?->npm ?? '-');
+                $sheet->setCellValue('E' . $row, $k->desaGelombang?->desa?->nama_desa ?? '-');
+                $sheet->setCellValue('F' . $row, $k->desaGelombang?->desa?->kecamatan?->nama_kecamatan ?? '-');
+                $sheet->setCellValue('G' . $row, $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? '-');
+                $sheet->setCellValue('H' . $row, $k->dosenPembimbingLapangan?->user?->name ?? '-');
+                $sheet->setCellValue('I' . $row, $dplScore ?? '-');
+                $sheet->setCellValue('J' . $row, $desaScore ?? '-');
+                $sheet->setCellValue('K' . $row, $lppmScore ?? '-');
+                $sheet->setCellValue('L' . $row, $finalScore ?? '-');
+                $row++;
+            }
         }
 
-        foreach (range('A', 'I') as $c) {
+        foreach (range('A', 'K') as $c) {
             $sheet->getColumnDimension($c)->setAutoSize(true);
         }
-        $sheet->getColumnDimension('J')->setWidth(12);
+        $sheet->getColumnDimension('L')->setWidth(12);
 
         $writer = new Xlsx($spreadsheet);
         $filename = 'nilai-kkn-ubt-' . date('Y-m-d') . '.xlsx';

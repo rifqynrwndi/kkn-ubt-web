@@ -134,9 +134,11 @@
 @foreach($kelompoks as $k)
 @php
     $pd = \App\Models\PenilaianKelompok::where('kelompok_kkn_id', $k->id)->get()->keyBy('komponen_id');
+    $pi = \App\Models\PenilaianIndividu::where('kelompok_kkn_id', $k->id)->get()->groupBy('peserta_kkn_id');
+    $k->load('pesertaKkn.mahasiswa.user');
 @endphp
 <div class="modal fade" id="nilaiModal{{ $k->id }}" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header" style="background:#2D3A8A;color:#fff;">
                 <h5 class="modal-title">Input Nilai - {{ $k->nama_kelompok }}</h5>
@@ -146,7 +148,36 @@
                 @csrf
                 <input type="hidden" name="kelompok_kkn_id" value="{{ $k->id }}">
                 <div class="modal-body">
-                    @foreach($komponenList->where('kategori', 'lppm') as $kom)
+                    @php $desaKom = $komponenList->firstWhere('nama_komponen', 'Nilai Desa'); @endphp
+                    @if($desaKom)
+                    <div class="mb-4">
+                        <h6 class="font-weight-bold mb-3">Nilai Desa (Per Mahasiswa)</h6>
+                        <table class="table table-sm table-bordered mb-0">
+                            <thead style="background:#2D3A8A;">
+                                <tr>
+                                    <th class="text-white">Mahasiswa</th>
+                                    <th class="text-white text-center" width="120">Nilai</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($k->pesertaKkn as $p)
+                                @php
+                                    $existing = $pi[$p->id][$desaKom->id]->nilai ?? null;
+                                @endphp
+                                <tr>
+                                    <td>{{ $p->mahasiswa?->user?->name ?? '-' }} <small class="text-muted">({{ $p->mahasiswa?->npm ?? '-' }})</small></td>
+                                    <td class="text-center">
+                                        <input type="hidden" name="desa_peserta_kkn_id[]" value="{{ $p->id }}">
+                                        <input type="number" name="desa_nilai[]" class="form-control form-control-sm text-center" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $existing }}" style="width:90px;">
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @endif
+
+                    @foreach($komponenList->where('kategori', 'lppm')->where('nama_komponen', 'Nilai LPPM') as $kom)
                     @php $existing = $pd[$kom->id]->nilai ?? null; @endphp
                     <div class="form-group">
                         <label class="font-weight-bold">{{ $kom->nama_komponen }}</label>
