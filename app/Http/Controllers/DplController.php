@@ -57,7 +57,7 @@ class DplController extends Controller
             ->get();
 
         $kelompoks->each(function ($k) use ($wn) {
-            $k->load(['tugasKelompok' => fn($q) => $q->whereIn('nama_tugas', $wn)->with('submissions')]);
+            $k->load(['tugasKelompok' => fn($q) => $q->whereIn('nama_tugas', $wn)->with(['submissions.pesertaKkn.mahasiswa.user'])]);
         });
 
         return view('dpl.kelompok-index', compact('dpl', 'kelompoks', 'semuaTasks'));

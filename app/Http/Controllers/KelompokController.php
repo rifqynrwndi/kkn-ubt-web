@@ -65,11 +65,18 @@ class KelompokController extends Controller
         $penilaianData = \App\Models\PenilaianKelompok::where('kelompok_kkn_id', $kelompok->id)
             ->with('komponen')->get()->keyBy('komponen_id');
 
-        $desaScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai Pelaksanaan KKN UBT')?->nilai;
-        $dplScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Logbook')?->nilai;
-        $lppmScore = $this->calcScore($komponenList->where('kategori','lppm'), $penilaianData);
-        $finalScore = $desaScore && $dplScore && $lppmScore
-            ? round(($desaScore * 0.30 + $dplScore * 0.50 + $lppmScore * 0.20), 2)
+        $penilaianIndividu = \App\Models\PenilaianIndividu::where('kelompok_kkn_id', $kelompok->id)->get();
+
+        $dplKomponen = $komponenList->firstWhere('nama_komponen', 'Nilai DPL');
+        $dplScores = $penilaianIndividu->where('komponen_id', $dplKomponen?->id)->pluck('nilai');
+        $dplScore = $dplScores->isNotEmpty() ? round($dplScores->avg(), 2) : null;
+
+        $desaScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai Desa')?->nilai;
+
+        $lppmScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai LPPM')?->nilai;
+
+        $finalScore = (!is_null($dplScore) && !is_null($desaScore) && !is_null($lppmScore))
+            ? round(($dplScore * 0.40 + $desaScore * 0.30 + $lppmScore * 0.30), 2)
             : null;
 
         return view('kelompok.index', compact(

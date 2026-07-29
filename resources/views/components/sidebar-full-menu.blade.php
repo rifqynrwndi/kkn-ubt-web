@@ -129,9 +129,9 @@
             {{-- ========================================================= --}}
             @role('superadmin')
 
-                {{-- USER MANAGEMENT --}}
+                {{-- MANAJEMEN PENGGUNA --}}
                 <li class="menu-header">
-                    User Management
+                    Manajemen Pengguna
                 </li>
 
                 <li class="{{ Request::is('hakakses*') ? 'active' : '' }}">
@@ -139,7 +139,7 @@
                        href="{{ route('hakakses.index') }}">
 
                         <i class="fas fa-user-shield"></i>
-                        <span>Role Access</span>
+                        <span>Hak Akses</span>
 
                     </a>
                 </li>
@@ -159,7 +159,7 @@
                        href="{{ route('pembimbing-lapangan.index') }}">
 
                         <i class="fas fa-chalkboard-teacher"></i>
-                        <span>Dosen Pembimbing</span>
+                        <span>Dosen Pembimbing Lapangan</span>
 
                     </a>
                 </li>
@@ -246,9 +246,14 @@
                     </a>
                 </li>
 
-                {{-- MONITORING --}}
-                <li class="menu-header">
-                    Monitoring
+                <li class="{{ Request::is('admin/penilaian*') ? 'active' : '' }}">
+                    <a class="nav-link"
+                       href="{{ route('penilaian.admin.index') }}">
+
+                        <i class="fas fa-star"></i>
+                        <span>Penilaian</span>
+
+                    </a>
                 </li>
 
                 <li class="{{ Request::is('notifications*') ? 'active' : '' }}">
@@ -256,35 +261,9 @@
                        href="{{ route('notifications.index') }}">
 
                         <i class="fas fa-bell"></i>
-                        <span>Notifications</span>
+                        <span>Notifikasi</span>
 
                         <livewire:notification-badge />
-
-                    </a>
-                </li>
-
-                <li class="{{ Request::is('activity-logs*') ? 'active' : '' }}">
-                    <a class="nav-link"
-                       href="{{ route('activity-logs.index') }}">
-
-                        <i class="fas fa-history"></i>
-                        <span>Activity Logs</span>
-
-                    </a>
-                </li>
-
-
-                {{-- SYSTEM --}}
-                <li class="menu-header">
-                    System
-                </li>
-
-                <li class="{{ Request::is('settings*') ? 'active' : '' }}">
-                    <a class="nav-link"
-                       href="{{ route('settings.index') }}">
-
-                        <i class="fas fa-cog"></i>
-                        <span>Settings</span>
 
                     </a>
                 </li>
@@ -293,25 +272,11 @@
 
 
             {{-- ========================================================= --}}
-            {{-- GLOBAL --}}
+            {{-- AKUN --}}
             {{-- ========================================================= --}}
             <li class="menu-header">
-                Account
+                Akun
             </li>
-
-            @role('mahasiswa')
-
-                <li class="{{ Request::is('notifications*') ? 'active' : '' }}">
-                    <a class="nav-link"
-                       href="{{ route('notifications.index') }}">
-
-                        <i class="fas fa-bell"></i>
-                        <span>Notifications</span>
-
-                        <livewire:notification-badge />
-
-                    </a>
-            @endrole
 
             @role('superadmin')
 
@@ -320,7 +285,7 @@
                        href="{{ route('profile.edit') }}">
 
                         <i class="far fa-user"></i>
-                        <span>Profile</span>
+                        <span>Profil</span>
 
                     </a>
                 </li>
@@ -344,7 +309,7 @@
                    href="{{ route('profile.change-password') }}">
 
                     <i class="fas fa-key"></i>
-                    <span>Change Password</span>
+                    <span>Ubah Password</span>
 
                 </a>
             </li>

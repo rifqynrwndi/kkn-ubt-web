@@ -20,9 +20,7 @@ class RolePermissionSeeder extends Seeder
             'view-dashboard',
 
             'manage-users',
-            'manage-settings',
             'manage-files',
-            'manage-activity-logs',
 
             'manage-master-data',
             'manage-kkn',

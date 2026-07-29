@@ -14,6 +14,14 @@
     </a>
 </li>
 
+<li class="menu-header">Penilaian</li>
+<li class="{{ Request::is('dpl/penilaian*') ? 'active' : '' }}">
+    <a class="nav-link" href="{{ route('dpl.penilaian.index') }}">
+        <i class="fas fa-star"></i>
+        <span>Penilaian Mahasiswa</span>
+    </a>
+</li>
+
 <li class="menu-header">Profil</li>
 <li class="{{ Request::is('dpl/profile*') ? 'active' : '' }}">
     <a class="nav-link" href="{{ route('dpl.profile.edit') }}">

@@ -567,71 +567,45 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle mb-0" style="border-collapse:collapse;">
+                        <table class="table table-striped align-middle mb-0">
                             <thead>
                                 <tr style="background:#2D3A8A;">
                                     <th class="text-white py-3" width="60">#</th>
                                     <th class="text-white py-3">Komponen Penilaian</th>
-                                    <th class="text-white text-center py-3" width="80">Bobot</th>
-                                    <th class="text-white text-center py-3" width="100">Nilai</th>
-                                    <th class="text-white text-center py-3" width="170">Aksi</th>
+                                    <th class="text-white text-center py-3" width="120">Nilai</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {{-- DPL SECTION --}}
-                                <tr class="bg-light">
-                                    <td colspan="5" class="py-2"><strong><i class="fas fa-user-tie mr-2"></i>Dosen Pembimbing Lapangan (DPL)</strong></td>
-                                </tr>
-                                @foreach($komponenList->where('kategori','dpl') as $k)
-                                @php $nilai = $penilaianData[$k->id]->nilai ?? null; @endphp
                                 <tr>
-                                    <td class="text-center">{{ $k->urutan }}</td>
-                                    <td><strong>{{ $k->nama_komponen }}</strong><br><small class="text-muted">{{ $k->deskripsi }}</small></td>
-                                    <td class="text-center"><span class="badge badge-primary">{{ $k->bobot }}%</span></td>
-                                    <td class="text-center">{{ $nilai !== null ? number_format($nilai,2) : '-' }}</td>
-                                    <td class="text-center">
-                                        <form action="{{ route('kelompok.penilaian.input') }}" method="POST">
-                                            @csrf
-                                            <input type="hidden" name="kelompok_kkn_id" value="{{ $kelompok_kkn->id }}">
-                                            <input type="hidden" name="komponen_id" value="{{ $k->id }}">
-                                            <div class="d-flex justify-content-center">
-                                                <input type="number" name="nilai" class="form-control form-control-sm text-center rounded-right-0" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $nilai }}" style="width:90px;">
-                                                <button class="btn btn-sm btn-primary rounded-left-0"><i class="fas fa-save"></i></button>
-                                            </div>
-                                        </form>
+                                    <td class="text-center">1</td>
+                                    <td class="py-3"><strong>Nilai DPL</strong></td>
+                                    <td class="text-center py-3">
+                                        @if($dplScore !== null)
+                                        <span class="font-weight-bold {{ $dplScore>=75?'text-success':($dplScore>=60?'text-warning':'text-danger') }}">{{ number_format($dplScore, 2) }}</span>
+                                        @else<span class="text-muted">-</span>@endif
                                     </td>
                                 </tr>
-                                @endforeach
-
-                                {{-- LPPM SECTION --}}
-                                <tr class="bg-light">
-                                    <td colspan="5" class="py-2"><strong><i class="fas fa-building mr-2"></i>LPPM UBT</strong></td>
-                                </tr>
-                                @foreach($komponenList->where('kategori','lppm') as $k)
-                                @php $nilai = $penilaianData[$k->id]->nilai ?? null; @endphp
                                 <tr>
-                                    <td class="text-center">{{ $k->urutan }}</td>
-                                    <td><strong>{{ $k->nama_komponen }}</strong><br><small class="text-muted">{{ $k->deskripsi }}</small></td>
-                                    <td class="text-center"><span class="badge badge-primary">{{ $k->bobot }}%</span></td>
-                                    <td class="text-center">{{ $nilai !== null ? number_format($nilai,2) : '-' }}</td>
-                                    <td class="text-center">
-                                        <form action="{{ route('kelompok.penilaian.input') }}" method="POST">
-                                            @csrf
-                                            <input type="hidden" name="kelompok_kkn_id" value="{{ $kelompok_kkn->id }}">
-                                            <input type="hidden" name="komponen_id" value="{{ $k->id }}">
-                                            <div class="d-flex justify-content-center">
-                                                <input type="number" name="nilai" class="form-control form-control-sm text-center rounded-right-0" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $nilai }}" style="width:90px;">
-                                                <button class="btn btn-sm btn-primary rounded-left-0"><i class="fas fa-save"></i></button>
-                                            </div>
-                                        </form>
+                                    <td class="text-center">2</td>
+                                    <td class="py-3"><strong>Nilai Desa</strong></td>
+                                    <td class="text-center py-3">
+                                        @if($desaScore !== null)
+                                        <span class="font-weight-bold {{ $desaScore>=75?'text-success':($desaScore>=60?'text-warning':'text-danger') }}">{{ number_format($desaScore, 2) }}</span>
+                                        @else<span class="text-muted">-</span>@endif
                                     </td>
                                 </tr>
-                                @endforeach
-
-                                {{-- FINAL SCORE --}}
+                                <tr>
+                                    <td class="text-center">3</td>
+                                    <td class="py-3"><strong>Nilai LPPM</strong></td>
+                                    <td class="text-center py-3">
+                                        @if($lppmScore !== null)
+                                        <span class="font-weight-bold {{ $lppmScore>=75?'text-success':($lppmScore>=60?'text-warning':'text-danger') }}">{{ number_format($lppmScore, 2) }}</span>
+                                        @else<span class="text-muted">-</span>@endif
+                                    </td>
+                                </tr>
                                 <tr style="background:#2D3A8A;">
-                                    <td colspan="4" class="text-right font-weight-bold text-white py-3" style="font-size:1.1rem;">Nilai Akhir</td>
-                                    <td class="text-center font-weight-bold text-white py-3" style="font-size:1.1rem;">{{ $finalScore ? number_format($finalScore, 2) : '-' }}</td>
+                                    <td colspan="2" class="text-right font-weight-bold py-3" style="font-size:1.1rem;">Nilai Akhir</td>
+                                    <td class="text-center font-weight-bold py-3" style="font-size:1.1rem;">{{ $finalScore ? number_format($finalScore, 2) : '-' }}</td>
                                 </tr>
                             </tbody>
                         </table>

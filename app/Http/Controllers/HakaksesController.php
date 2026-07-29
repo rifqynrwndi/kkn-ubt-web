@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\ActivityLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -57,13 +56,6 @@ class HakaksesController extends Controller
         $user = User::findOrFail($id);
         $user->syncRoles([$request->role]);
 
-        ActivityLog::log(
-            "Role updated for {$user->name} to {$request->role}",
-            'Role Access',
-            'updated',
-            $user
-        );
-
         return redirect()->route('hakakses.index')
             ->with('success', 'User role updated successfully.');
     }
@@ -81,14 +73,7 @@ class HakaksesController extends Controller
                 ->with('error', 'You cannot delete your own account.');
         }
 
-        $userName = $user->name;
         $user->delete();
-
-        ActivityLog::log(
-            "User deleted: {$userName}",
-            'Role Access',
-            'deleted'
-        );
 
         return redirect()->route('hakakses.index')
             ->with('success', 'User deleted successfully.');

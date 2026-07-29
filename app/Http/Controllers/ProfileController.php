@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ActivityLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -38,8 +37,6 @@ class ProfileController extends Controller
         $user->email = $request->input('email');
         $user->save();
 
-        ActivityLog::log('Profile updated', 'User Profile', 'updated', $user);
-
         return redirect()->route('profile.edit')->with('success', 'Profile updated successfully.');
     }
 
@@ -70,8 +67,6 @@ class ProfileController extends Controller
         $user->fill([
             'password' => Hash::make($request->new_password),
         ])->save();
-
-        ActivityLog::log('Password changed', 'User Profile', 'updated', $user);
 
         return back()->with('success', 'Password changed successfully.');
     }

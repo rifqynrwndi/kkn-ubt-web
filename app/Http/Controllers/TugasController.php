@@ -48,6 +48,8 @@ class TugasController extends Controller
 
     public function submit(Request $request, TugasKelompok $tugas): RedirectResponse
     {
+        \Log::info('Tugas submit attempt', ['user'=>auth()->id(), 'tugas_id'=>$tugas->id, 'file'=>$request->hasFile('file')]);
+        
         $request->validate([
             'judul' => 'required|string|max:255',
             'file' => 'required|file|max:10240',
@@ -60,6 +62,8 @@ class TugasController extends Controller
 
         $file = $request->file('file');
         $path = $file->store('tugas/'.$tugas->id, 'public');
+
+        \Log::info('Tugas submitted', ['path'=>$path, 'peserta'=>$peserta->id]);
 
         TugasSubmission::create([
             'tugas_kelompok_id' => $tugas->id,

@@ -10,12 +10,15 @@
 
     <div class="section-body">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h4>Daftar Kelompok</h4>
+                <div style="min-width:250px;">
+                    <input type="text" id="dplSearchInput" class="form-control" placeholder="Cari kelompok, desa, kecamatan...">
+                </div>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover mb-0" id="dplKelompokTable">
                         <thead>
                             <tr>
                                 <th class="text-center" width="40">No</th>
@@ -79,6 +82,14 @@
                 </div>
             </div>
         </div>
+        <script>
+        document.getElementById('dplSearchInput')?.addEventListener('keyup', function() {
+            var q = this.value.toLowerCase();
+            document.querySelectorAll('#dplKelompokTable tbody tr').forEach(function(row) {
+                row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+        });
+        </script>
 
         @if(isset($semuaTasks) && $semuaTasks->unique('nama_tugas')->count() > 0)
         <div class="card mt-3 border-0 shadow-sm">
@@ -103,8 +114,23 @@
                                 <td><small>{{ $k->nama_kelompok }}</small></td>
                                 @php $done = 0; $totalW = $semuaTasks->unique('nama_tugas')->count(); @endphp
                                 @foreach($semuaTasks->unique('nama_tugas') as $wt)
-                                @php $t = $k->tugasKelompok->firstWhere('nama_tugas', $wt->nama_tugas); $submitted = $t && $t->submissions->isNotEmpty(); if($submitted) $done++; @endphp
-                                <td class="text-center">@if($submitted)<span class="badge badge-success">✅</span>@else<span class="badge badge-danger">❌</span>@endif</td>
+                                @php
+                                    $t = $k->tugasKelompok->firstWhere('nama_tugas', $wt->nama_tugas);
+                                    $submitted = $t && $t->submissions->isNotEmpty();
+                                    if($submitted) $done++;
+                                @endphp
+                                <td class="text-center">
+                                    @if($submitted)
+                                        @php $firstSub = $t->submissions->first(); @endphp
+                                        @if($firstSub && $firstSub->file_path)
+                                        <a href="{{ storage_url($firstSub->file_path) }}" target="_blank" class="font-weight-bold text-success">Lihat</a>
+                                        @else
+                                        <span class="text-success font-weight-bold">Sudah</span>
+                                        @endif
+                                    @else
+                                    <span class="text-muted">-</span>
+                                    @endif
+                                </td>
                                 @endforeach
                                 <td class="text-center font-weight-bold"><span class="badge badge-{{ $done == $totalW ? 'success' : 'danger' }}">{{ $done }}/{{ $totalW }}</span></td>
                             </tr>
