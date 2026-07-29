@@ -6,7 +6,7 @@
 <section class="section">
     <div class="section-header d-flex justify-content-between align-items-center">
         <div>
-            <h1 class="mb-0">Penilaian Per Anggota</h1>
+            <h1 class="mb-0">Input Nilai Per Anggota</h1>
             <small class="text-muted">{{ $kelompok->nama_kelompok }} — {{ $kelompok->desaGelombang?->desa?->nama_desa ?? '-' }}</small>
         </div>
         <a href="{{ route('dpl.penilaian.index') }}" class="btn btn-secondary">
@@ -24,7 +24,7 @@
                             <tr>
                                 <th class="text-white py-3" width="200"><i class="fas fa-user mr-2"></i>Anggota</th>
                                 @foreach($komponenList as $k)
-                                <th class="text-white text-center py-3" width="180">{{ $k->nama_komponen }}</th>
+                                <th class="text-white text-center py-3" width="200">{{ $k->nama_komponen }}</th>
                                 @endforeach
                             </tr>
                         </thead>
@@ -44,8 +44,8 @@
                                         <input type="hidden" name="komponen_id" value="{{ $k->id }}">
                                         <input type="hidden" name="peserta_kkn_id" value="{{ $p->id }}">
                                         <div class="d-flex justify-content-center">
-                                            <input type="number" name="nilai" class="form-control form-control-sm text-center rounded-right-0" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $nilai }}" style="width:75px;">
-                                            <button class="btn btn-sm btn-primary rounded-left-0"><i class="fas fa-save"></i></button>
+                                            <input type="number" name="nilai" class="form-control form-control-sm text-center" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $nilai }}" style="width:80px;">
+                                            <button class="btn btn-sm btn-primary ml-1"><i class="fas fa-save"></i></button>
                                         </div>
                                     </form>
                                 </td>

@@ -878,7 +878,7 @@
     </td>
 </tr>
                                 <tr style="background:#2D3A8A;">
-                                    <td class="text-white font-weight-bold py-3" style="font-size:1.1rem;">Nilai Akhir</td>
+                                    <td class="font-weight-bold py-3" style="font-size:1.1rem;">Nilai Akhir</td>
                                     <td class="text-center py-3">
                                         @if($finalScore !== null)
                                         <span class="font-weight-bold text-white" style="font-size:1.2rem;">{{ number_format($finalScore, 2) }}</span>

@@ -578,7 +578,7 @@
                             <tbody>
                                 <tr>
                                     <td class="text-center">1</td>
-                                    <td class="py-3"><strong>DPL (Logbook)</strong></td>
+                                    <td class="py-3"><strong>Nilai DPL</strong></td>
                                     <td class="text-center py-3">
                                         @if($dplScore !== null)
                                         <span class="font-weight-bold {{ $dplScore>=75?'text-success':($dplScore>=60?'text-warning':'text-danger') }}">{{ number_format($dplScore, 2) }}</span>
@@ -587,7 +587,7 @@
                                 </tr>
                                 <tr>
                                     <td class="text-center">2</td>
-                                    <td class="py-3"><strong>Desa (Nilai Pelaksanaan KKN UBT)</strong></td>
+                                    <td class="py-3"><strong>Nilai Desa</strong></td>
                                     <td class="text-center py-3">
                                         @if($desaScore !== null)
                                         <span class="font-weight-bold {{ $desaScore>=75?'text-success':($desaScore>=60?'text-warning':'text-danger') }}">{{ number_format($desaScore, 2) }}</span>
@@ -596,7 +596,7 @@
                                 </tr>
                                 <tr>
                                     <td class="text-center">3</td>
-                                    <td class="py-3"><strong>LPPM (Video dan Program Kerja)</strong></td>
+                                    <td class="py-3"><strong>Nilai LPPM</strong></td>
                                     <td class="text-center py-3">
                                         @if($lppmScore !== null)
                                         <span class="font-weight-bold {{ $lppmScore>=75?'text-success':($lppmScore>=60?'text-warning':'text-danger') }}">{{ number_format($lppmScore, 2) }}</span>
@@ -604,8 +604,8 @@
                                     </td>
                                 </tr>
                                 <tr style="background:#2D3A8A;">
-                                    <td colspan="2" class="text-right font-weight-bold text-white py-3" style="font-size:1.1rem;">Nilai Akhir</td>
-                                    <td class="text-center font-weight-bold text-white py-3" style="font-size:1.1rem;">{{ $finalScore ? number_format($finalScore, 2) : '-' }}</td>
+                                    <td colspan="2" class="text-right font-weight-bold py-3" style="font-size:1.1rem;">Nilai Akhir</td>
+                                    <td class="text-center font-weight-bold py-3" style="font-size:1.1rem;">{{ $finalScore ? number_format($finalScore, 2) : '-' }}</td>
                                 </tr>
                             </tbody>
                         </table>

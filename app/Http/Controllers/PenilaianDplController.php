@@ -2,10 +2,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\KelompokKkn;
-use App\Models\PenilaianKelompok;
 use App\Models\PenilaianIndividu;
 use App\Models\PenilaianKomponen;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PenilaianDplController extends Controller
@@ -32,24 +30,7 @@ class PenilaianDplController extends Controller
             ->orderBy('nama_kelompok')
             ->get();
 
-        $komponenList = PenilaianKomponen::where('kategori', 'dpl')->orderBy('urutan')->get();
-
-        $kelompoks->each(function ($k) use ($komponenList) {
-            $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $k->id)->get()->groupBy('peserta_kkn_id')->map(fn($g) => $g->keyBy('komponen_id'));
-            $k->penilaianIndividu = $penilaianIndividu;
-            $k->komponenList = $komponenList;
-
-            $logbookKomponen = $komponenList->firstWhere('nama_komponen', 'Logbook');
-            $desaKomponen = $komponenList->firstWhere('nama_komponen', 'Nilai Pelaksanaan KKN UBT');
-
-            $logbookScores = $penilaianIndividu->flatten()->where('komponen_id', $logbookKomponen?->id)->pluck('nilai');
-            $desaScores = $penilaianIndividu->flatten()->where('komponen_id', $desaKomponen?->id)->pluck('nilai');
-
-            $k->dplScore = $logbookScores->isNotEmpty() ? round($logbookScores->avg(), 2) : null;
-            $k->desaScore = $desaScores->isNotEmpty() ? round($desaScores->avg(), 2) : null;
-        });
-
-        return view('penilaian-dpl.index', compact('kelompoks', 'komponenList'));
+        return view('penilaian-dpl.index', compact('kelompoks'));
     }
 
     public function show(KelompokKkn $kelompok): View

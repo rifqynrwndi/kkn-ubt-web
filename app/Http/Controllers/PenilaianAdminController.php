@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\Gelombang;
 use App\Models\KelompokKkn;
 use App\Models\PenilaianKelompok;
 use App\Models\PenilaianIndividu;
@@ -19,76 +20,71 @@ class PenilaianAdminController extends Controller
         $this->middleware('superadmin');
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $gelombangs = Gelombang::orderBy('created_at', 'desc')->get();
+
+        $selectedGelombang = $request->input('gelombang_id', $gelombangs->first()?->id);
+
+        $kelompoks = collect();
+        if ($selectedGelombang) {
+            $kelompoks = KelompokKkn::with([
+                'desaGelombang.desa.kecamatan',
+                'dosenPembimbingLapangan.user',
+                'pesertaKkn',
+                'desaGelombang.gelombang',
+            ])->whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $selectedGelombang));
+
+            if ($request->filled('search')) {
+                $s = $request->search;
+                $kelompoks->where(function ($q) use ($s) {
+                    $q->where('nama_kelompok', 'like', "%{$s}%")
+                      ->orWhere('kode_kelompok', 'like', "%{$s}%")
+                      ->orWhereHas('dosenPembimbingLapangan.user', fn($uq) => $uq->where('name', 'like', "%{$s}%"))
+                      ->orWhereHas('desaGelombang.desa', fn($dq) => $dq->where('nama_desa', 'like', "%{$s}%"));
+                });
+            }
+
+            $kelompoks = $kelompoks->orderBy('nama_kelompok')->paginate(20)->withQueryString();
+        }
+
         $komponenList = PenilaianKomponen::orderBy('urutan')->get();
 
-        $kelompoks = KelompokKkn::with([
-            'desaGelombang.desa.kecamatan',
-            'dosenPembimbingLapangan.user',
-            'pesertaKkn',
-        ])->orderBy('nama_kelompok')->get();
-
-        $kelompoks->each(function ($k) use ($komponenList) {
-            $penilaianData = PenilaianKelompok::where('kelompok_kkn_id', $k->id)->get()->keyBy('komponen_id');
-            $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $k->id)->get();
-
-            $logbookKomponen = $komponenList->firstWhere('nama_komponen', 'Logbook');
-            $desaKomponen = $komponenList->firstWhere('nama_komponen', 'Nilai Pelaksanaan KKN UBT');
-
-            $logbookScores = $penilaianIndividu->where('komponen_id', $logbookKomponen?->id)->pluck('nilai');
-            $desaScores = $penilaianIndividu->where('komponen_id', $desaKomponen?->id)->pluck('nilai');
-
-            $k->dplScore = $logbookScores->isNotEmpty() ? round($logbookScores->avg(), 2) : null;
-            $k->desaScore = $desaScores->isNotEmpty() ? round($desaScores->avg(), 2) : null;
-
-            $lppmKomponen = $komponenList->firstWhere('kategori', 'lppm');
-            $k->lppmScore = $lppmKomponen && isset($penilaianData[$lppmKomponen->id]) ? $penilaianData[$lppmKomponen->id]->nilai : null;
-
-            $k->finalScore = (!is_null($k->dplScore) && !is_null($k->desaScore) && !is_null($k->lppmScore))
-                ? round($k->dplScore * 0.40 + $k->desaScore * 0.30 + $k->lppmScore * 0.30, 2)
-                : null;
-
-            $k->lppmKomponenId = $lppmKomponen?->id;
-        });
-
-        return view('penilaian-admin.index', compact('kelompoks'));
+        return view('penilaian-admin.index', compact('gelombangs', 'selectedGelombang', 'kelompoks', 'komponenList'));
     }
 
     public function input(Request $request): RedirectResponse
     {
         $request->validate([
             'kelompok_kkn_id' => 'required|exists:kelompok_kkn,id',
+            'komponen_id' => 'required|exists:penilaian_komponen,id',
             'nilai' => 'required|numeric|min:0|max:100',
         ]);
 
-        $komponen = PenilaianKomponen::where('kategori', 'lppm')->first();
-        if (!$komponen) {
-            return back()->with('error', 'Komponen penilaian LPPM belum tersedia.');
-        }
-
         PenilaianKelompok::updateOrCreate(
-            ['kelompok_kkn_id' => $request->kelompok_kkn_id, 'komponen_id' => $komponen->id],
+            ['kelompok_kkn_id' => $request->kelompok_kkn_id, 'komponen_id' => $request->komponen_id],
             ['nilai' => $request->nilai, 'input_by' => auth()->id(), 'input_at' => now()]
         );
 
-        return redirect()->route('penilaian.admin.index')->with('success', 'Nilai LPPM berhasil disimpan.');
+        return back()->with('success', 'Nilai berhasil disimpan.');
     }
 
-    public function export(): StreamedResponse
+    public function export(Request $request): StreamedResponse
     {
+        $gelombangId = $request->input('gelombang_id');
         $komponenList = PenilaianKomponen::orderBy('urutan')->get();
 
         $kelompoks = KelompokKkn::with([
             'desaGelombang.desa.kecamatan',
             'dosenPembimbingLapangan.user',
-        ])->orderBy('nama_kelompok')->get();
+        ])->when($gelombangId, fn($q) => $q->whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $gelombangId)))
+            ->orderBy('nama_kelompok')->get();
 
         $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Nilai Akhir');
 
-        $headers = ['No', 'Kelompok', 'Kode', 'Desa', 'Kecamatan', 'Kabupaten', 'DPL', 'Nilai DPL', 'Nilai LPPM', 'Nilai Desa', 'Nilai Akhir'];
+        $headers = ['No', 'Kelompok', 'Kode', 'Desa', 'Kecamatan', 'Kabupaten', 'DPL', 'Nilai DPL', 'Nilai Desa', 'Nilai LPPM', 'Nilai Akhir'];
         $col = 'A';
         foreach ($headers as $h) {
             $sheet->setCellValue($col . '1', $h);
@@ -100,17 +96,12 @@ class PenilaianAdminController extends Controller
             $penilaianData = PenilaianKelompok::where('kelompok_kkn_id', $k->id)->get()->keyBy('komponen_id');
             $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $k->id)->get();
 
-            $logbookKomponen = $komponenList->firstWhere('nama_komponen', 'Logbook');
-            $desaKomponen = $komponenList->firstWhere('nama_komponen', 'Nilai Pelaksanaan KKN UBT');
+            $dplKomponen = $komponenList->firstWhere('nama_komponen', 'Nilai DPL');
+            $dplScores = $penilaianIndividu->where('komponen_id', $dplKomponen?->id)->pluck('nilai');
+            $dplScore = $dplScores->isNotEmpty() ? round($dplScores->avg(), 2) : null;
 
-            $logbookScores = $penilaianIndividu->where('komponen_id', $logbookKomponen?->id)->pluck('nilai');
-            $desaScores = $penilaianIndividu->where('komponen_id', $desaKomponen?->id)->pluck('nilai');
-
-            $dplScore = $logbookScores->isNotEmpty() ? round($logbookScores->avg(), 2) : null;
-            $desaScore = $desaScores->isNotEmpty() ? round($desaScores->avg(), 2) : null;
-
-            $lppmKomponen = $komponenList->firstWhere('kategori', 'lppm');
-            $lppmScore = $lppmKomponen && isset($penilaianData[$lppmKomponen->id]) ? $penilaianData[$lppmKomponen->id]->nilai : null;
+            $desaScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai Desa')?->nilai;
+            $lppmScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai LPPM')?->nilai;
 
             $finalScore = (!is_null($dplScore) && !is_null($desaScore) && !is_null($lppmScore))
                 ? round($dplScore * 0.40 + $desaScore * 0.30 + $lppmScore * 0.30, 2)
@@ -124,8 +115,8 @@ class PenilaianAdminController extends Controller
             $sheet->setCellValue('F' . $row, $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? '-');
             $sheet->setCellValue('G' . $row, $k->dosenPembimbingLapangan?->user?->name ?? '-');
             $sheet->setCellValue('H' . $row, $dplScore ?? '-');
-            $sheet->setCellValue('I' . $row, $lppmScore ?? '-');
-            $sheet->setCellValue('J' . $row, $desaScore ?? '-');
+            $sheet->setCellValue('I' . $row, $desaScore ?? '-');
+            $sheet->setCellValue('J' . $row, $lppmScore ?? '-');
             $sheet->setCellValue('K' . $row, $finalScore ?? '-');
             $row++;
         }

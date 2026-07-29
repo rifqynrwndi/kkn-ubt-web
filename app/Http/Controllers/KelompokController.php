@@ -67,16 +67,13 @@ class KelompokController extends Controller
 
         $penilaianIndividu = \App\Models\PenilaianIndividu::where('kelompok_kkn_id', $kelompok->id)->get();
 
-        $logbookKomponen = $komponenList->firstWhere('nama_komponen', 'Logbook');
-        $desaKomponen = $komponenList->firstWhere('nama_komponen', 'Nilai Pelaksanaan KKN UBT');
+        $dplKomponen = $komponenList->firstWhere('nama_komponen', 'Nilai DPL');
+        $dplScores = $penilaianIndividu->where('komponen_id', $dplKomponen?->id)->pluck('nilai');
+        $dplScore = $dplScores->isNotEmpty() ? round($dplScores->avg(), 2) : null;
 
-        $logbookScores = $penilaianIndividu->where('komponen_id', $logbookKomponen?->id)->pluck('nilai');
-        $desaScores = $penilaianIndividu->where('komponen_id', $desaKomponen?->id)->pluck('nilai');
+        $desaScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai Desa')?->nilai;
 
-        $dplScore = $logbookScores->isNotEmpty() ? round($logbookScores->avg(), 2) : null;
-        $desaScore = $desaScores->isNotEmpty() ? round($desaScores->avg(), 2) : null;
-
-        $lppmScore = $penilaianData->first(fn($v) => $v->komponen->kategori === 'lppm')?->nilai;
+        $lppmScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai LPPM')?->nilai;
 
         $finalScore = (!is_null($dplScore) && !is_null($desaScore) && !is_null($lppmScore))
             ? round(($dplScore * 0.40 + $desaScore * 0.30 + $lppmScore * 0.30), 2)

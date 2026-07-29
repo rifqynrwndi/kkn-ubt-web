@@ -278,20 +278,6 @@
                 Akun
             </li>
 
-            @role('mahasiswa')
-
-                <li class="{{ Request::is('notifications*') ? 'active' : '' }}">
-                    <a class="nav-link"
-                       href="{{ route('notifications.index') }}">
-
-                        <i class="fas fa-bell"></i>
-                        <span>Notifikasi</span>
-
-                        <livewire:notification-badge />
-
-                    </a>
-            @endrole
-
             @role('superadmin')
 
                 <li class="{{ Request::is('profile/edit') ? 'active' : '' }}">
