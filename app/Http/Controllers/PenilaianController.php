@@ -32,7 +32,7 @@ class PenilaianController extends Controller
                 ],
                 ['nilai' => $request->nilai, 'input_by' => auth()->id()]
             );
-            return redirect()->route('dpl.kelompok.show', $kelompokId)->with('success', 'Nilai individu berhasil disimpan.');
+            return back()->with('success', 'Nilai individu berhasil disimpan.');
         }
 
         PenilaianKelompok::updateOrCreate(
@@ -40,6 +40,6 @@ class PenilaianController extends Controller
             ['nilai'=>$request->nilai, 'input_by'=>auth()->id(), 'input_at'=>now()]
         );
 
-        return redirect()->route('kelompok.index', ['tab'=>'penilaian'])->with('success','Nilai berhasil disimpan.');
+        return back()->with('success','Nilai berhasil disimpan.');
     }
 }
