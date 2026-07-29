@@ -84,7 +84,9 @@
                                 $dplScores = $pi->where('komponen_id', $dplKom?->id)->pluck('nilai');
                                 $dplVal = $dplScores->isNotEmpty() ? round($dplScores->avg(), 2) : null;
 
-                                $desaVal = $pd->first(fn($v) => $v->komponen->nama_komponen === 'Nilai Desa')?->nilai;
+                                $desaKom = $komponenList->firstWhere('nama_komponen', 'Nilai Desa');
+                                $desaScores = $pi->where('komponen_id', $desaKom?->id)->pluck('nilai');
+                                $desaVal = $desaScores->isNotEmpty() ? round($desaScores->avg(), 2) : null;
                                 $lppmVal = $pd->first(fn($v) => $v->komponen->nama_komponen === 'Nilai LPPM')?->nilai;
 
                                 $finalVal = (!is_null($dplVal) && !is_null($desaVal) && !is_null($lppmVal))
@@ -104,9 +106,9 @@
                                 <td class="text-center">{{ $lppmVal !== null ? number_format($lppmVal, 2) : '-' }}</td>
                                 <td class="text-center font-weight-bold">{{ $finalVal !== null ? number_format($finalVal, 2) : '-' }}</td>
                                 <td class="text-center">
-                                    <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#nilaiModal{{ $k->id }}">
+                                    <a href="{{ route('penilaian.admin.edit', ['kelompok' => $k->id, 'gelombang_id' => request('gelombang_id'), 'search' => request('search'), 'page' => request('page')]) }}" class="btn btn-sm btn-primary">
                                         <i class="fas fa-edit"></i> Input
-                                    </button>
+                                    </a>
                                 </td>
                             </tr>
                             @endforeach
@@ -126,50 +128,4 @@
         @endif
     </div>
 </section>
-
-{{-- MODALS --}}
-@if($selectedGelombang)
-@foreach($kelompoks as $k)
-@php
-    $pd = \App\Models\PenilaianKelompok::where('kelompok_kkn_id', $k->id)->get()->keyBy('komponen_id');
-@endphp
-<div class="modal fade" id="nilaiModal{{ $k->id }}" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header" style="background:#2D3A8A;color:#fff;">
-                <h5 class="modal-title">Input Nilai - {{ $k->nama_kelompok }}</h5>
-                <button type="button" class="close text-white" data-dismiss="modal" data-bs-dismiss="modal">&times;</button>
-            </div>
-            <form action="{{ route('penilaian.admin.input') }}" method="POST">
-                @csrf
-                <input type="hidden" name="kelompok_kkn_id" value="{{ $k->id }}">
-                <div class="modal-body">
-                    @foreach($komponenList->where('kategori', 'lppm') as $kom)
-                    @php $existing = $pd[$kom->id]->nilai ?? null; @endphp
-                    <div class="form-group">
-                        <label class="font-weight-bold">{{ $kom->nama_komponen }}</label>
-                        <input type="hidden" name="komponen_id[]" value="{{ $kom->id }}">
-                        <input type="number" name="nilai[]" class="form-control" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $existing }}">
-                    </div>
-                    @endforeach
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-primary"><i class="fas fa-save"></i> Simpan</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-@endforeach
-@endif
 @endsection
-
-@push('scripts')
-<script>
-$(document).on('hidden.bs.modal', '.modal', function () {
-    $('body').removeClass('modal-open');
-    $('.modal-backdrop').remove();
-});
-</script>
-@endpush

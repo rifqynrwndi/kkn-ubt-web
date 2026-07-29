@@ -48,7 +48,7 @@
             @endforeach
 
             <div class="d-flex justify-content-end gap-2">
-                <button type="button" class="btn btn-secondary" onclick="saveDraft()">
+                <button type="button" class="btn btn-outline-secondary" onclick="saveDraft()">
                     <i class="fas fa-save mr-1"></i> Simpan Draft
                 </button>
                 <button type="button" class="btn btn-success" onclick="submitProposal()">

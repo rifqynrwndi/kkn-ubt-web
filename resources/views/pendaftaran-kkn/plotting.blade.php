@@ -196,7 +196,7 @@
 
                                             @if($kelompok->is_full)
 
-                                                <button class="btn btn-secondary btn-sm" disabled>
+                                                <button class="btn btn-outline-secondary btn-sm" disabled>
                                                     Penuh
                                                 </button>
 

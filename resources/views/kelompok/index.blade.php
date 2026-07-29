@@ -188,7 +188,7 @@
                     </div>
                     @endforeach
                     <div class="d-flex justify-content-end gap-2 mb-3">
-                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('form-action').value='draft';document.getElementById('proposal-form').submit()"><i class="fas fa-save mr-1"></i> Simpan Draft</button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('form-action').value='draft';document.getElementById('proposal-form').submit()"><i class="fas fa-save mr-1"></i> Simpan Draft</button>
                         <button type="button" class="btn btn-success" onclick="if(confirm('Ajukan untuk review DPL?')){document.getElementById('form-action').value='submit';document.getElementById('proposal-form').submit()}"><i class="fas fa-paper-plane mr-1"></i> Ajukan</button>
                     </div>
                 </form>

@@ -9,7 +9,7 @@
             <h1 class="mb-0">Input Nilai Per Anggota</h1>
             <small class="text-muted">{{ $kelompok->nama_kelompok }} — {{ $kelompok->desaGelombang?->desa?->nama_desa ?? '-' }}</small>
         </div>
-        <a href="{{ route('dpl.penilaian.index') }}" class="btn btn-secondary">
+        <a href="{{ route('dpl.penilaian.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left mr-1"></i> Kembali
         </a>
     </div>

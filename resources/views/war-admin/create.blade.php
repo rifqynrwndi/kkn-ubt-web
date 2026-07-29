@@ -71,7 +71,7 @@
                             </div>
                         </div>
                         <div class="card-footer text-right">
-                            <a href="{{ route('admin.war.index') }}" class="btn btn-secondary mr-2">
+                            <a href="{{ route('admin.war.index') }}" class="btn btn-outline-secondary mr-2">
                                 <i class="fas fa-times mr-1"></i> Batal
                             </a>
                             <button type="submit" class="btn btn-primary">

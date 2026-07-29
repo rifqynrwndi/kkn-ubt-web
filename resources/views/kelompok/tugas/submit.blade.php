@@ -48,7 +48,7 @@
                     </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-success"><i class="fas fa-paper-plane mr-1"></i> Kumpulkan</button>
-                        <a href="{{ route('kelompok.index', ['tab' => 'tugas']) }}" class="btn btn-secondary">Batal</a>
+                        <a href="{{ route('kelompok.index', ['tab' => 'tugas']) }}" class="btn btn-outline-secondary">Batal</a>
                     </div>
                 </form>
                 @else
@@ -56,7 +56,7 @@
                     <span style="font-size:48px;">✅</span>
                     <h5>Semua Tugas Sudah Dikumpulkan</h5>
                     <p class="text-muted">Semua tugas yang tersedia sudah diupload. Tunggu review dari DPL atau admin.</p>
-                    <a href="{{ route('kelompok.index', ['tab' => 'tugas']) }}" class="btn btn-secondary">Kembali</a>
+                    <a href="{{ route('kelompok.index', ['tab' => 'tugas']) }}" class="btn btn-outline-secondary">Kembali</a>
                 </div>
                 @endif
             </div>
