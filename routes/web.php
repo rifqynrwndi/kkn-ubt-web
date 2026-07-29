@@ -467,6 +467,7 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
 
         Route::prefix('admin/penilaian')->name('penilaian.admin.')->group(function () {
             Route::get('/', [PenilaianAdminController::class, 'index'])->name('index');
+            Route::get('/{kelompok}/edit', [PenilaianAdminController::class, 'edit'])->name('edit');
             Route::post('/input', [PenilaianAdminController::class, 'input'])->name('input');
             Route::get('/export', [PenilaianAdminController::class, 'export'])->name('export');
         });
