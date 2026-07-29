@@ -106,41 +106,33 @@
                                 <th class="text-white text-center" width="80" style="font-size:10px;">{{ $wt->nama_tugas }}</th>
                                 @endforeach
                                 <th class="text-white text-center" width="60">Total</th>
-                                <th class="text-white text-center" width="100">Lihat Berkas</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($kelompoks as $k)
                             <tr>
                                 <td><small>{{ $k->nama_kelompok }}</small></td>
-                                @php $done = 0; $totalW = $semuaTasks->unique('nama_tugas')->count(); $pendingSubmissions = []; @endphp
+                                @php $done = 0; $totalW = $semuaTasks->unique('nama_tugas')->count(); @endphp
                                 @foreach($semuaTasks->unique('nama_tugas') as $wt)
                                 @php
                                     $t = $k->tugasKelompok->firstWhere('nama_tugas', $wt->nama_tugas);
                                     $submitted = $t && $t->submissions->isNotEmpty();
                                     if($submitted) $done++;
-                                    if ($t && $t->submissions->isNotEmpty()) {
-                                        foreach ($t->submissions as $s) {
-                                            if ($s->status === 'menunggu' && $s->file_path) {
-                                                $pendingSubmissions[] = $s;
-                                            }
-                                        }
-                                    }
                                 @endphp
-                                <td class="text-center">@if($submitted)<span class="badge badge-success">✅</span>@else<span class="badge badge-danger">❌</span>@endif</td>
-                                @endforeach
-                                <td class="text-center font-weight-bold"><span class="badge badge-{{ $done == $totalW ? 'success' : 'danger' }}">{{ $done }}/{{ $totalW }}</span></td>
                                 <td class="text-center">
-                                    @if(count($pendingSubmissions) > 0)
-                                        @foreach($pendingSubmissions as $ps)
-                                        <a href="{{ storage_url($ps->file_path) }}" target="_blank" class="btn btn-sm btn-outline-info mb-1" title="{{ $ps->judul }}">
-                                            <i class="fas fa-file"></i>
-                                        </a>
-                                        @endforeach
+                                    @if($submitted)
+                                        @php $firstSub = $t->submissions->first(); @endphp
+                                        @if($firstSub && $firstSub->file_path)
+                                        <a href="{{ storage_url($firstSub->file_path) }}" target="_blank" class="font-weight-bold text-success" title="Lihat berkas">{{ $firstSub->judul ?? 'Tugas' }}</a>
+                                        @else
+                                        <span class="text-success font-weight-bold">Sudah</span>
+                                        @endif
                                     @else
-                                        <span class="text-muted">-</span>
+                                    <span class="text-muted">-</span>
                                     @endif
                                 </td>
+                                @endforeach
+                                <td class="text-center font-weight-bold"><span class="badge badge-{{ $done == $totalW ? 'success' : 'danger' }}">{{ $done }}/{{ $totalW }}</span></td>
                             </tr>
                             @endforeach
                         </tbody>

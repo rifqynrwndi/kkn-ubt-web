@@ -9,9 +9,11 @@ class PenilaianKomponenSeeder extends Seeder
 {
     public function run(): void
     {
+        \DB::statement('SET FOREIGN_KEY_CHECKS=0');
         PenilaianIndividu::truncate();
         PenilaianKelompok::truncate();
         PenilaianKomponen::truncate();
+        \DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         $components = [
             ['nama_komponen'=>'Nilai DPL', 'deskripsi'=>'Nilai dari bimbingan DPL (Logbook dan Program Kerja)', 'kategori'=>'dpl', 'bobot'=>40, 'urutan'=>1],
