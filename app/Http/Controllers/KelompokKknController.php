@@ -209,16 +209,27 @@ class KelompokKknController extends Controller
         $komponenList = \App\Models\PenilaianKomponen::orderBy('urutan')->get();
         $penilaianData = \App\Models\PenilaianKelompok::where('kelompok_kkn_id', $kelompok_kkn->id)->with('komponen')->get()->keyBy('komponen_id');
 
-        $dplFinal = $this->calcScore($komponenList->where('kategori','dpl'), $penilaianData);
-        $lppmFinal = $this->calcScore($komponenList->where('kategori','lppm'), $penilaianData);
-        $desaScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai Pelaksanaan KKN UBT')?->nilai;
-        $dplScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Logbook')?->nilai;
-        $finalScore = $desaScore && $dplScore && $lppmFinal ? round(($desaScore * 0.30 + $dplScore * 0.50 + $lppmFinal * 0.20), 2) : null;
+        $penilaianIndividu = \App\Models\PenilaianIndividu::where('kelompok_kkn_id', $kelompok_kkn->id)->get();
+
+        $logbookKomponen = $komponenList->firstWhere('nama_komponen', 'Logbook');
+        $desaKomponen = $komponenList->firstWhere('nama_komponen', 'Nilai Pelaksanaan KKN UBT');
+
+        $logbookScores = $penilaianIndividu->where('komponen_id', $logbookKomponen?->id)->pluck('nilai');
+        $desaScores = $penilaianIndividu->where('komponen_id', $desaKomponen?->id)->pluck('nilai');
+
+        $dplScore = $logbookScores->isNotEmpty() ? round($logbookScores->avg(), 2) : null;
+        $desaScore = $desaScores->isNotEmpty() ? round($desaScores->avg(), 2) : null;
+
+        $lppmScore = $penilaianData->first(fn($v) => $v->komponen->kategori === 'lppm')?->nilai;
+
+        $finalScore = (!is_null($dplScore) && !is_null($desaScore) && !is_null($lppmScore))
+            ? round(($dplScore * 0.40 + $desaScore * 0.30 + $lppmScore * 0.30), 2)
+            : null;
         $laporans = \App\Models\LaporanDpl::where('kelompok_kkn_id', $kelompok_kkn->id)->latest()->get()->groupBy('jenis');
 
         return view(
             'kelompok-kkn.show',
-            compact('kelompok_kkn', 'proposal', 'statusStages', 'statusCurrent', 'statusHistory', 'tugasList', 'logbookData', 'komponenList', 'penilaianData', 'desaScore', 'dplScore', 'lppmFinal', 'finalScore', 'laporans')
+            compact('kelompok_kkn', 'proposal', 'statusStages', 'statusCurrent', 'statusHistory', 'tugasList', 'logbookData', 'komponenList', 'penilaianData', 'penilaianIndividu', 'desaScore', 'dplScore', 'lppmScore', 'finalScore', 'laporans')
         );
     }
 
