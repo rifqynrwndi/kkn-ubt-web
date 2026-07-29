@@ -6,9 +6,7 @@
 <section class="section">
     <div class="section-header d-flex justify-content-between align-items-center">
         <h1>Input Nilai Kelompok</h1>
-        <a href="{{ route('penilaian.admin.index', request()->only(['gelombang_id', 'search', 'page'])) }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left mr-1"></i> Kembali
-        </a>
+        <a href="{{ route('penilaian.admin.index', request()->only(['gelombang_id', 'search', 'page'])) }}" class="btn btn-secondary">Kembali</a>
     </div>
 
     <div class="section-body">
@@ -81,10 +79,7 @@
             </div>
             @endforeach
 
-            <div class="d-flex justify-content-between">
-                <a href="{{ route('penilaian.admin.index', request()->only(['gelombang_id', 'search', 'page'])) }}" class="btn btn-secondary">
-                    <i class="fas fa-times mr-1"></i> Batal
-                </a>
+            <div class="d-flex justify-content-end">
                 <button class="btn btn-primary">
                     <i class="fas fa-save mr-1"></i> Simpan
                 </button>
