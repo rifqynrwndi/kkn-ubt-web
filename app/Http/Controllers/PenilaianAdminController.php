@@ -57,14 +57,21 @@ class PenilaianAdminController extends Controller
     {
         $request->validate([
             'kelompok_kkn_id' => 'required|exists:kelompok_kkn,id',
-            'komponen_id' => 'required|exists:penilaian_komponen,id',
-            'nilai' => 'required|numeric|min:0|max:100',
+            'komponen_id' => 'required|array',
+            'komponen_id.*' => 'exists:penilaian_komponen,id',
+            'nilai' => 'nullable|array',
+            'nilai.*' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        PenilaianKelompok::updateOrCreate(
-            ['kelompok_kkn_id' => $request->kelompok_kkn_id, 'komponen_id' => $request->komponen_id],
-            ['nilai' => $request->nilai, 'input_by' => auth()->id(), 'input_at' => now()]
-        );
+        foreach ($request->komponen_id as $i => $komponenId) {
+            $nilai = $request->nilai[$i] ?? null;
+            if ($nilai !== null && $nilai !== '') {
+                PenilaianKelompok::updateOrCreate(
+                    ['kelompok_kkn_id' => $request->kelompok_kkn_id, 'komponen_id' => $komponenId],
+                    ['nilai' => $nilai, 'input_by' => auth()->id(), 'input_at' => now()]
+                );
+            }
+        }
 
         return back()->with('success', 'Nilai berhasil disimpan.');
     }

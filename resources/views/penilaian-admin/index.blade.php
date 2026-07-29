@@ -120,25 +120,24 @@
                 <h5 class="modal-title">Input Nilai - {{ $k->nama_kelompok }}</h5>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
             </div>
-            <div class="modal-body">
-                @foreach($komponenList->where('kategori', 'lppm') as $kom)
-                @php $existing = $pd[$kom->id]->nilai ?? null; @endphp
-                <form action="{{ route('penilaian.admin.input') }}" method="POST" class="mb-3">
-                    @csrf
-                    <input type="hidden" name="kelompok_kkn_id" value="{{ $k->id }}">
-                    <input type="hidden" name="komponen_id" value="{{ $kom->id }}">
+            <form action="{{ route('penilaian.admin.input') }}" method="POST">
+                @csrf
+                <input type="hidden" name="kelompok_kkn_id" value="{{ $k->id }}">
+                <div class="modal-body">
+                    @foreach($komponenList->where('kategori', 'lppm') as $kom)
+                    @php $existing = $pd[$kom->id]->nilai ?? null; @endphp
                     <div class="form-group">
                         <label class="font-weight-bold">{{ $kom->nama_komponen }}</label>
-                        <div class="input-group">
-                            <input type="number" name="nilai" class="form-control" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $existing }}" required>
-                            <div class="input-group-append">
-                                <button class="btn btn-primary"><i class="fas fa-save"></i> Simpan</button>
-                            </div>
-                        </div>
+                        <input type="hidden" name="komponen_id[]" value="{{ $kom->id }}">
+                        <input type="number" name="nilai[]" class="form-control" placeholder="0-100" min="0" max="100" step="0.01" value="{{ $existing }}">
                     </div>
-                </form>
-                @endforeach
-            </div>
+                    @endforeach
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary"><i class="fas fa-save"></i> Simpan</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
