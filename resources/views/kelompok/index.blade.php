@@ -901,7 +901,7 @@
                 <div class="modal-content">
                     <div class="modal-header" style="background:#2D3A8A;color:#fff;">
                         <h5 class="modal-title">Detail Pengumpulan</h5>
-                        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                        <button type="button" class="close text-white" data-dismiss="modal" data-bs-dismiss="modal">&times;</button>
                     </div>
                     <div class="modal-body">
                         <table class="table table-bordered">

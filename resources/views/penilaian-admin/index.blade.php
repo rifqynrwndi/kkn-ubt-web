@@ -138,7 +138,7 @@
         <div class="modal-content">
             <div class="modal-header" style="background:#2D3A8A;color:#fff;">
                 <h5 class="modal-title">Input Nilai - {{ $k->nama_kelompok }}</h5>
-                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                <button type="button" class="close text-white" data-dismiss="modal" data-bs-dismiss="modal">&times;</button>
             </div>
             <form action="{{ route('penilaian.admin.input') }}" method="POST">
                 @csrf
@@ -164,3 +164,12 @@
 @endforeach
 @endif
 @endsection
+
+@push('scripts')
+<script>
+$(document).on('hidden.bs.modal', '.modal', function () {
+    $('body').removeClass('modal-open');
+    $('.modal-backdrop').remove();
+});
+</script>
+@endpush

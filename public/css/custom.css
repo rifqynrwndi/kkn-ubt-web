@@ -5,4 +5,14 @@
  * 
  */
 
+.modal-header .close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    z-index: 10;
+    opacity: 0.8;
+}
+.modal-header .close:hover {
+    opacity: 1;
+}
 /*# sourceMappingURL=custom.css.map */
