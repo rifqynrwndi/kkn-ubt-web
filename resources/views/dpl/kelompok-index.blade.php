@@ -123,7 +123,7 @@
                                     @if($submitted)
                                         @php $firstSub = $t->submissions->first(); @endphp
                                         @if($firstSub && $firstSub->file_path)
-                                        <a href="{{ storage_url($firstSub->file_path) }}" target="_blank" class="font-weight-bold text-success" title="Lihat berkas">{{ $firstSub->judul ?? 'Tugas' }}</a>
+                                        <a href="{{ storage_url($firstSub->file_path) }}" target="_blank" class="font-weight-bold text-success">Lihat</a>
                                         @else
                                         <span class="text-success font-weight-bold">Sudah</span>
                                         @endif
