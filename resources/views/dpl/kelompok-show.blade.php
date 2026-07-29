@@ -502,7 +502,7 @@
                                             <tr style="background:#2D3A8A;">
                                                 <th class="text-white py-3" width="200"><i class="fas fa-user mr-2"></i>Anggota</th>
                                                 @foreach($komponenList->where('kategori','dpl') as $k)
-                                                <th class="text-white text-center py-3" width="180">{{ $k->nama_komponen }}<br><small class="text-white-50">{{ $k->bobot }}%</small></th>
+                                                <th class="text-white text-center py-3" width="180">{{ $k->nama_komponen }}</th>
                                                 @endforeach
                                             </tr>
                                         </thead>

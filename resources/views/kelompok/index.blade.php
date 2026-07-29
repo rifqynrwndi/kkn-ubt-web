@@ -848,21 +848,13 @@
                         <table class="table table-striped mb-0">
                             <thead style="background:#2D3A8A;">
                                 <tr>
-                                    <th class="text-white py-3" width="250">Komponen Penilaian</th>
+                                    <th class="text-white py-3" width="200">Komponen</th>
                                     <th class="text-white text-center py-3" width="120">Nilai</th>
                                 </tr>
                             </thead>
                             <tbody>
 <tr>
-    <td class="py-3"><strong>Desa</strong></td>
-    <td class="text-center py-3">
-        @if($desaScore !== null)
-        <span class="font-weight-bold {{ $desaScore>=75?'text-success':($desaScore>=60?'text-warning':'text-danger') }}" style="font-size:1.1rem;">{{ number_format($desaScore, 2) }}</span>
-        @else<span class="text-muted">-</span>@endif
-    </td>
-</tr>
-<tr>
-    <td class="py-3"><strong>Dosen Pembimbing Lapangan (DPL)</strong></td>
+    <td class="py-3"><strong>DPL</strong></td>
     <td class="text-center py-3">
         @if($dplScore !== null)
         <span class="font-weight-bold {{ $dplScore>=75?'text-success':($dplScore>=60?'text-warning':'text-danger') }}" style="font-size:1.1rem;">{{ number_format($dplScore, 2) }}</span>
@@ -874,6 +866,14 @@
     <td class="text-center py-3">
         @if($lppmScore !== null)
         <span class="font-weight-bold {{ $lppmScore>=75?'text-success':($lppmScore>=60?'text-warning':'text-danger') }}" style="font-size:1.1rem;">{{ number_format($lppmScore, 2) }}</span>
+        @else<span class="text-muted">-</span>@endif
+    </td>
+</tr>
+<tr>
+    <td class="py-3"><strong>Desa</strong></td>
+    <td class="text-center py-3">
+        @if($desaScore !== null)
+        <span class="font-weight-bold {{ $desaScore>=75?'text-success':($desaScore>=60?'text-warning':'text-danger') }}" style="font-size:1.1rem;">{{ number_format($desaScore, 2) }}</span>
         @else<span class="text-muted">-</span>@endif
     </td>
 </tr>
