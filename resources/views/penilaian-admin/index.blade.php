@@ -164,3 +164,12 @@
 @endforeach
 @endif
 @endsection
+
+@push('scripts')
+<script>
+$(document).on('hidden.bs.modal', '.modal', function () {
+    $('body').removeClass('modal-open');
+    $('.modal-backdrop').remove();
+});
+</script>
+@endpush
