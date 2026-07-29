@@ -108,7 +108,7 @@ class PenilaianAdminController extends Controller
         return redirect()->route('penilaian.admin.index', $request->only(['gelombang_id', 'search', 'page']))->with('success', 'Nilai berhasil disimpan.');
     }
 
-    public function export(Request $request): StreamedResponse
+    public function export(Request $request)
     {
         $gelombangId = $request->input('gelombang_id');
         abort_unless($gelombangId, 400, 'Pilih gelombang terlebih dahulu.');
@@ -127,8 +127,8 @@ class PenilaianAdminController extends Controller
         $spreadsheet = new Spreadsheet;
         $firstSheet = true;
 
-        $headers = ['No', 'Kelompok', 'Mahasiswa', 'NPM', 'Desa', 'Kecamatan', 'Kabupaten', 'DPL', 'Nilai DPL', 'Nilai Desa', 'Nilai LPPM', 'Nilai Akhir'];
-        $headerRange = range('A', 'L');
+        $headers = ['No', 'Kelompok', 'Mahasiswa', 'NPM', 'Desa', 'Kecamatan', 'DPL', 'Nilai DPL', 'Nilai Desa', 'Nilai LPPM', 'Nilai Akhir'];
+        $headerRange = range('A', 'K');
 
         foreach ($kabupatens as $kabupaten => $items) {
             if ($firstSheet) {
@@ -170,20 +170,19 @@ class PenilaianAdminController extends Controller
                     $sheet->setCellValue('D' . $row, $p->mahasiswa?->npm ?? '-');
                     $sheet->setCellValue('E' . $row, $k->desaGelombang?->desa?->nama_desa ?? '-');
                     $sheet->setCellValue('F' . $row, $k->desaGelombang?->desa?->kecamatan?->nama_kecamatan ?? '-');
-                    $sheet->setCellValue('G' . $row, $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? '-');
-                    $sheet->setCellValue('H' . $row, $k->dosenPembimbingLapangan?->user?->name ?? '-');
-                    $sheet->setCellValue('I' . $row, $dplScore ?? '-');
-                    $sheet->setCellValue('J' . $row, $desaScore ?? '-');
-                    $sheet->setCellValue('K' . $row, $lppmScore ?? '-');
-                    $sheet->setCellValue('L' . $row, $finalScore ?? '-');
+                    $sheet->setCellValue('G' . $row, $k->dosenPembimbingLapangan?->user?->name ?? '-');
+                    $sheet->setCellValue('H' . $row, $dplScore ?? '-');
+                    $sheet->setCellValue('I' . $row, $desaScore ?? '-');
+                    $sheet->setCellValue('J' . $row, $lppmScore ?? '-');
+                    $sheet->setCellValue('K' . $row, $finalScore ?? '-');
                     $row++;
                 }
             }
 
-            foreach ($headerRange as $c) {
+            foreach (range('A', 'J') as $c) {
                 $sheet->getColumnDimension($c)->setAutoSize(true);
             }
-            $sheet->getColumnDimension('L')->setWidth(12);
+            $sheet->getColumnDimension('K')->setWidth(12);
         }
 
         $spreadsheet->setActiveSheetIndex(0);
