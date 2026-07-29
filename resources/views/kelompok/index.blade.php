@@ -854,7 +854,7 @@
                             </thead>
                             <tbody>
 <tr>
-    <td class="py-3"><strong>DPL</strong></td>
+    <td class="py-3"><strong>Dosen Pembimbing Lapangan (DPL)</strong></td>
     <td class="text-center py-3">
         @if($dplScore !== null)
         <span class="font-weight-bold {{ $dplScore>=75?'text-success':($dplScore>=60?'text-warning':'text-danger') }}" style="font-size:1.1rem;">{{ number_format($dplScore, 2) }}</span>

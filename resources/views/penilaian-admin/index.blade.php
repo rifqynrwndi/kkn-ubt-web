@@ -36,7 +36,7 @@
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary btn-block">
-                            <i class="fas fa-filter mr-1"></i> Filter
+                            <i class="fas fa-search mr-1"></i> Cari
                         </button>
                     </div>
                 </form>
