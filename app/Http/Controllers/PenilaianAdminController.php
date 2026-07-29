@@ -11,8 +11,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-
 class PenilaianAdminController extends Controller
 {
     public function __construct()
@@ -192,13 +190,11 @@ class PenilaianAdminController extends Controller
 
         $writer = new Xlsx($spreadsheet);
         $filename = 'nilai-kkn-ubt-' . date('Y-m-d') . '.xlsx';
+        $tempPath = sys_get_temp_dir() . '/' . $filename;
+        $writer->save($tempPath);
 
-        $response = new StreamedResponse(function () use ($writer) {
-            $writer->save('php://output');
-        });
-        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
-
-        return $response;
+        return response()->download($tempPath, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 }
