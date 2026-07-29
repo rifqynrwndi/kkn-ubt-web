@@ -108,7 +108,7 @@ class PenilaianAdminController extends Controller
         return redirect()->route('penilaian.admin.index', $request->only(['gelombang_id', 'search', 'page']))->with('success', 'Nilai berhasil disimpan.');
     }
 
-    public function export(Request $request): StreamedResponse
+    public function export(Request $request)
     {
         $gelombangId = $request->input('gelombang_id');
         abort_unless($gelombangId, 400, 'Pilih gelombang terlebih dahulu.');
