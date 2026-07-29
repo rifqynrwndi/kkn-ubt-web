@@ -79,21 +79,23 @@ class PenilaianAdminController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $gelombangId = $request->input('gelombang_id');
+        abort_unless($gelombangId, 400, 'Pilih gelombang terlebih dahulu.');
+
         $komponenList = PenilaianKomponen::orderBy('urutan')->get();
 
         $kelompoks = KelompokKkn::with([
             'desaGelombang.desa.kecamatan',
             'dosenPembimbingLapangan.user',
-        ])->when($gelombangId, fn($q) => $q->whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $gelombangId)))
+        ])->whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $gelombangId))
             ->orderBy('nama_kelompok')->get();
 
         $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Nilai Akhir');
 
-        $headers = ['No', 'Kelompok', 'Alamat', 'DPL', 'Nilai DPL', 'Nilai Desa', 'Nilai LPPM', 'Nilai Akhir'];
+        $headers = ['No', 'Kelompok', 'Desa', 'Kecamatan', 'Kabupaten', 'DPL', 'Nilai DPL', 'Nilai Desa', 'Nilai LPPM', 'Nilai Akhir'];
 
-        foreach (range('A', 'H') as $i => $c) {
+        foreach (range('A', 'J') as $i => $c) {
             $sheet->setCellValue($c . '1', $headers[$i]);
         }
 
@@ -113,26 +115,23 @@ class PenilaianAdminController extends Controller
                 ? round($dplScore * 0.40 + $desaScore * 0.30 + $lppmScore * 0.30, 2)
                 : null;
 
-            $alamat = implode(', ', array_filter([
-                $k->desaGelombang?->desa?->nama_desa,
-                $k->desaGelombang?->desa?->kecamatan?->nama_kecamatan,
-                $k->desaGelombang?->desa?->kecamatan?->kabupaten,
-            ])) ?: '-';
-
             $sheet->setCellValue('A' . $row, $i + 1);
             $sheet->setCellValue('B' . $row, $k->nama_kelompok);
-            $sheet->setCellValue('C' . $row, $alamat);
-            $sheet->setCellValue('D' . $row, $k->dosenPembimbingLapangan?->user?->name ?? '-');
-            $sheet->setCellValue('E' . $row, $dplScore ?? '-');
-            $sheet->setCellValue('F' . $row, $desaScore ?? '-');
-            $sheet->setCellValue('G' . $row, $lppmScore ?? '-');
-            $sheet->setCellValue('H' . $row, $finalScore ?? '-');
+            $sheet->setCellValue('C' . $row, $k->desaGelombang?->desa?->nama_desa ?? '-');
+            $sheet->setCellValue('D' . $row, $k->desaGelombang?->desa?->kecamatan?->nama_kecamatan ?? '-');
+            $sheet->setCellValue('E' . $row, $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? '-');
+            $sheet->setCellValue('F' . $row, $k->dosenPembimbingLapangan?->user?->name ?? '-');
+            $sheet->setCellValue('G' . $row, $dplScore ?? '-');
+            $sheet->setCellValue('H' . $row, $desaScore ?? '-');
+            $sheet->setCellValue('I' . $row, $lppmScore ?? '-');
+            $sheet->setCellValue('J' . $row, $finalScore ?? '-');
             $row++;
         }
 
-        foreach (range('A', 'H') as $c) {
+        foreach (range('A', 'I') as $c) {
             $sheet->getColumnDimension($c)->setAutoSize(true);
         }
+        $sheet->getColumnDimension('J')->setWidth(12);
 
         $writer = new Xlsx($spreadsheet);
         $filename = 'nilai-kkn-ubt-' . date('Y-m-d') . '.xlsx';
