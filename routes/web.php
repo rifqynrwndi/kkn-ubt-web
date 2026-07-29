@@ -6,7 +6,6 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\{
-    ActivityLogController,
     BiodataController,
     FakultasProdiController,
     FileManagerController,
@@ -29,12 +28,13 @@ use App\Http\Controllers\{
     TugasController,
     LogBookController,
     PenilaianController,
+    PenilaianAdminController,
+    PenilaianDplController,
     TugasAdminController,
     WarAdminController,
     WarController,
     WarMonitorController,
     ProfileController,
-    SettingController
 };
 
 /*
@@ -153,6 +153,12 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
         Route::put('/profile/update', [DplController::class, 'profileUpdate'])->name('profile.update');
         Route::post('/kelompok/{kelompok}/laporan', [DplController::class, 'laporanStore'])->name('laporan.store');
         Route::delete('/kelompok/{kelompok}/laporan/{laporan}', [DplController::class, 'laporanDestroy'])->name('laporan.destroy');
+
+        Route::prefix('penilaian')->name('penilaian.')->group(function () {
+            Route::get('/', [PenilaianDplController::class, 'index'])->name('index');
+            Route::get('/{kelompok}', [PenilaianDplController::class, 'show'])->name('show');
+            Route::post('/input', [PenilaianController::class, 'input'])->name('input');
+        });
     });
 
     Route::prefix('kelompok')->name('kelompok.')->group(function () {
@@ -455,28 +461,14 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
 
         /*
         |--------------------------------------------------------------------------
-        | Activity Logs
+        | Penilaian Admin (LPPM)
         |--------------------------------------------------------------------------
         */
 
-        Route::prefix('activity-logs')->name('activity-logs.')->group(function () {
-            Route::get('/', [ActivityLogController::class, 'index'])->name('index');
-            Route::get('/{id}', [ActivityLogController::class, 'show'])->name('show');
-            Route::delete('/{id}', [ActivityLogController::class, 'destroy'])->name('destroy');
-            Route::delete('/', [ActivityLogController::class, 'clear'])->name('clear');
-        });
-
-        /*
-        |--------------------------------------------------------------------------
-        | Settings
-        |--------------------------------------------------------------------------
-        */
-
-        Route::prefix('settings')->name('settings.')->group(function () {
-            Route::get('/', [SettingController::class, 'index'])->name('index');
-            Route::put('/', [SettingController::class, 'update'])->name('update');
-            Route::post('/', [SettingController::class, 'store'])->name('store');
-            Route::post('/reset', [SettingController::class, 'reset'])->name('reset');
+        Route::prefix('admin/penilaian')->name('penilaian.admin.')->group(function () {
+            Route::get('/', [PenilaianAdminController::class, 'index'])->name('index');
+            Route::post('/input', [PenilaianAdminController::class, 'input'])->name('input');
+            Route::get('/export', [PenilaianAdminController::class, 'export'])->name('export');
         });
 
     });

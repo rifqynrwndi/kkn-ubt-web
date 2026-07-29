@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\File;
-use App\Models\ActivityLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -98,13 +97,6 @@ class FileManagerController extends Controller
             ]);
 
             $uploadedFiles[] = $uploadedFile;
-
-            ActivityLog::log(
-                'File uploaded: ' . $originalName,
-                'File Manager',
-                'created',
-                $uploadedFile
-            );
         }
 
         return redirect()->route('file-manager.index', ['folder' => $folder])
@@ -117,13 +109,6 @@ class FileManagerController extends Controller
     public function download(int $id): StreamedResponse
     {
         $file = File::where('user_id', auth()->id())->findOrFail($id);
-
-        ActivityLog::log(
-            'File downloaded: ' . $file->original_name,
-            'File Manager',
-            'custom',
-            $file
-        );
 
         return Storage::disk('public')->download($file->path, $file->original_name);
     }
@@ -147,13 +132,6 @@ class FileManagerController extends Controller
 
         $file->update($validated);
 
-        ActivityLog::log(
-            'File updated: ' . $file->original_name,
-            'File Manager',
-            'updated',
-            $file
-        );
-
         return redirect()->route('file-manager.index', ['folder' => $file->folder])
             ->with('success', 'File updated successfully.');
     }
@@ -174,12 +152,6 @@ class FileManagerController extends Controller
         $folder = $file->folder;
 
         $file->delete();
-
-        ActivityLog::log(
-            'File deleted: ' . $fileName,
-            'File Manager',
-            'deleted'
-        );
 
         return redirect()->route('file-manager.index', ['folder' => $folder])
             ->with('success', 'File deleted successfully.');

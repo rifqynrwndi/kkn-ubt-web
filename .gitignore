@@ -45,3 +45,4 @@ database/*.sqlite
 *.log
 
 *PRD.md
+PLAN.md
