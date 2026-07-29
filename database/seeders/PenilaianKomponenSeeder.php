@@ -17,7 +17,7 @@ class PenilaianKomponenSeeder extends Seeder
 
         $components = [
             ['nama_komponen'=>'Nilai DPL', 'deskripsi'=>'Nilai dari bimbingan DPL (Logbook dan Program Kerja)', 'kategori'=>'dpl', 'bobot'=>40, 'urutan'=>1],
-            ['nama_komponen'=>'Nilai Desa', 'deskripsi'=>'Nilai Pelaksanaan KKN UBT yang diinput oleh LPPM', 'kategori'=>'lppm', 'bobot'=>30, 'urutan'=>2],
+            ['nama_komponen'=>'Nilai Desa', 'deskripsi'=>'Nilai Pelaksanaan KKN UBT yang diinput oleh DPL', 'kategori'=>'dpl', 'bobot'=>30, 'urutan'=>2],
             ['nama_komponen'=>'Nilai LPPM', 'deskripsi'=>'Nilai Luaran Video dan Artikel', 'kategori'=>'lppm', 'bobot'=>30, 'urutan'=>3],
         ];
 

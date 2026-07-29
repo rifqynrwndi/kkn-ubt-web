@@ -84,7 +84,9 @@
                                 $dplScores = $pi->where('komponen_id', $dplKom?->id)->pluck('nilai');
                                 $dplVal = $dplScores->isNotEmpty() ? round($dplScores->avg(), 2) : null;
 
-                                $desaVal = $pd->first(fn($v) => $v->komponen->nama_komponen === 'Nilai Desa')?->nilai;
+                                $desaKom = $komponenList->firstWhere('nama_komponen', 'Nilai Desa');
+                                $desaScores = $pi->where('komponen_id', $desaKom?->id)->pluck('nilai');
+                                $desaVal = $desaScores->isNotEmpty() ? round($desaScores->avg(), 2) : null;
                                 $lppmVal = $pd->first(fn($v) => $v->komponen->nama_komponen === 'Nilai LPPM')?->nilai;
 
                                 $finalVal = (!is_null($dplVal) && !is_null($desaVal) && !is_null($lppmVal))

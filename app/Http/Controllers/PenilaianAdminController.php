@@ -108,7 +108,9 @@ class PenilaianAdminController extends Controller
             $dplScores = $penilaianIndividu->where('komponen_id', $dplKomponen?->id)->pluck('nilai');
             $dplScore = $dplScores->isNotEmpty() ? round($dplScores->avg(), 2) : null;
 
-            $desaScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai Desa')?->nilai;
+            $desaKomponen = $komponenList->firstWhere('nama_komponen', 'Nilai Desa');
+            $desaScores = $penilaianIndividu->where('komponen_id', $desaKomponen?->id)->pluck('nilai');
+            $desaScore = $desaScores->isNotEmpty() ? round($desaScores->avg(), 2) : null;
             $lppmScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai LPPM')?->nilai;
 
             $finalScore = (!is_null($dplScore) && !is_null($desaScore) && !is_null($lppmScore))
