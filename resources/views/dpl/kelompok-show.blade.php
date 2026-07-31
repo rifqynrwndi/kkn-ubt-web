@@ -363,7 +363,7 @@
                                         <div class="d-flex flex-wrap gap-2 justify-content-end">
                                             <div class="form-group mb-2">
                                                 <label class="small font-weight-bold">Pilih Anggota</label>
-                                                <select id="dpl-logbook-member" class="form-control form-control-sm" onchange="dplFilterMember(); applyDplLogbookFilters();" style="min-width:160px;">
+                                                <select id="dpl-logbook-member" class="form-control form-control-sm" style="width:160px;">
                                                     <option value="">Semua Anggota</option>
                                                     @foreach($kelompok->pesertaKkn as $p)
                                                     <option value="card-{{ $p->id }}">{{ $p->mahasiswa->user->name ?? 'Unknown' }}</option>
@@ -410,11 +410,11 @@
                         </div>
                         @foreach($logbookData as $pesertaId => $entries)
                         @php $member = $entries->first()->pesertaKkn->mahasiswa->user; $v = $entries->where('is_validated',true)->count(); @endphp
-                        <div class="card border-0 shadow-sm mb-3 logbook-member-card" id="card-{{ $pesertaId }}">
+                        <div class="card border-0 shadow-sm mb-3 logbook-member-card" id="card-{{ $pesertaId }}" style="display:none;">
                             <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
                                 <strong>{{ $member->name ?? 'Unknown' }} <small class="text-muted ml-2">{{ $entries->count() }} entri</small></strong>
                                 <div>
-                                    <span class="badge badge-{{ $v>=20?'success':'warning' }} mr-2">{{ $v }}/{{ $entries->count() }}</span>
+                                    <span class="badge badge-{{ $v>=20?'success':'warning' }} mr-2 logbook-validated-badge">{{ $v }}/{{ $entries->count() }}</span>
                                     <form action="{{ route('kelompok.logbook.validateAll') }}" method="POST" class="d-inline">@csrf
                                         <input type="hidden" name="peserta_id" value="{{ $pesertaId }}">
                                         <button class="btn btn-sm btn-warning" onclick="return confirm('Validasi semua?')">Validasi Semua</button>
@@ -460,21 +460,21 @@
                                                     </div>
                                                     @else <span class="text-muted">-</span> @endif
                                                 </td>
-                                                <td class="text-center">
-                                                    @if($lb->status === 'tervalidasi')<span class="badge badge-success">✅</span>
+                                                <td class="text-center logbook-status-cell">
+                                                    <span class="logbook-status-badge">@if($lb->status === 'tervalidasi')<span class="badge badge-success">✅</span>
                                                     @elseif($lb->status === 'ditolak')<span class="badge badge-danger">❌ Ditolak</span>
-                                                    @else<span class="badge badge-warning">Menunggu</span>@endif
+                                                    @else<span class="badge badge-warning">Menunggu</span>@endif</span>
                                                     @if($lb->komentar_dpl)<br><small class="text-muted" style="font-size:10px;">"{{ $lb->komentar_dpl }}"</small>@endif
                                                 </td>
-                                                <td class="text-center">
+                                                <td class="text-center logbook-actions-cell">
                                                     @if($lb->status === 'menunggu' || $lb->status === 'tervalidasi')
-                                                    <form action="{{ route('kelompok.logbook.review', $lb->id) }}" method="POST" class="d-inline" @if($lb->status === 'tervalidasi') onsubmit="return confirm('Tolak log book yang sudah tervalidasi ini?')" @endif>
+                                                    <form action="{{ route('kelompok.logbook.review', $lb->id) }}" method="POST" class="d-inline js-logbook-review" data-status="{{ $lb->status }}">
                                                         @csrf
                                                         <input name="komentar_dpl" class="form-control form-control-sm mb-1" placeholder="Komentar..." style="width:100px;font-size:11px;">
                                                         @if($lb->status === 'menunggu')
-                                                        <button name="action" value="terima" class="btn btn-success btn-sm"><i class="fas fa-check"></i></button>
+                                                        <button type="submit" name="action" value="terima" class="btn btn-success btn-sm"><i class="fas fa-check"></i></button>
                                                         @endif
-                                                        <button name="action" value="tolak" class="btn btn-danger btn-sm"><i class="fas fa-times"></i></button>
+                                                        <button type="submit" name="action" value="tolak" class="btn btn-danger btn-sm"><i class="fas fa-times"></i></button>
                                                     </form>
                                                     @endif
                                                 </td>
@@ -765,6 +765,86 @@
         document.querySelector('.dpl-logbook-sortby')?.addEventListener('change', applyDplLogbookFilters);
         document.querySelector('.dpl-logbook-order')?.addEventListener('change', applyDplLogbookFilters);
         document.querySelector('.dpl-logbook-toggle-doc')?.addEventListener('change', applyDplLogbookFilters);
+
+        var memberSelect = document.getElementById('dpl-logbook-member');
+        var memberKey = 'dpl-logbook-member:' + location.pathname;
+        function onMemberChange() {
+            dplFilterMember();
+            applyDplLogbookFilters();
+            var v = memberSelect.value || '';
+            if (v) sessionStorage.setItem(memberKey, v); else sessionStorage.removeItem(memberKey);
+        }
+        if (memberSelect) {
+            memberSelect.addEventListener('change', onMemberChange);
+            var saved = sessionStorage.getItem(memberKey);
+            if (saved && memberSelect.querySelector('option[value="' + saved + '"]')) {
+                memberSelect.value = saved;
+                onMemberChange();
+            }
+        }
+
+        function applyLogbookReviewResult(form, data) {
+            var tr = form.closest('tr');
+            if (!tr) return;
+            var cell = tr.querySelector('.logbook-status-cell');
+            if (cell) {
+                var badge = data.status === 'tervalidasi' ? '<span class="badge badge-success">✅</span>'
+                    : data.status === 'ditolak' ? '<span class="badge badge-danger">❌ Ditolak</span>'
+                    : '<span class="badge badge-warning">Menunggu</span>';
+                var komentar = data.komentar ? '<br><small class="text-muted" style="font-size:10px;">"' + data.komentar + '"</small>' : '';
+                cell.innerHTML = badge + komentar;
+            }
+            if (data.status === 'tervalidasi') {
+                var terima = form.querySelector('button[value="terima"]');
+                if (terima) terima.remove();
+            } else if (data.status === 'ditolak') {
+                form.remove();
+                return;
+            }
+            form.dataset.status = data.status;
+            var card = tr.closest('.logbook-member-card');
+            if (card && typeof data.validated_count === 'number') {
+                var b = card.querySelector('.logbook-validated-badge');
+                if (b) {
+                    b.className = 'badge badge-' + (data.validated_count >= 20 ? 'success' : 'warning') + ' mr-2 logbook-validated-badge';
+                    b.textContent = data.validated_count + '/' + data.total_count;
+                }
+            }
+        }
+        document.querySelectorAll('form.js-logbook-review').forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                var submitter = e.submitter;
+                var action = submitter ? submitter.value : '';
+                if (!action) return;
+                if (action === 'tolak' && form.dataset.status === 'tervalidasi') {
+                    if (!confirm('Tolak log book yang sudah tervalidasi ini?')) { e.preventDefault(); return; }
+                }
+                e.preventDefault();
+                var btn = submitter;
+                btn.disabled = true;
+                var fd = new FormData(form);
+                fd.append('action', action);
+                fetch(form.getAttribute('action'), {
+                    method: 'POST',
+                    body: fd,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                }).then(function(res) {
+                    return res.json().catch(function() { return {}; }).then(function(data) { return { res: res, data: data }; });
+                }).then(function(r) {
+                    if (!r.res.ok || r.data.error) {
+                        iziToast.error({ title: 'Gagal', message: r.data.message || r.data.error || 'Terjadi kesalahan.', position: 'topRight', timeout: 8000 });
+                        return;
+                    }
+                    applyLogbookReviewResult(form, r.data);
+                    iziToast.success({ title: 'Berhasil', message: r.data.message || 'Log book di-review.', position: 'topRight', timeout: 5000 });
+                }).catch(function() {
+                    iziToast.error({ title: 'Gagal', message: 'Terjadi kesalahan jaringan.', position: 'topRight', timeout: 8000 });
+                }).finally(function() {
+                    btn.disabled = false;
+                });
+            });
+        });
         setTimeout(applyDplLogbookFilters, 100);
     })();
 </script>
