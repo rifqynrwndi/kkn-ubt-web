@@ -145,7 +145,7 @@ class LogBookController extends Controller
         return redirect($url)->with('success', 'Semua log book anggota ini berhasil divalidasi.');
     }
 
-    public function review(Request $request, LogBook $logbook): RedirectResponse
+    public function review(Request $request, LogBook $logbook): \Symfony\Component\HttpFoundation\Response
     {
         $request->validate([
             'action' => 'required|in:terima,tolak',
@@ -176,6 +176,18 @@ class LogBookController extends Controller
                 'komentar_dpl' => $request->komentar_dpl,
                 'validated_by' => auth()->id(),
                 'validated_at' => now(),
+            ]);
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            $pesertaId = $logbook->peserta_kkn_id;
+            return response()->json([
+                'status' => $logbook->status,
+                'komentar' => $logbook->komentar_dpl,
+                'is_validated' => $logbook->is_validated,
+                'validated_count' => LogBook::where('peserta_kkn_id', $pesertaId)->where('is_validated', true)->count(),
+                'total_count' => LogBook::where('peserta_kkn_id', $pesertaId)->count(),
+                'message' => 'Log book di-review.',
             ]);
         }
 
