@@ -467,11 +467,13 @@
                                                     @if($lb->komentar_dpl)<br><small class="text-muted" style="font-size:10px;">"{{ $lb->komentar_dpl }}"</small>@endif
                                                 </td>
                                                 <td class="text-center">
-                                                    @if($lb->status === 'menunggu')
-                                                    <form action="{{ route('kelompok.logbook.review', $lb->id) }}" method="POST" class="d-inline">
+                                                    @if($lb->status === 'menunggu' || $lb->status === 'tervalidasi')
+                                                    <form action="{{ route('kelompok.logbook.review', $lb->id) }}" method="POST" class="d-inline" @if($lb->status === 'tervalidasi') onsubmit="return confirm('Tolak log book yang sudah tervalidasi ini?')" @endif>
                                                         @csrf
                                                         <input name="komentar_dpl" class="form-control form-control-sm mb-1" placeholder="Komentar..." style="width:100px;font-size:11px;">
+                                                        @if($lb->status === 'menunggu')
                                                         <button name="action" value="terima" class="btn btn-success btn-sm"><i class="fas fa-check"></i></button>
+                                                        @endif
                                                         <button name="action" value="tolak" class="btn btn-danger btn-sm"><i class="fas fa-times"></i></button>
                                                     </form>
                                                     @endif
