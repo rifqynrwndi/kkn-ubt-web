@@ -149,7 +149,7 @@ class PenilaianAdminController extends Controller
             $no = 1;
             foreach ($items as $k) {
                 $penilaianData = PenilaianKelompok::where('kelompok_kkn_id', $k->id)->get()->keyBy('komponen_id');
-                $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $k->id)->get()->groupBy('peserta_kkn_id');
+                $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $k->id)->get()->groupBy('peserta_kkn_id')->map(fn($g) => $g->keyBy('komponen_id'));
 
                 $lppmScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai LPPM')?->nilai;
 
