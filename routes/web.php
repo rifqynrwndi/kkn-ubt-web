@@ -457,6 +457,7 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
             Route::get('/edit', [TugasAdminController::class, 'edit'])->name('edit');
             Route::put('/update', [TugasAdminController::class, 'updateByNama'])->name('updateByNama');
             Route::delete('/destroy-by-nama', [TugasAdminController::class, 'destroyByNama'])->name('destroyByNama');
+            Route::get('/export', [TugasAdminController::class, 'export'])->name('export');
         });
 
         /*
