@@ -45,7 +45,7 @@
                                 <th class="text-white">Nama Tugas</th>
                                 <th class="text-white text-center" width="130">Kategori</th>
                                 <th class="text-white text-center" width="90">Kelompok</th>
-                                <th class="text-white text-center" width="90">Submission</th>
+                                <th class="text-white text-center" width="90">Pengumpulan</th>
                                 <th class="text-white text-center" width="120">Aksi</th>
                             </tr>
                         </thead>
