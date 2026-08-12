@@ -4,11 +4,35 @@
 <section class="section">
     <div class="section-header d-flex justify-content-between align-items-center">
         <h1>Template Tugas Kelompok</h1>
-        <a href="{{ route('admin.tugas.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus mr-1"></i> Tambah Tugas
-        </a>
+        <div class="d-flex align-items-center gap-2">
+            @if($selectedGelombang)
+            <a href="{{ route('admin.tugas.export', ['gelombang_id' => $selectedGelombang]) }}" class="btn btn-success">
+                <i class="fas fa-file-excel mr-1"></i> Export Excel
+            </a>
+            @endif
+            <a href="{{ route('admin.tugas.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus mr-1"></i> Tambah Tugas
+            </a>
+        </div>
     </div>
     <div class="section-body">
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <form method="GET" class="row align-items-end">
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label font-weight-bold">Pilih Gelombang</label>
+                        <select name="gelombang_id" class="form-control" onchange="this.form.submit()">
+                            <option value="">-- Semua Gelombang --</option>
+                            @foreach($gelombangs as $g)
+                            <option value="{{ $g->id }}" {{ $g->id == $selectedGelombang ? 'selected' : '' }}>
+                                {{ $g->nama_gelombang ?? 'Gelombang ' . $g->id }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-transparent">
                 <h4 class="mb-0">Daftar Template Tugas</h4>
