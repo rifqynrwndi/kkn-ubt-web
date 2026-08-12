@@ -17,7 +17,12 @@ class TugasAdminController extends Controller
 {
     public function index(Request $request): View
     {
-        $tugasList = TugasKelompok::with('submissions')->get()
+        $gelombangs = Gelombang::orderBy('created_at', 'desc')->get();
+        $selectedGelombang = $request->input('gelombang_id', $gelombangs->first()?->id);
+
+        $tugasList = TugasKelompok::with('submissions')
+            ->when($selectedGelombang, fn($q) => $q->whereHas('kelompokKkn.desaGelombang', fn($dg) => $dg->where('gelombang_id', $selectedGelombang)))
+            ->get()
             ->groupBy('nama_tugas')
             ->map(fn($group) => [
                 'nama_tugas' => $group->first()->nama_tugas,
@@ -32,9 +37,6 @@ class TugasAdminController extends Controller
 
         $wn = ['Program Kerja','Video Profil Desa','Draft Artikel','Laporan Program KKN'];
         $semuaTasks = TugasKelompok::whereIn('nama_tugas', $wn)->get();
-
-        $gelombangs = Gelombang::orderBy('created_at', 'desc')->get();
-        $selectedGelombang = $request->input('gelombang_id', $gelombangs->first()?->id);
 
         $kelompoks = KelompokKkn::with(['desaGelombang.desa.kecamatan',
             'tugasKelompok' => fn($q) => $q->whereIn('nama_tugas', $wn)]);
@@ -111,6 +113,7 @@ class TugasAdminController extends Controller
                 $kec = $k->desaGelombang?->desa?->kecamatan?->nama_kecamatan ?? '-';
 
                 $tugasRows = $k->tugasKelompok->isEmpty() ? collect() : $k->tugasKelompok->sortBy('nama_tugas');
+
                 if ($tugasRows->isEmpty()) {
                     $sheet->fromArray([[$no++, $k->nama_kelompok . "\n(" . $k->kode_kelompok . ')', 'Belum ada tugas', '-', '-', $statusLabels['belum'], '', '']], null, "A{$row}");
                     $style = ($no % 2 === 1) ? $altRowStyle : $rowStyle;
@@ -119,32 +122,62 @@ class TugasAdminController extends Controller
                     continue;
                 }
 
+                $blockStart = $row;
+                $totalRows = 0;
+                foreach ($tugasRows as $tugas) {
+                    $totalRows += $tugas->submissions->isEmpty() ? 1 : $tugas->submissions->count();
+                }
+
+                $namaKelompok = $k->nama_kelompok . "\n(" . $k->kode_kelompok . ')';
+                $firstOfBlock = true;
+
                 foreach ($tugasRows as $tugas) {
                     $namaTugas = $tugas->nama_tugas;
                     $kategori = $katLabels[$tugas->kategori] ?? $tugas->kategori;
 
-                    if ($tugas->submissions->isEmpty()) {
-                        $sheet->fromArray([[$no++, $k->nama_kelompok . "\n(" . $k->kode_kelompok . ')', $namaTugas, $kategori, '-', $statusLabels['belum'], '', '']], null, "A{$row}");
-                    } else {
-                        foreach ($tugas->submissions as $sub) {
-                            $pengumpul = $sub->pesertaKkn?->mahasiswa?->user?->name ?? '-';
-                            $status = $statusLabels[$sub->status] ?? $sub->status;
-                            $link = $sub->file_path ? storage_url($sub->file_path) : '';
-                            $tanggal = $sub->created_at ? $sub->created_at->format('d-m-Y H:i') : '';
-                            $sheet->fromArray([[$no++, $k->nama_kelompok . "\n(" . $k->kode_kelompok . ')', $namaTugas, $kategori, $pengumpul, $status, $sub->file_name ?? $link, $tanggal]], null, "A{$row}");
-                            if ($link) {
-                                $cell = $sheet->getCell('G' . $row);
-                                $cell->getHyperlink()->setUrl($link);
-                                $cell->getHyperlink()->setTooltip($link);
-                            }
-                        }
-                    }
+                    $rowsToWrite = $tugas->submissions->isEmpty()
+                        ? [[$namaTugas, $kategori, '-', $statusLabels['belum'], '', '', '']]
+                        : $tugas->submissions->map(fn($sub) => [
+                            $namaTugas,
+                            $kategori,
+                            $sub->pesertaKkn?->mahasiswa?->user?->name ?? '-',
+                            $statusLabels[$sub->status] ?? $sub->status,
+                            $sub->file_name ?: ($sub->file_path ? 'Lihat File' : ''),
+                            $sub->file_path ? storage_url($sub->file_path) : '',
+                            $sub->created_at ? $sub->created_at->format('d-m-Y H:i') : '',
+                        ])->values()->toArray();
 
-                    $style = ($no % 2 === 1) ? $altRowStyle : $rowStyle;
-                    $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray($style);
-                    $sheet->getStyle("A{$row}:{$lastCol}{$row}")->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_TOP);
-                    $row++;
+                    foreach ($rowsToWrite as $rw) {
+                        [$namaTugasRow, $katRow, $pengumpul, $statusRow, $fileText, $linkUrl, $tanggal] = $rw;
+                        $sheet->fromArray([[
+                            $firstOfBlock ? $no : '',
+                            $firstOfBlock ? $namaKelompok : '',
+                            $namaTugasRow, $katRow, $pengumpul, $statusRow, $fileText, $tanggal,
+                        ]], null, "A{$row}");
+
+                        if ($linkUrl) {
+                            $sheet->getCell('G' . $row)->getHyperlink()->setUrl($linkUrl);
+                            $sheet->getCell('G' . $row)->getHyperlink()->setTooltip($linkUrl);
+                            $sheet->getStyle('G' . $row)->getFont()->getColor()->setARGB('0563C1');
+                            $sheet->getStyle('G' . $row)->getFont()->setUnderline(true);
+                        }
+
+                        $style = ($no % 2 === 1) ? $altRowStyle : $rowStyle;
+                        $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray($style);
+                        $sheet->getStyle("A{$row}:{$lastCol}{$row}")->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_TOP);
+                        $firstOfBlock = false;
+                        $row++;
+                    }
                 }
+
+                if ($totalRows > 1) {
+                    $blockEnd = $blockStart + $totalRows - 1;
+                    $sheet->mergeCells("A{$blockStart}:A{$blockEnd}");
+                    $sheet->mergeCells("B{$blockStart}:B{$blockEnd}");
+                    $sheet->getStyle("A{$blockStart}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+                    $sheet->getStyle("B{$blockStart}")->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+                }
+                $no++;
             }
 
             $sheet->getColumnDimension('A')->setWidth(6);
