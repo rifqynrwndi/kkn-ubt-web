@@ -45,6 +45,30 @@ use App\Http\Controllers\{
 
 Route::get('/', fn () => view('auth.login'));
 
+Route::get('/sitemap.xml', function () {
+    $pages = [
+        ['loc' => '/', 'priority' => '1.0', 'changefreq' => 'daily'],
+        ['loc' => '/login', 'priority' => '0.8', 'changefreq' => 'monthly'],
+        ['loc' => '/register', 'priority' => '0.8', 'changefreq' => 'monthly'],
+        ['loc' => '/pendaftaran-kkn', 'priority' => '0.9', 'changefreq' => 'weekly'],
+    ];
+
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    foreach ($pages as $page) {
+        $xml .= "  <url>\n";
+        $xml .= "    <loc>" . e(url($page['loc'])) . "</loc>\n";
+        $xml .= "    <changefreq>" . e($page['changefreq']) . "</changefreq>\n";
+        $xml .= "    <priority>" . e($page['priority']) . "</priority>\n";
+        $xml .= "  </url>\n";
+    }
+    $xml .= "</urlset>";
+
+    return response($xml, 200)
+        ->header('Content-Type', 'application/xml')
+        ->header('Cache-Control', 'public, max-age=3600');
+});
+
 Auth::routes();
 
 Route::get('/s3/{path}', [FileProxyController::class, 'streamS3'])->where('path', '.*')->name('s3.proxy');

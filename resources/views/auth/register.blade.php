@@ -1,6 +1,9 @@
 @extends('layouts.auth')
 
-@section('title', 'Register')
+@section('title', 'KKN Universitas Borneo Tarakan — Register')
+@section('description', 'Daftar akun baru untuk mengikuti program Kuliah Kerja Nyata (KKN) Universitas Borneo Tarakan.')
+@section('og-title', 'KKN UBT — Register')
+@section('og-desc', 'Buat akun untuk mengikuti program KKN Universitas Borneo Tarakan.')
 
 @section('content')
 <div class="auth-card">

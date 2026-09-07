@@ -7,7 +7,22 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Title -->
-    <title>@yield('title') &mdash; KKN Universitas Borneo Tarakan</title>
+    <title>@yield('title', 'KKN Universitas Borneo Tarakan') &mdash; KKN UBT</title>
+
+    <meta name="description" content="@yield('description', 'Sistem informasi resmi Kuliah Kerja Nyata Universitas Borneo Tarakan untuk pendaftaran, penempatan kelompok, pengumpulan laporan, dan penilaian.')">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="@yield('og-title', 'KKN Universitas Borneo Tarakan')">
+    <meta property="og:description" content="@yield('og-desc', 'Sistem informasi resmi KKN Universitas Borneo Tarakan untuk pendaftaran, penempatan, laporan, dan penilaian.')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="KKN UBT">
+    <meta property="og:image" content="{{ asset('images/logo-ubt.png') }}">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="@yield('og-title', 'KKN Universitas Borneo Tarakan')">
+    <meta name="twitter:description" content="@yield('og-desc', 'Sistem informasi resmi KKN Universitas Borneo Tarakan.')">
 
     <link rel="icon" type="image/png" href="{{ asset('images/logo-ubt.png') }}">
 
