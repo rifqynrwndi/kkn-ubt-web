@@ -61,7 +61,7 @@
             </div>
         </div>
         @else
-        <div class="card"><div class="card-body text-center py-5"><span style="font-size:48px;">⭐</span><h5>Belum Ada Komponen Penilaian</h5><p class="text-muted">Jalankan seeder PenilaianKomponenSeeder terlebih dahulu.</p></div></div>
+        <div class="card"><div class="card-body text-center py-5"><h5>Belum Ada Komponen Penilaian</h5><p class="text-muted">Jalankan seeder PenilaianKomponenSeeder terlebih dahulu.</p></div></div>
         @endif
     </div>
 </section>

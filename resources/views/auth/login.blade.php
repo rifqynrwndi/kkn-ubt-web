@@ -1,6 +1,9 @@
 @extends('layouts.auth')
 
-@section('title', 'Login')
+@section('title', 'KKN Universitas Borneo Tarakan — Login')
+@section('description', 'Masuk ke sistem informasi KKN Universitas Borneo Tarakan. Kelola pendaftaran, penempatan kelompok, pengumpulan laporan, dan penilaian.')
+@section('og-title', 'KKN UBT — Login')
+@section('og-desc', 'Masuk ke sistem informasi Kuliah Kerja Nyata Universitas Borneo Tarakan.')
 
 @section('content')
 <div class="auth-card">

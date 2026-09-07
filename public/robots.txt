@@ -1,2 +1,16 @@
 User-agent: *
-Disallow:
+Disallow: /admin
+Disallow: /dpl
+Disallow: /kelompok
+Disallow: /file-manager
+Disallow: /notifications
+Disallow: /hakakses
+Disallow: /war
+Disallow: /mahasiswa
+Disallow: /gelombang
+Disallow: /pembimbing-lapangan
+Disallow: /verifikasi-dokumen
+Disallow: /penilaian
+Disallow: /profile
+
+Sitemap: https://kknubt.id/sitemap.xml
