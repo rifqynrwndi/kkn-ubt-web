@@ -50,3 +50,9 @@ PLAN.md
 test-results/
 .phpunit.result.cache
 *prompt.md
+
+# AI Agent / Skills
+.agents/
+.claude/
+.opencode/
+skills-lock.json

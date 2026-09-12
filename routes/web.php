@@ -67,7 +67,7 @@ Route::get('/sitemap.xml', function () {
         ->header('Cache-Control', 'public, max-age=3600');
 });
 
-Auth::routes(['register' => true, 'reset' => true, 'verify' => true]);
+Auth::routes(['register' => false, 'reset' => true, 'verify' => true]);
 
 Route::post('/register', [RegisterController::class, 'register'])->middleware('throttle:register')->name('register');
 
