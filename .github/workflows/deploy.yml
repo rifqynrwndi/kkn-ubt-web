@@ -81,6 +81,7 @@ jobs:
           ssh -T server bash << 'REMOTE'
           set -e
           cd ${{ secrets.DEPLOY_PATH }}
+          rm -f bootstrap/cache/config-*.php bootstrap/cache/routes-*.php bootstrap/cache/views-*.php
           php artisan migrate --force
           php artisan config:cache
           php artisan route:cache
