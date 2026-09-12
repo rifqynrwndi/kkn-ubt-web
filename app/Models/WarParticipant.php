@@ -3,9 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\WarSession;
-use App\Models\PesertaKkn;
-use App\Models\KelompokKkn;
 
 class WarParticipant extends Model
 {

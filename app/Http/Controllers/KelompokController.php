@@ -1,22 +1,32 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Models\KelompokKkn;
+use App\Models\KelompokProposal;
+use App\Models\LogBook;
+use App\Models\PenilaianIndividu;
+use App\Models\PenilaianKelompok;
+use App\Models\PenilaianKomponen;
+use App\Models\PesertaKkn;
+use App\Models\TugasKelompok;
+use App\Services\StatusService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class KelompokController extends Controller
 {
     private function getPeserta()
     {
         $mahasiswa = auth()->user()->mahasiswa;
-        if (! $mahasiswa) return null;
+        if (! $mahasiswa) {
+            return null;
+        }
 
-        return \App\Models\PesertaKkn::where('mahasiswa_id', $mahasiswa->user_id)
+        return PesertaKkn::where('mahasiswa_id', $mahasiswa->user_id)
             ->whereNotNull('kelompok_kkn_id')
-            ->whereDoesntHave('gelombang.warSessions', fn($q) => $q->whereIn('status', ['scheduled', 'active']))
+            ->whereDoesntHave('gelombang.warSessions', fn ($q) => $q->whereIn('status', ['scheduled', 'active']))
             ->with(['kelompokKkn.desaGelombang.desa.kecamatan', 'kelompokKkn.desaGelombang.gelombang'])
             ->first();
     }
@@ -27,6 +37,7 @@ class KelompokController extends Controller
 
         if (! $peserta) {
             session()->flash('info', 'Anda belum tergabung dalam kelompok KKN. Silakan menunggu penempatan oleh admin atau ikuti proses WAR KKN.');
+
             return redirect()->route('home');
         }
 
@@ -41,31 +52,31 @@ class KelompokController extends Controller
             'ketua.mahasiswa.user',
         ]);
 
-        $proposal = \App\Models\KelompokProposal::where('kelompok_kkn_id', $kelompok->id)->first();
+        $proposal = KelompokProposal::where('kelompok_kkn_id', $kelompok->id)->first();
 
-        $statusService = app(\App\Services\StatusService::class);
+        $statusService = app(StatusService::class);
         $statusCurrent = $statusService->getCurrentStage($kelompok);
         $statusHistory = $statusService->getHistory($kelompok);
-        $statusStages  = \App\Services\StatusService::STAGES;
+        $statusStages = StatusService::STAGES;
         $isAdmin = auth()->user()->hasRole('superadmin');
 
-        $tugasList = \App\Models\TugasKelompok::where('kelompok_kkn_id', $kelompok->id)
+        $tugasList = TugasKelompok::where('kelompok_kkn_id', $kelompok->id)
             ->with(['submissions.pesertaKkn.mahasiswa.user'])->get()
             ->groupBy('kategori');
 
-        $logbookData = \App\Models\LogBook::where('kelompok_kkn_id', $kelompok->id)
+        $logbookData = LogBook::where('kelompok_kkn_id', $kelompok->id)
             ->with(['pesertaKkn.mahasiswa.user'])
             ->latest('tanggal')
             ->get()
             ->groupBy('peserta_kkn_id');
 
-        $members = $kelompok->pesertaKkn->map(fn($p) => ['id'=>$p->id,'name'=>$p->mahasiswa->user->name]);
+        $members = $kelompok->pesertaKkn->map(fn ($p) => ['id' => $p->id, 'name' => $p->mahasiswa->user->name]);
 
-        $komponenList = \App\Models\PenilaianKomponen::orderBy('urutan')->get();
-        $penilaianData = \App\Models\PenilaianKelompok::where('kelompok_kkn_id', $kelompok->id)
+        $komponenList = PenilaianKomponen::orderBy('urutan')->get();
+        $penilaianData = PenilaianKelompok::where('kelompok_kkn_id', $kelompok->id)
             ->with('komponen')->get()->keyBy('komponen_id');
 
-        $penilaianIndividu = \App\Models\PenilaianIndividu::where('kelompok_kkn_id', $kelompok->id)->get();
+        $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $kelompok->id)->get();
 
         $dplKomponen = $komponenList->firstWhere('nama_komponen', 'Nilai DPL');
         $dplScores = $penilaianIndividu->where('komponen_id', $dplKomponen?->id)->pluck('nilai');
@@ -75,9 +86,9 @@ class KelompokController extends Controller
         $desaScores = $penilaianIndividu->where('komponen_id', $desaKomponen?->id)->pluck('nilai');
         $desaScore = $desaScores->isNotEmpty() ? round($desaScores->avg(), 2) : null;
 
-        $lppmScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai LPPM')?->nilai;
+        $lppmScore = $penilaianData->first(fn ($v) => $v->komponen->nama_komponen === 'Nilai LPPM')?->nilai;
 
-        $finalScore = (!is_null($dplScore) && !is_null($desaScore) && !is_null($lppmScore))
+        $finalScore = (! is_null($dplScore) && ! is_null($desaScore) && ! is_null($lppmScore))
             ? round(($dplScore * 0.40 + $desaScore * 0.30 + $lppmScore * 0.30), 2)
             : null;
 
@@ -113,10 +124,13 @@ class KelompokController extends Controller
     private function calcScore($komponenList, $penilaianData): ?float
     {
         $totalBobot = $komponenList->sum('bobot');
-        if ($totalBobot === 0) return null;
+        if ($totalBobot === 0) {
+            return null;
+        }
         $totalNilai = $komponenList->sum(function ($k) use ($penilaianData) {
             return ($penilaianData[$k->id]->nilai ?? 0) * $k->bobot;
         });
+
         return $totalNilai > 0 ? round($totalNilai / $totalBobot, 2) : null;
     }
 }

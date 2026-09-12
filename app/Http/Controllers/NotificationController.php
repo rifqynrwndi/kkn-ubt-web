@@ -87,7 +87,7 @@ class NotificationController extends Controller
 
         return redirect()
             ->route('notifications.index')
-            ->with('success', 'Notifikasi berhasil dikirim ke ' . $users->count() . ' pengguna.');
+            ->with('success', 'Notifikasi berhasil dikirim ke '.$users->count().' pengguna.');
     }
 
     public function markAsRead(string $id): RedirectResponse

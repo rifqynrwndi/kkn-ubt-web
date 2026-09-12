@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -11,7 +12,7 @@ class FileProxyController extends Controller
         $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
 
         try {
-            if (!Storage::disk($disk)->exists($path)) {
+            if (! Storage::disk($disk)->exists($path)) {
                 abort(404);
             }
         } catch (\Throwable $e) {

@@ -62,22 +62,22 @@ class DokumenVerifiedNotification extends Notification
     {
         $messages = [];
 
-        if (!empty($verified)) {
+        if (! empty($verified)) {
             $messages[] =
-                'Dokumen berikut telah diverifikasi: ' .
-                implode(', ', $verified) . '.';
+                'Dokumen berikut telah diverifikasi: '.
+                implode(', ', $verified).'.';
         }
 
-        if (!empty($revision)) {
+        if (! empty($revision)) {
             $messages[] =
-                'Dokumen berikut perlu revisi: ' .
-                implode(', ', $revision) . '.';
+                'Dokumen berikut perlu revisi: '.
+                implode(', ', $revision).'.';
         }
 
-        if (!empty($rejected)) {
+        if (! empty($rejected)) {
             $messages[] =
-                'Dokumen berikut ditolak: ' .
-                implode(', ', $rejected) . '.';
+                'Dokumen berikut ditolak: '.
+                implode(', ', $rejected).'.';
         }
 
         return implode(' ', $messages);

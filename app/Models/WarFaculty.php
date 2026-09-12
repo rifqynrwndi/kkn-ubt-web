@@ -17,7 +17,7 @@ class WarFaculty extends Model
 
     protected $casts = [
         'start_at' => 'datetime',
-        'end_at'   => 'datetime',
+        'end_at' => 'datetime',
     ];
 
     public function warSession()

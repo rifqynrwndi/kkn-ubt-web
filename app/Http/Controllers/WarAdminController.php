@@ -8,6 +8,7 @@ use App\Models\KelompokKkn;
 use App\Models\PesertaKkn;
 use App\Models\WarFaculty;
 use App\Models\WarLog;
+use App\Models\WarParticipant;
 use App\Models\WarSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -50,24 +51,25 @@ class WarAdminController extends Controller
     public function create()
     {
         $gelombangs = Gelombang::latest()->get();
+
         return view('war-admin.create', compact('gelombangs'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name'         => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'gelombang_id' => 'required|exists:gelombang,id',
-            'start_at'     => 'required|date',
-            'end_at'       => 'required|date|after:start_at',
+            'start_at' => 'required|date',
+            'end_at' => 'required|date|after:start_at',
         ]);
 
         WarSession::create([
-            'name'         => $request->name,
+            'name' => $request->name,
             'gelombang_id' => $request->gelombang_id,
-            'start_at'     => $request->start_at,
-            'end_at'       => $request->end_at,
-            'status'       => 'scheduled',
+            'start_at' => $request->start_at,
+            'end_at' => $request->end_at,
+            'status' => 'scheduled',
         ]);
 
         return redirect()->route('admin.war.index')->with('success', 'Sesi WAR berhasil dibuat.');
@@ -80,9 +82,9 @@ class WarAdminController extends Controller
         }
 
         $request->validate([
-            'name'     => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'start_at' => 'required|date',
-            'end_at'   => 'required|date|after:start_at',
+            'end_at' => 'required|date|after:start_at',
         ]);
 
         $war->update($request->only(['name', 'start_at', 'end_at']));
@@ -107,14 +109,14 @@ class WarAdminController extends Controller
     public function setFacultyQuota(Request $request, WarSession $war)
     {
         $request->validate([
-            'faculties'   => 'required|array',
+            'faculties' => 'required|array',
             'faculties.*' => 'exists:fakultas,id',
         ]);
 
         DB::transaction(function () use ($request, $war) {
             foreach ($request->faculties as $fakultasId) {
                 // Hitung kuota berdasarkan jumlah peserta KKN di gelombang ini untuk fakultas tersebut
-                $quota = \App\Models\PesertaKkn::where('gelombang_id', $war->gelombang_id)
+                $quota = PesertaKkn::where('gelombang_id', $war->gelombang_id)
                     ->whereHas('mahasiswa.prodi', function ($query) use ($fakultasId) {
                         $query->where('fakultas_id', $fakultasId);
                     })
@@ -122,18 +124,18 @@ class WarAdminController extends Controller
 
                 $warFaculty = WarFaculty::firstOrNew([
                     'war_session_id' => $war->id,
-                    'fakultas_id'    => $fakultasId,
+                    'fakultas_id' => $fakultasId,
                 ]);
 
                 $warFaculty->quota = $quota;
-                
+
                 // Jika data baru, inisialisasi filled dan jadwal
-                if (!$warFaculty->exists) {
+                if (! $warFaculty->exists) {
                     $warFaculty->filled = 0;
                     $warFaculty->start_at = null;
                     $warFaculty->end_at = null;
                 }
-                
+
                 $warFaculty->save();
             }
         });
@@ -144,10 +146,10 @@ class WarAdminController extends Controller
     public function setFacultySchedule(Request $request, WarSession $war)
     {
         $request->validate([
-            'schedules'               => 'required|array',
+            'schedules' => 'required|array',
             'schedules.*.fakultas_id' => 'required|exists:fakultas,id',
-            'schedules.*.start_at'    => 'required|date',
-            'schedules.*.end_at'      => 'required|date|after:schedules.*.start_at',
+            'schedules.*.start_at' => 'required|date',
+            'schedules.*.end_at' => 'required|date|after:schedules.*.start_at',
         ]);
 
         DB::transaction(function () use ($request, $war) {
@@ -156,7 +158,7 @@ class WarAdminController extends Controller
                     ->where('fakultas_id', $schedule['fakultas_id'])
                     ->update([
                         'start_at' => $schedule['start_at'],
-                        'end_at'   => $schedule['end_at'],
+                        'end_at' => $schedule['end_at'],
                     ]);
             }
         });
@@ -174,7 +176,7 @@ class WarAdminController extends Controller
             WarSession::query()->update(['status' => 'scheduled']);
 
             $war->update([
-                'status'   => 'active',
+                'status' => 'active',
                 'start_at' => now(),
             ]);
         });
@@ -202,11 +204,11 @@ class WarAdminController extends Controller
         DB::transaction(function () use ($war) {
 
             // Kumpulkan ID peserta_kkn yang terdaftar di sesi ini
-            $pesertaIds = \App\Models\WarParticipant::where('war_session_id', $war->id)
+            $pesertaIds = WarParticipant::where('war_session_id', $war->id)
                 ->pluck('peserta_kkn_id');
 
             // Hapus semua catatan WarParticipant untuk sesi ini
-            \App\Models\WarParticipant::where('war_session_id', $war->id)->delete();
+            WarParticipant::where('war_session_id', $war->id)->delete();
 
             // Null-kan kelompok_kkn_id untuk peserta yang terdaftar di sesi ini
             if ($pesertaIds->isNotEmpty()) {
@@ -234,10 +236,10 @@ class WarAdminController extends Controller
         $war->loadCount('participants');
 
         $kelompoks = KelompokKkn::with([
-                'desaGelombang.desa',
-                'pesertaKkn.mahasiswa.prodi.fakultas',
-            ])
-            ->whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $war->gelombang_id))
+            'desaGelombang.desa',
+            'pesertaKkn.mahasiswa.prodi.fakultas',
+        ])
+            ->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $war->gelombang_id))
             ->get();
 
         $totalPesertaGelombang = PesertaKkn::where('gelombang_id', $war->gelombang_id)->count();
@@ -245,29 +247,29 @@ class WarAdminController extends Controller
         $fakultasStats = PesertaKkn::where('gelombang_id', $war->gelombang_id)
             ->with('mahasiswa.prodi.fakultas')
             ->get()
-            ->groupBy(fn($p) => $p->mahasiswa->prodi->fakultas_id)
+            ->groupBy(fn ($p) => $p->mahasiswa->prodi->fakultas_id)
             ->map(function ($pesertas, $fakultasId) {
                 $fakultas = $pesertas->first()->mahasiswa->prodi->fakultas;
                 $total = $pesertas->count();
-                $filled = $pesertas->filter(fn($p) => $p->kelompok_kkn_id !== null)->count();
+                $filled = $pesertas->filter(fn ($p) => $p->kelompok_kkn_id !== null)->count();
+
                 return [
                     'fakultas_id' => $fakultasId,
-                    'nama'        => $fakultas->nama_fakultas ?? 'N/A',
-                    'total'       => $total,
-                    'filled'      => $filled,
-                    'persen'      => $total > 0 ? round(($filled / $total) * 100) : 0,
+                    'nama' => $fakultas->nama_fakultas ?? 'N/A',
+                    'total' => $total,
+                    'filled' => $filled,
+                    'persen' => $total > 0 ? round(($filled / $total) * 100) : 0,
                 ];
             })
             ->values();
 
-        $kelompokData = KelompokKkn::whereHas('desaGelombang', fn($q) =>
-                $q->where('gelombang_id', $war->gelombang_id)
-            )
+        $kelompokData = KelompokKkn::whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $war->gelombang_id)
+        )
             ->selectRaw('COUNT(*) as total, SUM(CASE WHEN status = "penuh" THEN 1 ELSE 0 END) as penuh')
             ->first();
 
         $kelompokTersedia = ($kelompokData->total ?? 0) - ($kelompokData->penuh ?? 0);
-        $kelompokPenuh    = $kelompokData->penuh ?? 0;
+        $kelompokPenuh = $kelompokData->penuh ?? 0;
 
         return view('war-admin.monitor', compact(
             'war', 'kelompoks', 'fakultasStats', 'totalPesertaGelombang',
@@ -280,36 +282,36 @@ class WarAdminController extends Controller
         $totalPeserta = $war->participants()->count();
         $totalPesertaGelombang = PesertaKkn::where('gelombang_id', $war->gelombang_id)->count();
 
-        $kelompokData = KelompokKkn::whereHas('desaGelombang', fn($q) => 
-                $q->where('gelombang_id', $war->gelombang_id)
-            )
+        $kelompokData = KelompokKkn::whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $war->gelombang_id)
+        )
             ->selectRaw('COUNT(*) as total, SUM(CASE WHEN status = "penuh" THEN 1 ELSE 0 END) as penuh')
             ->first();
 
         $fakultasStats = PesertaKkn::where('gelombang_id', $war->gelombang_id)
             ->with('mahasiswa.prodi.fakultas')
             ->get()
-            ->groupBy(fn($p) => $p->mahasiswa->prodi->fakultas_id)
+            ->groupBy(fn ($p) => $p->mahasiswa->prodi->fakultas_id)
             ->map(function ($pesertas, $fakultasId) {
                 $fakultas = $pesertas->first()->mahasiswa->prodi->fakultas;
                 $total = $pesertas->count();
-                $filled = $pesertas->filter(fn($p) => $p->kelompok_kkn_id !== null)->count();
+                $filled = $pesertas->filter(fn ($p) => $p->kelompok_kkn_id !== null)->count();
+
                 return [
                     'fakultas_id' => $fakultasId,
-                    'nama'        => $fakultas->nama_fakultas ?? 'N/A',
-                    'quota'       => $total,
-                    'filled'      => $filled,
-                    'persen'      => $total > 0 ? round(($filled / $total) * 100) : 0,
+                    'nama' => $fakultas->nama_fakultas ?? 'N/A',
+                    'quota' => $total,
+                    'filled' => $filled,
+                    'persen' => $total > 0 ? round(($filled / $total) * 100) : 0,
                 ];
             })
             ->values();
 
         return response()->json([
-            'total_peserta'           => $totalPeserta,
+            'total_peserta' => $totalPeserta,
             'total_peserta_gelombang' => $totalPesertaGelombang,
-            'kelompok'                => [
-                'total'   => $kelompokData->total ?? 0,
-                'penuh'   => $kelompokData->penuh ?? 0,
+            'kelompok' => [
+                'total' => $kelompokData->total ?? 0,
+                'penuh' => $kelompokData->penuh ?? 0,
                 'tersisa' => ($kelompokData->total ?? 0) - ($kelompokData->penuh ?? 0),
             ],
             'fakultas' => $fakultasStats,
@@ -325,12 +327,12 @@ class WarAdminController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get()
-            ->map(fn($log) => [
-                'id'      => $log->id,
+            ->map(fn ($log) => [
+                'id' => $log->id,
                 'peserta' => $log->pesertaKkn->mahasiswa->name ?? 'Unknown',
-                'action'  => $log->action,
-                'meta'    => json_decode($log->meta),
-                'human'   => $log->created_at->diffForHumans(),
+                'action' => $log->action,
+                'meta' => json_decode($log->meta),
+                'human' => $log->created_at->diffForHumans(),
             ]);
 
         return response()->json(['logs' => $logs]);
@@ -338,17 +340,16 @@ class WarAdminController extends Controller
 
     public function monitorKelompoks(WarSession $war)
     {
-        $kelompoks = KelompokKkn::whereHas('desaGelombang', fn($q) => 
-                $q->where('gelombang_id', $war->gelombang_id)
-            )
+        $kelompoks = KelompokKkn::whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $war->gelombang_id)
+        )
             ->withCount('pesertaKkn')
             ->get()
-            ->map(fn($k) => [
-                'id'     => $k->id,
-                'terisi' => $k->peserta_kkn_count,
-                'kuota'  => $k->kuota,
-                'status' => $k->status,
-            ]);
+            ->map(fn ($k) => [
+            'id' => $k->id,
+            'terisi' => $k->peserta_kkn_count,
+            'kuota' => $k->kuota,
+            'status' => $k->status,
+        ]);
 
         return response()->json(['kelompoks' => $kelompoks]);
     }
@@ -364,7 +365,7 @@ class WarAdminController extends Controller
 
             logger()->info('WAR auto-closed', [
                 'war_id' => $war->id,
-                'name'   => $war->name,
+                'name' => $war->name,
                 'end_at' => $war->end_at,
             ]);
         }

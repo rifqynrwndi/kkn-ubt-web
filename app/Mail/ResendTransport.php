@@ -23,10 +23,10 @@ class ResendTransport extends AbstractTransport
         Http::withToken($this->apiKey)
             ->acceptJson()
             ->post('https://api.resend.com/emails', [
-                'from'    => config('mail.from.name') . ' <' . config('mail.from.address') . '>',
-                'to'      => array_map(fn($a) => $a->getAddress(), $email->getTo()),
+                'from' => config('mail.from.name').' <'.config('mail.from.address').'>',
+                'to' => array_map(fn ($a) => $a->getAddress(), $email->getTo()),
                 'subject' => $email->getSubject(),
-                'html'    => $email->getHtmlBody() ?? $email->getTextBody(),
+                'html' => $email->getHtmlBody() ?? $email->getTextBody(),
             ]);
     }
 

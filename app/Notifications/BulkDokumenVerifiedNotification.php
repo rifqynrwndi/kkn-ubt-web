@@ -27,8 +27,7 @@ class BulkDokumenVerifiedNotification extends Notification
     {
         return [
             'title' => 'Verifikasi Dokumen Diperbarui',
-            'message' =>
-                'Status verifikasi dokumen KKN Anda telah diperbarui oleh admin.',
+            'message' => 'Status verifikasi dokumen KKN Anda telah diperbarui oleh admin.',
             'peserta_kkn_id' => $this->peserta->id,
             'type' => 'bulk_verification',
         ];

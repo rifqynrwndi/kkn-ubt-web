@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Kecamatan;
 use App\Models\Desa;
-use App\Models\Gelombang;
 use App\Models\DesaGelombang;
+use App\Models\Gelombang;
+use App\Models\Kecamatan;
+use Illuminate\Database\Seeder;
 
 class DesaSeeder extends Seeder
 {
@@ -21,16 +21,16 @@ class DesaSeeder extends Seeder
         if (! $gelombangTerbaru) {
             $gelombangTerbaru = Gelombang::firstOrCreate(
                 [
-                    'nama_gelombang' => 'KKN Default Periode ' . now()->year,
-                    'tahun'          => now()->year,
+                    'nama_gelombang' => 'KKN Default Periode '.now()->year,
+                    'tahun' => now()->year,
                 ],
                 [
-                    'tgl_mulai'      => now(),
-                    'tgl_akhir'      => now()->addMonths(3),
-                    'status'         => 'persiapan',
+                    'tgl_mulai' => now(),
+                    'tgl_akhir' => now()->addMonths(3),
+                    'status' => 'persiapan',
                 ]
             );
-            $this->command->info('Gelombang default dibuat: ' . $gelombangTerbaru->nama_gelombang);
+            $this->command->info('Gelombang default dibuat: '.$gelombangTerbaru->nama_gelombang);
         }
 
         // Struktur Data: ['Nama Kabupaten' => ['Nama Kecamatan' => ['Desa 1', 'Desa 2']]]
@@ -42,7 +42,7 @@ class DesaSeeder extends Seeder
                     'Pelita Kanaan',
                     'Malinau Hulu',
                     'Malinau Hilir',
-                    'Tanjung Keranjang'
+                    'Tanjung Keranjang',
                 ],
                 'Malinau Utara' => [
                     'Kaliamok',
@@ -56,7 +56,7 @@ class DesaSeeder extends Seeder
                     'Sembuak Warod',
                     'Lubak Manis',
                     'Kelapis',
-                    'Semenggaris'
+                    'Semenggaris',
                 ],
                 'Malinau Barat' => [
                     'Long Bila',
@@ -66,13 +66,13 @@ class DesaSeeder extends Seeder
                     'Tanjung Lapang',
                     'Taras',
                     'Kuala Lapang',
-                    'Sempayang'
+                    'Sempayang',
                 ],
                 'Mentarang' => [
                     'Long Bisai',
                     'Pulau Sapi',
                     'Lidung Kemenci',
-                    'Mentarang Baru'
+                    'Mentarang Baru',
                 ],
             ],
 
@@ -80,28 +80,28 @@ class DesaSeeder extends Seeder
                 'Sesayap' => [
                     'Tideng Pale',
                     'Limbu Sedulun',
-                    'Sebawang'
+                    'Sebawang',
                 ],
                 'Sesayap Hilir' => [
                     'Bebatu',
                     'Sengkong',
                     'Manjelutung',
-                    'Bandan Bikis'
+                    'Bandan Bikis',
                 ],
                 'Betayau' => [
                     'Mendupo',
                     'Kujau',
                     'Maning',
                     'Buong Baru',
-                    'Periuk'
+                    'Periuk',
                 ],
                 'Muruk Rian' => [
                     'Rian Rayo',
                     'Balayan Ari',
-                    'Seputuk'
+                    'Seputuk',
                 ],
                 'Tana Lia' => [
-                    'Tengkudacing'
+                    'Tengkudacing',
                 ],
             ],
 
@@ -117,19 +117,19 @@ class DesaSeeder extends Seeder
                 'Bunyu' => [
                     'Bunyu Selatan',
                     'Bunyu Timur',
-                    'Bunyu Barat'
+                    'Bunyu Barat',
                 ],
                 'Tanjung Palas' => [
                     'Gunung Putih',
                     'Pejalin',
-                    'Antutan'
+                    'Antutan',
                 ],
                 'Tanjung Palas Barat' => [
-                    'Long Sam'
+                    'Long Sam',
                 ],
                 'Tanjung Palas Tengah' => [
                     'Salimbatu',
-                    'Silva Rahayu'
+                    'Silva Rahayu',
                 ],
                 'Tanjung Palas Utara' => [
                     'Pimping',
@@ -137,14 +137,14 @@ class DesaSeeder extends Seeder
                     'Panca Agung',
                     'Ruhui Rahayu',
                     'Ardimulyo',
-                    'Kelubir'
+                    'Kelubir',
 
                 ],
                 'Tanjung Palas Timur' => [
                     'Mangkupadi',
                     'Tanah Kuning',
                     'Binai',
-                    'Tanjung Agung'
+                    'Tanjung Agung',
                 ],
             ],
         ];
@@ -155,7 +155,7 @@ class DesaSeeder extends Seeder
                 // Buat atau cari Kecamatan
                 $kecamatan = Kecamatan::firstOrCreate([
                     'nama_kecamatan' => $namaKecamatan,
-                    'kabupaten'      => $namaKabupaten,
+                    'kabupaten' => $namaKabupaten,
                 ]);
 
                 foreach ($desas as $namaDesa) {
@@ -163,17 +163,17 @@ class DesaSeeder extends Seeder
                     // Buat atau cari Desa
                     $desa = Desa::firstOrCreate([
                         'kecamatan_id' => $kecamatan->id,
-                        'nama_desa'    => $namaDesa,
+                        'nama_desa' => $namaDesa,
                     ], [
-                        'aktif' => 1
+                        'aktif' => 1,
                     ]);
 
                     DesaGelombang::firstOrCreate([
                         'gelombang_id' => $gelombangTerbaru->id,
-                        'desa_id'      => $desa->id,
+                        'desa_id' => $desa->id,
                     ], [
-                        'kuota_total'                  => 12,
-                        'status'                       => 'dibuka',
+                        'kuota_total' => 12,
+                        'status' => 'dibuka',
                         'dosen_pembimbing_lapangan_id' => null,
                     ]);
                 }

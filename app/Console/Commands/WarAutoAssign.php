@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Console\Commands;
 
 use App\Models\KelompokKkn;
@@ -10,6 +11,7 @@ use Illuminate\Console\Command;
 class WarAutoAssign extends Command
 {
     protected $signature = 'war:auto-assign {session_id : WAR session ID} {--fakultas= : Specific faculty ID (optional)}';
+
     protected $description = 'Auto-assign remaining unplaced mahasiswa to random available kelompok when faculty WAR time ends';
 
     public function handle(WarService $warService)
@@ -25,7 +27,7 @@ class WarAutoAssign extends Command
             ->with(['mahasiswa.prodi.fakultas']);
 
         if ($fakultasFilter) {
-            $query->whereHas('mahasiswa.prodi', fn($q) => $q->where('fakultas_id', $fakultasFilter));
+            $query->whereHas('mahasiswa.prodi', fn ($q) => $q->where('fakultas_id', $fakultasFilter));
         }
 
         $pesertas = $query->get();
@@ -33,6 +35,7 @@ class WarAutoAssign extends Command
 
         if ($total === 0) {
             $this->info('Tidak ada mahasiswa yang perlu di-assign.');
+
             return;
         }
 
@@ -47,12 +50,12 @@ class WarAutoAssign extends Command
             $fakId = $peserta->mahasiswa->prodi->fakultas_id;
 
             // Pick a random available kelompok
-            $kelompok = KelompokKkn::whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $gelId))
+            $kelompok = KelompokKkn::whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $gelId))
                 ->where('status', '!=', 'penuh')
                 ->inRandomOrder()
                 ->first();
 
-            if (!$kelompok) {
+            if (! $kelompok) {
                 $this->warn("\nTidak ada kelompok tersedia. Berhenti.");
                 $fail += ($total - $success - $fail);
                 break;
@@ -74,7 +77,7 @@ class WarAutoAssign extends Command
 
         $bar->finish();
         $this->newLine(2);
-        $this->info("Auto-assign selesai!");
+        $this->info('Auto-assign selesai!');
         $this->info("Berhasil: {$success}");
         $this->info("Gagal: {$fail}");
     }

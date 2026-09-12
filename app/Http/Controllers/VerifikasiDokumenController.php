@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\DokumenPendaftaran;
+use App\Models\Gelombang;
 use App\Models\PesertaKkn;
-use Illuminate\Http\Request;
-use App\Notifications\DokumenVerifiedNotification;
-use Illuminate\Support\Facades\DB;
 use App\Notifications\BulkDokumenVerifiedNotification;
+use App\Notifications\DokumenVerifiedNotification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class VerifikasiDokumenController extends Controller
 {
@@ -15,7 +16,7 @@ class VerifikasiDokumenController extends Controller
     {
         $gelombangId = $request->get('gelombang_id');
 
-        $gelombangs = \App\Models\Gelombang::orderBy('tahun', 'desc')
+        $gelombangs = Gelombang::orderBy('tahun', 'desc')
             ->orderBy('nama_gelombang')
             ->get();
 
@@ -27,17 +28,17 @@ class VerifikasiDokumenController extends Controller
             $pesertaList = PesertaKkn::with([
                 'mahasiswa.user',
                 'gelombang',
-                'dokumenPendaftaran'
+                'dokumenPendaftaran',
             ])
-            ->where('gelombang_id', $gelombangId)
-            ->when($statusFilter, fn($q) => $q->where('status_pendaftaran', $statusFilter))
-            ->when(!$statusFilter, fn($q) => $q->whereIn('status_pendaftaran', [
-                'draft', 'pending_documents', 'pending_verification',
-                'revision', 'approved', 'rejected', 'expired'
-            ]))
-            ->latest()
-            ->paginate(20)
-            ->appends(['gelombang_id' => $gelombangId, 'status' => $statusFilter]);
+                ->where('gelombang_id', $gelombangId)
+                ->when($statusFilter, fn ($q) => $q->where('status_pendaftaran', $statusFilter))
+                ->when(! $statusFilter, fn ($q) => $q->whereIn('status_pendaftaran', [
+                    'draft', 'pending_documents', 'pending_verification',
+                    'revision', 'approved', 'rejected', 'expired',
+                ]))
+                ->latest()
+                ->paginate(20)
+                ->appends(['gelombang_id' => $gelombangId, 'status' => $statusFilter]);
         }
 
         return view('verifikasi-dokumen.index', compact('pesertaList', 'gelombangs', 'gelombangId'));
@@ -48,7 +49,7 @@ class VerifikasiDokumenController extends Controller
         $peserta = PesertaKkn::with([
             'mahasiswa.user',
             'gelombang',
-            'dokumenPendaftaran.file'
+            'dokumenPendaftaran.file',
         ])->findOrFail($id);
 
         return view('verifikasi-dokumen.show', compact('peserta'));
@@ -58,7 +59,7 @@ class VerifikasiDokumenController extends Controller
     {
         $request->validate([
             'status_verifikasi' => 'required|in:verified,revision_required,rejected',
-            'catatan_revisi' => 'nullable|string'
+            'catatan_revisi' => 'nullable|string',
         ]);
 
         $dokumen = DokumenPendaftaran::findOrFail($id);
@@ -98,8 +99,9 @@ class VerifikasiDokumenController extends Controller
         */
         if (count($uploadedJenis) < count($requiredDokumen)) {
             $peserta->update([
-                'status_pendaftaran' => 'pending_documents'
+                'status_pendaftaran' => 'pending_documents',
             ]);
+
             return;
         }
 
@@ -110,8 +112,9 @@ class VerifikasiDokumenController extends Controller
         */
         if ($dokumen->contains('status_verifikasi', 'rejected')) {
             $peserta->update([
-                'status_pendaftaran' => 'rejected'
+                'status_pendaftaran' => 'rejected',
             ]);
+
             return;
         }
 
@@ -122,8 +125,9 @@ class VerifikasiDokumenController extends Controller
         */
         if ($dokumen->contains('status_verifikasi', 'revision_required')) {
             $peserta->update([
-                'status_pendaftaran' => 'revision'
+                'status_pendaftaran' => 'revision',
             ]);
+
             return;
         }
 
@@ -132,10 +136,11 @@ class VerifikasiDokumenController extends Controller
         | Semua Verified
         |--------------------------------------------------------------------------
         */
-        if ($dokumen->every(fn($d) => $d->status_verifikasi === 'verified')) {
+        if ($dokumen->every(fn ($d) => $d->status_verifikasi === 'verified')) {
             $peserta->update([
-                'status_pendaftaran' => 'approved'
+                'status_pendaftaran' => 'approved',
             ]);
+
             return;
         }
 
@@ -145,7 +150,7 @@ class VerifikasiDokumenController extends Controller
         |--------------------------------------------------------------------------
         */
         $peserta->update([
-            'status_pendaftaran' => 'pending_verification'
+            'status_pendaftaran' => 'pending_verification',
         ]);
     }
 
@@ -160,10 +165,10 @@ class VerifikasiDokumenController extends Controller
 
             $pesertaList = PesertaKkn::with([
                 'dokumenPendaftaran',
-                'mahasiswa.user'
+                'mahasiswa.user',
             ])
-            ->whereIn('id', $request->peserta_ids)
-            ->get();
+                ->whereIn('id', $request->peserta_ids)
+                ->get();
 
             foreach ($pesertaList as $peserta) {
 
@@ -201,18 +206,16 @@ class VerifikasiDokumenController extends Controller
     {
         $request->validate([
             'documents' => 'required|array',
-            'documents.*.status_verifikasi' =>
-                'required|in:verified,revision_required,rejected',
+            'documents.*.status_verifikasi' => 'required|in:verified,revision_required,rejected',
 
-            'documents.*.catatan_revisi' =>
-                'nullable|string',
+            'documents.*.catatan_revisi' => 'nullable|string',
         ]);
 
         DB::transaction(function () use ($request, $pesertaId) {
 
             $peserta = PesertaKkn::with([
                 'dokumenPendaftaran',
-                'mahasiswa.user'
+                'mahasiswa.user',
             ])->findOrFail($pesertaId);
 
             foreach ($request->documents as $dokumenId => $data) {
@@ -221,22 +224,20 @@ class VerifikasiDokumenController extends Controller
                     'id',
                     $dokumenId
                 )
-                ->where(
-                    'peserta_kkn_id',
-                    $peserta->id
-                )
-                ->first();
+                    ->where(
+                        'peserta_kkn_id',
+                        $peserta->id
+                    )
+                    ->first();
 
-                if (!$dokumen) {
+                if (! $dokumen) {
                     continue;
                 }
 
                 $dokumen->update([
-                    'status_verifikasi' =>
-                        $data['status_verifikasi'],
+                    'status_verifikasi' => $data['status_verifikasi'],
 
-                    'catatan_revisi' =>
-                        $data['catatan_revisi'] ?? null,
+                    'catatan_revisi' => $data['catatan_revisi'] ?? null,
 
                     'verified_by' => auth()->id(),
 

@@ -8,10 +8,10 @@ use App\Models\NotificationLog;
 use App\Models\PesertaKkn;
 use App\Models\User;
 use App\Notifications\DokumenUploadedNotification;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 class DokumenPendaftaranController extends Controller
 {
@@ -26,9 +26,9 @@ class DokumenPendaftaranController extends Controller
     public function index(): View
     {
         $peserta = PesertaKkn::where(
-                'mahasiswa_id',
-                auth()->id()
-            )
+            'mahasiswa_id',
+            auth()->id()
+        )
             ->latest()
             ->first();
 
@@ -40,8 +40,8 @@ class DokumenPendaftaranController extends Controller
         if (! $peserta) {
 
             return view('dokumen-pendaftaran.index', [
-                'peserta'           => null,
-                'dokumen'           => collect(),
+                'peserta' => null,
+                'dokumen' => collect(),
                 'requiredDocuments' => [],
                 'uploadedDocuments' => [],
             ]);
@@ -76,9 +76,9 @@ class DokumenPendaftaranController extends Controller
     public function show($id)
     {
         $dokumen = DokumenPendaftaran::with([
-                'file',
-                'pesertaKkn',
-            ])
+            'file',
+            'pesertaKkn',
+        ])
             ->findOrFail($id);
 
         /*
@@ -116,9 +116,9 @@ class DokumenPendaftaranController extends Controller
     public function create(): View|RedirectResponse
     {
         $peserta = PesertaKkn::where(
-                'mahasiswa_id',
-                auth()->id()
-            )
+            'mahasiswa_id',
+            auth()->id()
+        )
             ->latest()
             ->first();
 
@@ -144,8 +144,8 @@ class DokumenPendaftaranController extends Controller
         $documents = DokumenPendaftaran::getDocumentLabels();
 
         $missingDocuments = collect(
-                array_keys($documents)
-            )
+            array_keys($documents)
+        )
             ->diff($uploadedTypes)
             ->values();
 
@@ -177,9 +177,9 @@ class DokumenPendaftaranController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $peserta = PesertaKkn::where(
-                'mahasiswa_id',
-                auth()->id()
-            )
+            'mahasiswa_id',
+            auth()->id()
+        )
             ->latest()
             ->first();
 
@@ -217,11 +217,9 @@ class DokumenPendaftaranController extends Controller
         |--------------------------------------------------------------------------
         */
         $request->validate([
-            'jenis_dokumen' =>
-                'required|string|in:dhs,surat_pernyataan,surat_ortu,surat_vaksin,surat_dokter',
+            'jenis_dokumen' => 'required|string|in:dhs,surat_pernyataan,surat_ortu,surat_vaksin,surat_dokter',
 
-            'file' =>
-                'required|mimes:pdf,jpg,jpeg,png|max:2048',
+            'file' => 'required|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
         /*
@@ -235,15 +233,15 @@ class DokumenPendaftaranController extends Controller
         );
 
         $file = File::create([
-            'user_id'       => auth()->id(),
-            'name'          => $request->file('file')->hashName(),
+            'user_id' => auth()->id(),
+            'name' => $request->file('file')->hashName(),
             'original_name' => $request->file('file')->getClientOriginalName(),
-            'path'          => $path,
-            'mime_type'     => $request->file('file')->getMimeType(),
-            'size'          => $request->file('file')->getSize(),
-            'extension'     => $request->file('file')->getClientOriginalExtension(),
-            'folder'        => 'dokumen-pendaftaran',
-            'is_public'     => false,
+            'path' => $path,
+            'mime_type' => $request->file('file')->getMimeType(),
+            'size' => $request->file('file')->getSize(),
+            'extension' => $request->file('file')->getClientOriginalExtension(),
+            'folder' => 'dokumen-pendaftaran',
+            'is_public' => false,
         ]);
 
         /*
@@ -253,7 +251,7 @@ class DokumenPendaftaranController extends Controller
         */
         $existing = DokumenPendaftaran::where([
             'peserta_kkn_id' => $peserta->id,
-            'jenis_dokumen'  => $request->jenis_dokumen,
+            'jenis_dokumen' => $request->jenis_dokumen,
         ])->first();
 
         if ($existing && $existing->file) {
@@ -273,14 +271,14 @@ class DokumenPendaftaranController extends Controller
         DokumenPendaftaran::updateOrCreate(
             [
                 'peserta_kkn_id' => $peserta->id,
-                'jenis_dokumen'  => $request->jenis_dokumen,
+                'jenis_dokumen' => $request->jenis_dokumen,
             ],
             [
-                'file_id'           => $file->id,
+                'file_id' => $file->id,
                 'status_verifikasi' => 'pending',
-                'verified_by'       => null,
-                'verified_at'       => null,
-                'catatan_revisi'    => null,
+                'verified_by' => null,
+                'verified_at' => null,
+                'catatan_revisi' => null,
             ]
         );
 
@@ -307,7 +305,7 @@ class DokumenPendaftaranController extends Controller
         */
         $log = NotificationLog::create([
             'title' => 'Dokumen Pendaftaran Baru',
-            'message' => auth()->user()->name . ' mengupload dokumen ' . $request->jenis_dokumen,
+            'message' => auth()->user()->name.' mengupload dokumen '.$request->jenis_dokumen,
             'type' => 'info',
             'recipients' => $admins->pluck('name')->toArray(),
             'action_url' => route('dokumen-pendaftaran.index'),
@@ -336,9 +334,9 @@ class DokumenPendaftaranController extends Controller
     public function destroy($id): RedirectResponse
     {
         $dokumen = DokumenPendaftaran::with([
-                'file',
-                'pesertaKkn',
-            ])
+            'file',
+            'pesertaKkn',
+        ])
             ->findOrFail($id);
 
         abort_if(

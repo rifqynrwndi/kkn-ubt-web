@@ -24,7 +24,7 @@ return new class extends Migration
         Schema::table('kelompok_kkn', function (Blueprint $table) {
 
             $table->dropForeign([
-                'ketua_peserta_id'
+                'ketua_peserta_id',
             ]);
 
             $table->dropColumn(

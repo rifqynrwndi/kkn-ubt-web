@@ -23,7 +23,7 @@ class DokumenUploadedNotification extends Notification
     {
         return [
             'title' => 'Dokumen Baru Diunggah',
-            'message' => $this->peserta->mahasiswa->user->name .
+            'message' => $this->peserta->mahasiswa->user->name.
                 ' telah mengunggah dokumen pendaftaran KKN.',
             'peserta_kkn_id' => $this->peserta->id,
             'type' => 'dokumen_uploaded',

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\KelompokKkn;
@@ -13,11 +14,13 @@ class StatusService
         3 => ['nama' => 'Selesai', 'color' => 'dark', 'desc' => 'Seluruh rangkaian KKN telah selesai dilaksanakan. Nilai akhir telah ditetapkan dan tidak dapat diubah lagi.'],
     ];
 
-    public function changeStatus(KelompokKkn $kelompok, int $newStage, string $keterangan = null, string $role = 'superadmin'): void
+    public function changeStatus(KelompokKkn $kelompok, int $newStage, ?string $keterangan = null, string $role = 'superadmin'): void
     {
         $oldStage = $kelompok->status_tahap;
 
-        if ($newStage === $oldStage) return;
+        if ($newStage === $oldStage) {
+            return;
+        }
 
         $kelompok->update(['status_tahap' => $newStage]);
 

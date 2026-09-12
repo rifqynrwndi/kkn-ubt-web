@@ -33,7 +33,7 @@ class FileManagerController extends Controller
 
         // Search
         if ($request->filled('search')) {
-            $query->where('original_name', 'like', '%' . $request->search . '%');
+            $query->where('original_name', 'like', '%'.$request->search.'%');
         }
 
         // Filter by type
@@ -82,7 +82,7 @@ class FileManagerController extends Controller
         foreach ($request->file('files') as $file) {
             $originalName = $file->getClientOriginalName();
             $extension = $file->getClientOriginalExtension();
-            $name = Str::random(40) . '.' . $extension;
+            $name = Str::random(40).'.'.$extension;
             $path = $file->storeAs('uploads', $name, 'public');
 
             $uploadedFile = File::create([
@@ -100,7 +100,7 @@ class FileManagerController extends Controller
         }
 
         return redirect()->route('file-manager.index', ['folder' => $folder])
-            ->with('success', count($uploadedFiles) . ' file(s) uploaded successfully.');
+            ->with('success', count($uploadedFiles).' file(s) uploaded successfully.');
     }
 
     /**
@@ -163,6 +163,7 @@ class FileManagerController extends Controller
     public function show(int $id): JsonResponse
     {
         $file = File::where('user_id', auth()->id())->findOrFail($id);
+
         return response()->json($file);
     }
 
@@ -177,20 +178,20 @@ class FileManagerController extends Controller
         ]);
 
         $parentFolder = $this->normalizeFolder($request->get('parent_folder', '/'));
-        $folderPath = $this->normalizeFolder(trim($parentFolder . '/' . $request->folder_name));
+        $folderPath = $this->normalizeFolder(trim($parentFolder.'/'.$request->folder_name));
 
         // Create a placeholder file to represent the folder
         File::create([
             'user_id' => auth()->id(),
             'name' => '.folder',
             'original_name' => $request->folder_name,
-            'path' => 'folders/' . Str::random(40) . '.placeholder',
+            'path' => 'folders/'.Str::random(40).'.placeholder',
             'mime_type' => 'folder',
             'size' => 0,
             'folder' => $folderPath,
         ]);
 
-        Storage::disk('public')->makeDirectory('uploads' . $folderPath);
+        Storage::disk('public')->makeDirectory('uploads'.$folderPath);
 
         return redirect()->route('file-manager.index', ['folder' => $folderPath])
             ->with('success', 'Folder created successfully.');
@@ -220,6 +221,6 @@ class FileManagerController extends Controller
             }
         }
 
-        return '/' . implode('/', $parts);
+        return '/'.implode('/', $parts);
     }
 }

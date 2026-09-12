@@ -2,14 +2,14 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Kecamatan;
 use App\Models\Desa;
-use App\Models\Gelombang;
 use App\Models\DesaGelombang;
+use App\Models\Fakultas;
+use App\Models\Gelombang;
+use App\Models\Kecamatan;
 use App\Models\KelompokKkn;
 use App\Models\KelompokKuota;
-use App\Models\Fakultas;
+use Illuminate\Database\Seeder;
 
 class DesaTambahSeeder extends Seeder
 {
@@ -22,7 +22,7 @@ class DesaTambahSeeder extends Seeder
                 ['nama_gelombang' => 'KKN XXII PERIODE 2', 'tahun' => 2025],
                 ['tgl_mulai' => '2026-04-24', 'tgl_akhir' => '2026-07-23', 'status' => 'pendaftaran']
             );
-            $this->command?->info('Gelombang dibuat: ' . $gelombang->nama_gelombang);
+            $this->command?->info('Gelombang dibuat: '.$gelombang->nama_gelombang);
         }
 
         $fakultasList = Fakultas::all();
@@ -60,7 +60,7 @@ class DesaTambahSeeder extends Seeder
                     'Karang Anyar', 'Karang Balik', 'Karang Harapan',
                 ],
                 'Tarakan Tengah' => [
-                    'Kampung 1 SKIP','Pamusian', 'Sebengkok',
+                    'Kampung 1 SKIP', 'Pamusian', 'Sebengkok',
                 ],
                 'Tarakan Utara' => [
                     'Juata Kerikil', 'Juata Laut', 'Juata Permai',
@@ -80,35 +80,35 @@ class DesaTambahSeeder extends Seeder
             foreach ($kecamatans as $namaKecamatan => $desas) {
                 $kecamatan = Kecamatan::firstOrCreate([
                     'nama_kecamatan' => $namaKecamatan,
-                    'kabupaten'      => $kabupaten,
+                    'kabupaten' => $kabupaten,
                 ]);
                 $totalKec++;
 
                 foreach ($desas as $namaDesa) {
                     $desa = Desa::firstOrCreate([
                         'kecamatan_id' => $kecamatan->id,
-                        'nama_desa'    => $namaDesa,
+                        'nama_desa' => $namaDesa,
                     ], ['aktif' => 1]);
 
                     $totalDesa++;
 
                     $desaGelombang = DesaGelombang::firstOrCreate([
                         'gelombang_id' => $gelombang->id,
-                        'desa_id'      => $desa->id,
+                        'desa_id' => $desa->id,
                     ], [
                         'kuota_total' => 12,
-                        'status'      => 'dibuka',
+                        'status' => 'dibuka',
                     ]);
 
-                    $namaKelompok = $desa->nama_desa . ' - ' . $gelombang->nama_gelombang;
+                    $namaKelompok = $desa->nama_desa.' - '.$gelombang->nama_gelombang;
 
                     KelompokKkn::firstOrCreate([
                         'desa_gelombang_id' => $desaGelombang->id,
                     ], [
                         'dosen_pembimbing_lapangan_id' => null,
                         'nama_kelompok' => $namaKelompok,
-                        'kuota'         => 12,
-                        'status'        => 'dibuka',
+                        'kuota' => 12,
+                        'status' => 'dibuka',
                     ]);
 
                     if ($desaGelombang->wasRecentlyCreated) {
@@ -121,10 +121,10 @@ class DesaTambahSeeder extends Seeder
 
                             KelompokKuota::firstOrCreate([
                                 'kelompok_kkn_id' => $desaGelombang->kelompokKkn->first()?->id,
-                                'fakultas_id'     => $fakultas->id,
+                                'fakultas_id' => $fakultas->id,
                             ], [
-                                'kuota'           => $kuota,
-                                'kuota_laki'      => $kuota >= 5 ? 2 : 1,
+                                'kuota' => $kuota,
+                                'kuota_laki' => $kuota >= 5 ? 2 : 1,
                                 'kuota_perempuan' => $kuota >= 5 ? 3 : ($kuota === 3 ? 2 : 1),
                             ]);
                         }
@@ -133,9 +133,9 @@ class DesaTambahSeeder extends Seeder
             }
         }
 
-        $this->command?->info("Seeder Selesai!");
+        $this->command?->info('Seeder Selesai!');
         $this->command?->info("Kecamatan: {$totalKec}");
         $this->command?->info("Desa: {$totalDesa} (skip: {$skipDesa})");
-        $this->command?->info("Total: " . ($totalKec + $totalDesa) . " records");
+        $this->command?->info('Total: '.($totalKec + $totalDesa).' records');
     }
 }

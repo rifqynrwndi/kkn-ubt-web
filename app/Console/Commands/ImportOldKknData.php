@@ -22,11 +22,11 @@ class ImportOldKknData extends Command
     protected $description = 'Import peserta KKN dari database lama (peminatan table) ke database baru';
 
     private array $prodiMap = [
-        1  => 15, 2  => 17, 3  => 18, 4  => 16,
+        1 => 15, 2 => 17, 3 => 18, 4 => 16,
         15 => 13, 16 => 14,
-        5  => 10, 6  => 11, 7  => 12,
-        8  => 19,
-        9  => 6,  10 => 7,  11 => 8,  12 => 9,
+        5 => 10, 6 => 11, 7 => 12,
+        8 => 19,
+        9 => 6,  10 => 7,  11 => 8,  12 => 9,
         13 => 4,  14 => 5,
         17 => 2,  18 => 1,  19 => 3,
         20 => 21, 21 => 20, 23 => 20,
@@ -36,13 +36,14 @@ class ImportOldKknData extends Command
     {
         if (! $this->canConnect()) {
             $this->error('Tidak dapat terhubung ke database lama. Periksa OLD_DB_* di .env');
+
             return 1;
         }
 
         $oldGelombangId = $this->option('old-gelombang');
         $newGelombangId = $this->option('new-gelombang');
-        $skipPeserta    = $this->option('skip-peserta');
-        $chunk          = (int) $this->option('chunk');
+        $skipPeserta = $this->option('skip-peserta');
+        $chunk = (int) $this->option('chunk');
 
         // Build query from peminatan joined with mahasiswa + users
         $query = DB::connection('old_mysql')
@@ -81,22 +82,27 @@ class ImportOldKknData extends Command
 
         if ($total === 0) {
             $this->warn('Tidak ada data yang ditemukan di database lama.');
+
             return 0;
         }
 
         $this->info("Peserta ditemukan di DB lama: {$total}");
-        if ($oldGelombangId) $this->info("Old Gelombang ID: {$oldGelombangId}");
-        if ($newGelombangId)  $this->info("New Gelombang ID: {$newGelombangId}");
+        if ($oldGelombangId) {
+            $this->info("Old Gelombang ID: {$oldGelombangId}");
+        }
+        if ($newGelombangId) {
+            $this->info("New Gelombang ID: {$newGelombangId}");
+        }
         $this->info("Chunk size: {$chunk}");
 
         $bar = $this->output->createProgressBar($total);
         $bar->start();
 
-        $createdUser      = 0;
+        $createdUser = 0;
         $createdAdminUser = 0;
         $createdMahasiswa = 0;
-        $createdPeserta   = 0;
-        $skippedExists    = 0;
+        $createdPeserta = 0;
+        $skippedExists = 0;
         $skippedSuperAdmin = 0;
 
         $prodiCache = ProgramStudi::all()->keyBy('id');
@@ -110,7 +116,9 @@ class ImportOldKknData extends Command
                 $emails = [];
                 $dataByEmail = [];
                 foreach ($rows as $row) {
-                    if (empty($row->email)) continue;
+                    if (empty($row->email)) {
+                        continue;
+                    }
                     $emails[] = $row->email;
                     $dataByEmail[$row->email] = $row;
                 }
@@ -122,6 +130,7 @@ class ImportOldKknData extends Command
 
                     if (isset($existingEmails[$email])) {
                         $skippedExists++;
+
                         continue;
                     }
 
@@ -130,21 +139,23 @@ class ImportOldKknData extends Command
                     // Skip old superadmin
                     if ($email === 'ubt.tarakan@gmail.com') {
                         $skippedSuperAdmin++;
+
                         continue;
                     }
 
                     // Create User
                     $user = User::create([
-                        'name'              => $row->name,
-                        'email'             => $email,
-                        'password'          => $row->old_password ?? Hash::make(Str::random(16)),
+                        'name' => $row->name,
+                        'email' => $email,
+                        'password' => $row->old_password ?? Hash::make(Str::random(16)),
                         'email_verified_at' => $row->email_verified_at ?? now(),
-                        'remember_token'    => $row->remember_token ?? Str::random(10),
+                        'remember_token' => $row->remember_token ?? Str::random(10),
                     ]);
 
                     if ($isAdmin) {
                         // LPPM admin: no role, no Mahasiswa, no PesertaKkn
                         $createdAdminUser++;
+
                         continue;
                     }
 
@@ -158,7 +169,7 @@ class ImportOldKknData extends Command
 
                     // Map prodi
                     $oldProdi = (int) ($row->old_prodi_id ?? 0);
-                    $prodiId  = null;
+                    $prodiId = null;
                     if ($oldProdi && isset($this->prodiMap[$oldProdi])) {
                         $mapped = $this->prodiMap[$oldProdi];
                         $prodiId = isset($prodiCache[$mapped]) ? $mapped : null;
@@ -168,21 +179,23 @@ class ImportOldKknData extends Command
                     Mahasiswa::updateOrCreate(
                         ['user_id' => $user->id],
                         [
-                            'npm'                  => $row->npm,
-                            'jenis_kelamin'        => $gender,
-                            'prodi_id'             => $prodiId,
-                            'foto'                 => $row->foto ?? null,
-                            'no_hp'                => $row->hp ?? null,
-                            'nama_ortu'            => $row->nama_ortu ?? null,
-                            'no_hp_ortu'           => $row->hp_ortu ?? null,
-                            'alamat_ortu'          => $row->alamat_ortu ?? null,
-                            'is_biodata_complete'  => ! empty($gender),
+                            'npm' => $row->npm,
+                            'jenis_kelamin' => $gender,
+                            'prodi_id' => $prodiId,
+                            'foto' => $row->foto ?? null,
+                            'no_hp' => $row->hp ?? null,
+                            'nama_ortu' => $row->nama_ortu ?? null,
+                            'no_hp_ortu' => $row->hp_ortu ?? null,
+                            'alamat_ortu' => $row->alamat_ortu ?? null,
+                            'is_biodata_complete' => ! empty($gender),
                         ]
                     );
                     $createdMahasiswa++;
 
                     // Create PesertaKkn
-                    if ($skipPeserta || ! $newGelombangId) continue;
+                    if ($skipPeserta || ! $newGelombangId) {
+                        continue;
+                    }
 
                     PesertaKkn::firstOrCreate(
                         ['mahasiswa_id' => $user->id, 'gelombang_id' => $newGelombangId],
@@ -218,15 +231,21 @@ class ImportOldKknData extends Command
                 $existing = User::whereIn('email', $emails)->pluck('id', 'email');
 
                 foreach ($adminUsers as $u) {
-                    if (! $u->email) continue;
-                    if (isset($existing[$u->email])) { $adminSkipped++; continue; }
+                    if (! $u->email) {
+                        continue;
+                    }
+                    if (isset($existing[$u->email])) {
+                        $adminSkipped++;
+
+                        continue;
+                    }
 
                     User::create([
-                        'name'              => $u->name,
-                        'email'             => $u->email,
-                        'password'          => $u->password ?? Hash::make(Str::random(16)),
+                        'name' => $u->name,
+                        'email' => $u->email,
+                        'password' => $u->password ?? Hash::make(Str::random(16)),
                         'email_verified_at' => $u->email_verified_at ?? now(),
-                        'remember_token'    => $u->remember_token ?? Str::random(10),
+                        'remember_token' => $u->remember_token ?? Str::random(10),
                     ])->assignRole('superadmin');
                     $adminCount++;
                 }
@@ -240,6 +259,7 @@ class ImportOldKknData extends Command
     {
         try {
             DB::connection('old_mysql')->getPdo();
+
             return true;
         } catch (\Throwable) {
             return false;

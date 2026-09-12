@@ -23,7 +23,7 @@ class BiodataController extends Controller
         $mahasiswa = auth()->user()->mahasiswa;
 
         $request->validate([
-            'npm' => 'required|string|max:20|unique:mahasiswa,npm,' . $mahasiswa->user_id . ',user_id',
+            'npm' => 'required|string|max:20|unique:mahasiswa,npm,'.$mahasiswa->user_id.',user_id',
             'jenis_kelamin' => 'required|in:L,P',
             'no_hp' => 'required|string|max:20',
 

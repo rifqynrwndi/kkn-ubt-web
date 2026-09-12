@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Console\Commands;
 
 use App\Models\KelompokKkn;
@@ -7,10 +8,12 @@ use App\Models\WarFaculty;
 use App\Models\WarSession;
 use App\Services\War\WarService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class WarProcessExpiredFaculties extends Command
 {
     protected $signature = 'war:process-expired-faculties';
+
     protected $description = 'Tunggu semua fakultas selesai WAR, baru assign sisa peserta ke kelompok random';
 
     public function handle(WarService $warService)
@@ -18,12 +21,13 @@ class WarProcessExpiredFaculties extends Command
         // Cari active session yang SEMUA fakultasnya sudah expired
         $sessions = WarSession::where('status', 'active')
             ->whereHas('faculties')
-            ->whereDoesntHave('faculties', fn($q) => $q->where('end_at', '>', now()))
+            ->whereDoesntHave('faculties', fn ($q) => $q->where('end_at', '>', now()))
             ->with(['gelombang', 'faculties'])
             ->get();
 
         if ($sessions->isEmpty()) {
             $this->info('Belum ada session WAR yang semua fakultasnya selesai.');
+
             return;
         }
 
@@ -39,9 +43,10 @@ class WarProcessExpiredFaculties extends Command
                 ->get();
 
             if ($pesertas->isEmpty()) {
-                $this->line("  Tidak ada mahasiswa yang perlu di-assign.");
+                $this->line('  Tidak ada mahasiswa yang perlu di-assign.');
                 $session->update(['status' => 'closed']);
-                $this->info("  Sesi ditutup.");
+                $this->info('  Sesi ditutup.');
+
                 continue;
             }
 
@@ -54,7 +59,7 @@ class WarProcessExpiredFaculties extends Command
             WarFaculty::where('war_session_id', $session->id)
                 ->update(['end_at' => $extendedUntil, 'start_at' => now()->subMinutes(5)]);
 
-            $byFakultas = $pesertas->groupBy(fn($p) => $p->mahasiswa->prodi->fakultas_id);
+            $byFakultas = $pesertas->groupBy(fn ($p) => $p->mahasiswa->prodi->fakultas_id);
             $success = 0;
 
             // Round-robin per fakultas — skip semua aturan, cuma cek total < 12
@@ -63,24 +68,26 @@ class WarProcessExpiredFaculties extends Command
                 $hasRemaining = false;
 
                 foreach ($byFakultas as $fakId => $group) {
-                    if ($group->isEmpty()) continue;
+                    if ($group->isEmpty()) {
+                        continue;
+                    }
 
                     $hasRemaining = true;
                     $peserta = $group->shift();
 
-                    $kelompok = KelompokKkn::whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $gelId))
+                    $kelompok = KelompokKkn::whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $gelId))
                         ->where('status', '!=', 'penuh')
                         ->withCount('pesertaKkn')
                         ->orderBy('peserta_kkn_count')
                         ->first();
 
-                    if (!$kelompok) {
+                    if (! $kelompok) {
                         $this->warn("  Kelompok habis. Assign berhenti ({$success} berhasil).");
                         break 2;
                     }
 
                     // Assign langsung — skip semua validasi
-                    \Illuminate\Support\Facades\DB::update(
+                    DB::update(
                         'UPDATE peserta_kkn SET kelompok_kkn_id = ? WHERE id = ?',
                         [$kelompok->id, $peserta->id]
                     );

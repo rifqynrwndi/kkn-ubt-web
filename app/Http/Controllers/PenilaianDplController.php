@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\KelompokKkn;
@@ -21,7 +22,7 @@ class PenilaianDplController extends Controller
     public function index(): View
     {
         $dpl = $this->getDpl();
-        abort_if(!$dpl, 403);
+        abort_if(! $dpl, 403);
 
         $kelompoks = KelompokKkn::with([
             'desaGelombang.desa.kecamatan',
@@ -45,7 +46,7 @@ class PenilaianDplController extends Controller
 
         $komponenList = PenilaianKomponen::where('kategori', 'dpl')->orderBy('urutan')->get();
         $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $kelompok->id)
-            ->get()->groupBy('peserta_kkn_id')->map(fn($g) => $g->keyBy('komponen_id'));
+            ->get()->groupBy('peserta_kkn_id')->map(fn ($g) => $g->keyBy('komponen_id'));
 
         return view('penilaian-dpl.show', compact('kelompok', 'komponenList', 'penilaianIndividu'));
     }

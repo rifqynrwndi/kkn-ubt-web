@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use App\Http\Controllers\BiodataController;
 
 class EnsureBiodataComplete
 {
@@ -15,8 +14,8 @@ class EnsureBiodataComplete
         if (
             $user->hasRole('mahasiswa') &&
             $user->mahasiswa &&
-            !$user->mahasiswa->is_biodata_complete &&
-            !$request->routeIs('biodata.*')
+            ! $user->mahasiswa->is_biodata_complete &&
+            ! $request->routeIs('biodata.*')
         ) {
             return redirect()->route('biodata.edit')
                 ->with('warning', 'Lengkapi biodata terlebih dahulu.');

@@ -3,12 +3,13 @@
 namespace App\Providers;
 
 use App\Mail\ResendTransport;
-use Illuminate\Support\ServiceProvider;
+use Carbon\Carbon;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Http\Request;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrap();
-        \Carbon\Carbon::setLocale('id');
+        Carbon::setLocale('id');
 
         Mail::extend('resend', function (array $config) {
             return new ResendTransport(

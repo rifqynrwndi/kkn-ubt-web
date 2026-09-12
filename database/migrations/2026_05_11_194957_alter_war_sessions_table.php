@@ -4,8 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::table('war_sessions', function (Blueprint $table) {
@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->enum('status', [
                 'scheduled',
                 'active',
-                'closed'
+                'closed',
             ])->default('scheduled');
 
             // relasi gelombang
@@ -38,7 +38,7 @@ return new class extends Migration {
 
             $table->dropColumn([
                 'gelombang_id',
-                'status'
+                'status',
             ]);
 
             $table->boolean('is_active')

@@ -1,16 +1,18 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Gelombang;
 use App\Models\KelompokKkn;
-use App\Models\PenilaianKelompok;
 use App\Models\PenilaianIndividu;
+use App\Models\PenilaianKelompok;
 use App\Models\PenilaianKomponen;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 class PenilaianAdminController extends Controller
 {
     public function __construct()
@@ -31,15 +33,15 @@ class PenilaianAdminController extends Controller
                 'dosenPembimbingLapangan.user',
                 'pesertaKkn',
                 'desaGelombang.gelombang',
-            ])->whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $selectedGelombang));
+            ])->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $selectedGelombang));
 
             if ($request->filled('search')) {
                 $s = $request->search;
                 $kelompoks->where(function ($q) use ($s) {
                     $q->where('nama_kelompok', 'like', "%{$s}%")
-                      ->orWhere('kode_kelompok', 'like', "%{$s}%")
-                      ->orWhereHas('dosenPembimbingLapangan.user', fn($uq) => $uq->where('name', 'like', "%{$s}%"))
-                      ->orWhereHas('desaGelombang.desa', fn($dq) => $dq->where('nama_desa', 'like', "%{$s}%"));
+                        ->orWhere('kode_kelompok', 'like', "%{$s}%")
+                        ->orWhereHas('dosenPembimbingLapangan.user', fn ($uq) => $uq->where('name', 'like', "%{$s}%"))
+                        ->orWhereHas('desaGelombang.desa', fn ($dq) => $dq->where('nama_desa', 'like', "%{$s}%"));
                 });
             }
 
@@ -56,7 +58,7 @@ class PenilaianAdminController extends Controller
         $kelompok->load('pesertaKkn.mahasiswa.user', 'desaGelombang.desa.kecamatan', 'dosenPembimbingLapangan.user');
         $komponenList = PenilaianKomponen::orderBy('urutan')->get();
         $penilaianKelompok = PenilaianKelompok::where('kelompok_kkn_id', $kelompok->id)->get()->keyBy('komponen_id');
-        $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $kelompok->id)->get()->groupBy('peserta_kkn_id')->map(fn($g) => $g->keyBy('komponen_id'));
+        $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $kelompok->id)->get()->groupBy('peserta_kkn_id')->map(fn ($g) => $g->keyBy('komponen_id'));
 
         return view('penilaian-admin.edit', compact('kelompok', 'komponenList', 'penilaianKelompok', 'penilaianIndividu'));
     }
@@ -119,10 +121,10 @@ class PenilaianAdminController extends Controller
             'desaGelombang.desa.kecamatan',
             'dosenPembimbingLapangan.user',
             'pesertaKkn.mahasiswa.user',
-        ])->whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $gelombangId))
+        ])->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $gelombangId))
             ->orderBy('nama_kelompok')->get();
 
-        $kabupatens = $kelompoks->groupBy(fn($k) => $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? 'Unknown');
+        $kabupatens = $kelompoks->groupBy(fn ($k) => $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? 'Unknown');
 
         $spreadsheet = new Spreadsheet;
         $firstSheet = true;
@@ -142,16 +144,16 @@ class PenilaianAdminController extends Controller
             $sheet->setTitle($sheetName);
 
             foreach ($headerRange as $i => $c) {
-                $sheet->setCellValue($c . '1', $headers[$i]);
+                $sheet->setCellValue($c.'1', $headers[$i]);
             }
 
             $row = 2;
             $no = 1;
             foreach ($items as $k) {
                 $penilaianData = PenilaianKelompok::where('kelompok_kkn_id', $k->id)->get()->keyBy('komponen_id');
-                $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $k->id)->get()->groupBy('peserta_kkn_id')->map(fn($g) => $g->keyBy('komponen_id'));
+                $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $k->id)->get()->groupBy('peserta_kkn_id')->map(fn ($g) => $g->keyBy('komponen_id'));
 
-                $lppmScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai LPPM')?->nilai;
+                $lppmScore = $penilaianData->first(fn ($v) => $v->komponen->nama_komponen === 'Nilai LPPM')?->nilai;
 
                 foreach ($k->pesertaKkn as $p) {
                     $dplKom = $komponenList->firstWhere('nama_komponen', 'Nilai DPL');
@@ -160,21 +162,21 @@ class PenilaianAdminController extends Controller
                     $desaKom = $komponenList->firstWhere('nama_komponen', 'Nilai Desa');
                     $desaScore = $penilaianIndividu[$p->id][$desaKom?->id]->nilai ?? null;
 
-                    $finalScore = (!is_null($dplScore) && !is_null($desaScore) && !is_null($lppmScore))
+                    $finalScore = (! is_null($dplScore) && ! is_null($desaScore) && ! is_null($lppmScore))
                         ? round($dplScore * 0.40 + $desaScore * 0.30 + $lppmScore * 0.30, 2)
                         : null;
 
-                    $sheet->setCellValue('A' . $row, $no++);
-                    $sheet->setCellValue('B' . $row, $k->nama_kelompok);
-                    $sheet->setCellValue('C' . $row, $p->mahasiswa?->user?->name ?? '-');
-                    $sheet->setCellValue('D' . $row, $p->mahasiswa?->npm ?? '-');
-                    $sheet->setCellValue('E' . $row, $k->desaGelombang?->desa?->nama_desa ?? '-');
-                    $sheet->setCellValue('F' . $row, $k->desaGelombang?->desa?->kecamatan?->nama_kecamatan ?? '-');
-                    $sheet->setCellValue('G' . $row, $k->dosenPembimbingLapangan?->user?->name ?? '-');
-                    $sheet->setCellValue('H' . $row, $dplScore ?? '-');
-                    $sheet->setCellValue('I' . $row, $desaScore ?? '-');
-                    $sheet->setCellValue('J' . $row, $lppmScore ?? '-');
-                    $sheet->setCellValue('K' . $row, $finalScore ?? '-');
+                    $sheet->setCellValue('A'.$row, $no++);
+                    $sheet->setCellValue('B'.$row, $k->nama_kelompok);
+                    $sheet->setCellValue('C'.$row, $p->mahasiswa?->user?->name ?? '-');
+                    $sheet->setCellValue('D'.$row, $p->mahasiswa?->npm ?? '-');
+                    $sheet->setCellValue('E'.$row, $k->desaGelombang?->desa?->nama_desa ?? '-');
+                    $sheet->setCellValue('F'.$row, $k->desaGelombang?->desa?->kecamatan?->nama_kecamatan ?? '-');
+                    $sheet->setCellValue('G'.$row, $k->dosenPembimbingLapangan?->user?->name ?? '-');
+                    $sheet->setCellValue('H'.$row, $dplScore ?? '-');
+                    $sheet->setCellValue('I'.$row, $desaScore ?? '-');
+                    $sheet->setCellValue('J'.$row, $lppmScore ?? '-');
+                    $sheet->setCellValue('K'.$row, $finalScore ?? '-');
                     $row++;
                 }
             }
@@ -188,8 +190,8 @@ class PenilaianAdminController extends Controller
         $spreadsheet->setActiveSheetIndex(0);
 
         $writer = new Xlsx($spreadsheet);
-        $filename = 'nilai-kkn-ubt-' . date('Y-m-d') . '.xlsx';
-        $tempPath = sys_get_temp_dir() . '/' . $filename;
+        $filename = 'nilai-kkn-ubt-'.date('Y-m-d').'.xlsx';
+        $tempPath = sys_get_temp_dir().'/'.$filename;
         $writer->save($tempPath);
 
         return response()->download($tempPath, $filename, [

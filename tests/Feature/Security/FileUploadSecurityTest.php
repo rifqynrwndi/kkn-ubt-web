@@ -3,7 +3,6 @@
 namespace Tests\Feature\Security;
 
 use App\Models\KelompokKkn;
-use App\Models\KelompokProposal;
 use App\Models\PesertaKkn;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -71,7 +70,7 @@ class FileUploadSecurityTest extends TestCase
             'kategori' => 'tugas_kelompok',
         ]);
 
-        $maliciousFile = UploadedFile::fake()->createWithContent('malware.exe', 'MZ' . random_bytes(100));
+        $maliciousFile = UploadedFile::fake()->createWithContent('malware.exe', 'MZ'.random_bytes(100));
 
         $response = $this->actingAs($user)->post(route('kelompok.tugas.submit', $tugas->id), [
             'judul' => 'Test',

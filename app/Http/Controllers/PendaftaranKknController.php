@@ -20,10 +20,10 @@ class PendaftaranKknController extends Controller
         |--------------------------------------------------------------------------
         */
         $gelombangAktif = Gelombang::whereIn('status', [
-                'pendaftaran',
-                'berjalan',
-                'selesai',
-            ])
+            'pendaftaran',
+            'berjalan',
+            'selesai',
+        ])
             ->latest()
             ->first();
 
@@ -38,9 +38,9 @@ class PendaftaranKknController extends Controller
             |--------------------------------------------------------------------------
             */
             $pendaftaran = PesertaKkn::with([
-                    'gelombang',
-                    'kelompokKkn',
-                ])
+                'gelombang',
+                'kelompokKkn',
+            ])
                 ->where('mahasiswa_id', $user->id)
                 ->where('gelombang_id', $gelombangAktif->id)
                 ->first();
@@ -53,20 +53,20 @@ class PendaftaranKknController extends Controller
             if ($pendaftaran?->kelompok_kkn_id) {
 
                 $kelompok = KelompokKkn::with([
-                        'desaGelombang.desa.kecamatan',
-                        'desaGelombang.gelombang',
-                        'dosenPembimbingLapangan.user',
-                        'pesertaKkn.mahasiswa.user',
-                        'ketua.mahasiswa.user',
-                    ])
+                    'desaGelombang.desa.kecamatan',
+                    'desaGelombang.gelombang',
+                    'dosenPembimbingLapangan.user',
+                    'pesertaKkn.mahasiswa.user',
+                    'ketua.mahasiswa.user',
+                ])
                     ->find($pendaftaran->kelompok_kkn_id);
             }
         }
 
         return view('pendaftaran-kkn.index', [
-            'gelombang'   => $gelombangAktif,
+            'gelombang' => $gelombangAktif,
             'pendaftaran' => $pendaftaran,
-            'kelompok'    => $kelompok,
+            'kelompok' => $kelompok,
         ]);
     }
 
@@ -80,24 +80,25 @@ class PendaftaranKknController extends Controller
         $user = auth()->user();
 
         $peserta = PesertaKkn::with([
-                'kelompokKkn.desaGelombang.desa.kecamatan',
-                'kelompokKkn.dosenPembimbingLapangan.user',
-                'kelompokKkn.pesertaKkn.mahasiswa.user',
-                'kelompokKkn.pesertaKkn.mahasiswa.prodi.fakultas',
-            ])
+            'kelompokKkn.desaGelombang.desa.kecamatan',
+            'kelompokKkn.dosenPembimbingLapangan.user',
+            'kelompokKkn.pesertaKkn.mahasiswa.user',
+            'kelompokKkn.pesertaKkn.mahasiswa.prodi.fakultas',
+        ])
             ->where('mahasiswa_id', $user->id)
             ->whereNotNull('kelompok_kkn_id')
-            ->whereDoesntHave('gelombang.warSessions', fn($q) => $q->whereIn('status', ['scheduled', 'active']))
+            ->whereDoesntHave('gelombang.warSessions', fn ($q) => $q->whereIn('status', ['scheduled', 'active']))
             ->first();
 
         if (! $peserta) {
             session()->flash('info', 'Anda belum tergabung dalam kelompok KKN. Silakan menunggu penempatan oleh admin atau ikuti proses WAR KKN.');
+
             return redirect()->route('home');
         }
 
         return view('war.joined', [
-            'session'     => null,
-            'peserta'     => $peserta,
+            'session' => null,
+            'peserta' => $peserta,
             'participant' => null,
         ]);
     }
@@ -128,10 +129,10 @@ class PendaftaranKknController extends Controller
         $user = auth()->user();
 
         $pendaftaran = PesertaKkn::with([
-                'mahasiswa.prodi.fakultas',
-                'gelombang',
-                'dokumenPendaftaran',
-            ])
+            'mahasiswa.prodi.fakultas',
+            'gelombang',
+            'dokumenPendaftaran',
+        ])
             ->where('mahasiswa_id', $user->id)
             ->latest()
             ->first();
@@ -173,7 +174,7 @@ class PendaftaranKknController extends Controller
         |-----------------------------------------
         */
         $skipDokumen = $pendaftaran->gelombang->skip_dokumen ?? false;
-        
+
         $documentUploadComplete = $skipDokumen ? true : $isUploadComplete;
         $documentVerified = $skipDokumen ? true : $isVerifiedComplete;
 
@@ -184,13 +185,13 @@ class PendaftaranKknController extends Controller
         */
         $kelompoks = collect();
 
-        if ($documentUploadComplete && $documentVerified && !$pendaftaran->kelompok_kkn_id) {
+        if ($documentUploadComplete && $documentVerified && ! $pendaftaran->kelompok_kkn_id) {
 
             $kelompoks = KelompokKkn::with([
-                    'desaGelombang.desa.kecamatan',
-                    'dosenPembimbingLapangan.user',
-                    'pesertaKkn.mahasiswa.prodi',
-                ])
+                'desaGelombang.desa.kecamatan',
+                'dosenPembimbingLapangan.user',
+                'pesertaKkn.mahasiswa.prodi',
+            ])
                 ->whereHas('desaGelombang', function ($q) use ($pendaftaran) {
                     $q->where('gelombang_id', $pendaftaran->gelombang_id);
                 })
@@ -218,8 +219,8 @@ class PendaftaranKknController extends Controller
         $user = auth()->user();
 
         $pendaftaran = PesertaKkn::with([
-                'mahasiswa.prodi.fakultas',
-            ])
+            'mahasiswa.prodi.fakultas',
+        ])
             ->where('mahasiswa_id', $user->id)
             ->latest()
             ->first();
@@ -266,7 +267,7 @@ class PendaftaranKknController extends Controller
         $mahasiswa = $pendaftaran->mahasiswa;
 
         $jenisKelamin = $mahasiswa->jenis_kelamin;
-        $fakultasId   = $mahasiswa->prodi?->fakultas_id;
+        $fakultasId = $mahasiswa->prodi?->fakultas_id;
 
         /*
         |--------------------------------------------------------------------------
@@ -377,9 +378,9 @@ class PendaftaranKknController extends Controller
         |--------------------------------------------------------------------------
         */
         $gelombangAktif = Gelombang::where(
-                'status',
-                'pendaftaran'
-            )
+            'status',
+            'pendaftaran'
+        )
             ->latest()
             ->first();
 
@@ -401,7 +402,8 @@ class PendaftaranKknController extends Controller
             $existing = PesertaKkn::where('mahasiswa_id', $user->id)->first();
             $msg = $existing->gelombang_id === $gelombangAktif->id
                 ? 'Anda sudah terdaftar pada gelombang ini.'
-                : 'Anda sudah terdaftar di gelombang "' . ($existing->gelombang->nama_gelombang ?? 'lain') . '". Tidak dapat mendaftar di gelombang ini.';
+                : 'Anda sudah terdaftar di gelombang "'.($existing->gelombang->nama_gelombang ?? 'lain').'". Tidak dapat mendaftar di gelombang ini.';
+
             return back()->with('error', $msg);
         }
 
@@ -414,14 +416,14 @@ class PendaftaranKknController extends Controller
         $verifiedAt = $gelombangAktif->skip_dokumen ? now() : null;
 
         PesertaKkn::create([
-            'mahasiswa_id'       => $user->id,
-            'gelombang_id'       => $gelombangAktif->id,
+            'mahasiswa_id' => $user->id,
+            'gelombang_id' => $gelombangAktif->id,
             'status_pendaftaran' => $statusPendaftaran,
-            'submitted_at'       => now(),
-            'verified_at'        => $verifiedAt,
+            'submitted_at' => now(),
+            'verified_at' => $verifiedAt,
         ]);
 
-        $msg = $gelombangAktif->skip_dokumen 
+        $msg = $gelombangAktif->skip_dokumen
             ? 'Berhasil mendaftar KKN. Anda telah otomatis disetujui untuk gelombang ini.'
             : 'Berhasil mendaftar KKN. Silakan lengkapi dokumen pendaftaran.';
 

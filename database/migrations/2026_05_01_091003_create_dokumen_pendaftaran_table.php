@@ -30,7 +30,7 @@ return new class extends Migration
                 'pending',
                 'verified',
                 'revision_required',
-                'rejected'
+                'rejected',
             ])->default('pending');
 
             $table->text('catatan_revisi')->nullable();

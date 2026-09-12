@@ -14,6 +14,7 @@ class RoleAccessTest extends TestCase
     {
         $user = User::factory()->create();
         $user->assignRole($role);
+
         return $user;
     }
 

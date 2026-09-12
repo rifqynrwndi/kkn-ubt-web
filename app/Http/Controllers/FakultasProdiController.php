@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Fakultas;
+use App\Models\Mahasiswa;
 use App\Models\ProgramStudi;
 use Illuminate\Http\Request;
 
@@ -31,7 +32,7 @@ class FakultasProdiController extends Controller
     public function storeFakultas(Request $request)
     {
         $request->validate([
-            'nama_fakultas' => 'required|unique:fakultas,nama_fakultas'
+            'nama_fakultas' => 'required|unique:fakultas,nama_fakultas',
         ]);
 
         Fakultas::create($request->only('nama_fakultas'));
@@ -49,7 +50,7 @@ class FakultasProdiController extends Controller
     public function updateFakultas(Request $request, Fakultas $fakultas)
     {
         $request->validate([
-            'nama_fakultas' => 'required|unique:fakultas,nama_fakultas,' . $fakultas->id
+            'nama_fakultas' => 'required|unique:fakultas,nama_fakultas,'.$fakultas->id,
         ]);
 
         $fakultas->update($request->only('nama_fakultas'));
@@ -66,6 +67,7 @@ class FakultasProdiController extends Controller
         }
 
         $fakultas->delete();
+
         return back()->with('success', 'Fakultas berhasil dihapus.');
     }
 
@@ -73,6 +75,7 @@ class FakultasProdiController extends Controller
     public function createProdi()
     {
         $fakultas = Fakultas::all();
+
         return view('fakultasprodi.create_prodi', compact('fakultas'));
     }
 
@@ -80,7 +83,7 @@ class FakultasProdiController extends Controller
     {
         $request->validate([
             'fakultas_id' => 'required|exists:fakultas,id',
-            'nama_prodi' => 'required'
+            'nama_prodi' => 'required',
         ]);
 
         ProgramStudi::create($request->only('fakultas_id', 'nama_prodi'));
@@ -93,6 +96,7 @@ class FakultasProdiController extends Controller
     public function editProdi(ProgramStudi $prodi)
     {
         $fakultas = Fakultas::all();
+
         return view('fakultasprodi.edit_prodi', compact('prodi', 'fakultas'));
     }
 
@@ -100,7 +104,7 @@ class FakultasProdiController extends Controller
     {
         $request->validate([
             'fakultas_id' => 'required|exists:fakultas,id',
-            'nama_prodi' => 'required'
+            'nama_prodi' => 'required',
         ]);
 
         $prodi->update([
@@ -115,11 +119,12 @@ class FakultasProdiController extends Controller
 
     public function deleteProdi(ProgramStudi $prodi)
     {
-        if (\App\Models\Mahasiswa::where('prodi_id', $prodi->id)->exists()) {
+        if (Mahasiswa::where('prodi_id', $prodi->id)->exists()) {
             return back()->with('error', 'Prodi tidak dapat dihapus karena masih memiliki mahasiswa.');
         }
 
         $prodi->delete();
+
         return back()->with('success', 'Prodi berhasil dihapus.');
     }
 }

@@ -1,32 +1,38 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\LogBook;
-use Illuminate\Http\Request;
+use App\Models\PesertaKkn;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class LogBookController extends Controller
 {
     private function getKelompokId()
     {
         $mhs = auth()->user()->mahasiswa;
-        if (!$mhs) return null;
-        return \App\Models\PesertaKkn::where('mahasiswa_id', $mhs->user_id)->whereNotNull('kelompok_kkn_id')->value('kelompok_kkn_id');
+        if (! $mhs) {
+            return null;
+        }
+
+        return PesertaKkn::where('mahasiswa_id', $mhs->user_id)->whereNotNull('kelompok_kkn_id')->value('kelompok_kkn_id');
     }
 
     public function create(Request $request): View
     {
-        abort_if(!$this->getKelompokId(), 404);
+        abort_if(! $this->getKelompokId(), 404);
 
         $editing = null;
         if ($request->has('edit')) {
             $editing = LogBook::where('id', $request->edit)
                 ->where('status', 'ditolak')
-                ->whereHas('pesertaKkn', fn($q) => $q->where('mahasiswa_id', auth()->user()->mahasiswa->user_id))
+                ->whereHas('pesertaKkn', fn ($q) => $q->where('mahasiswa_id', auth()->user()->mahasiswa->user_id))
                 ->first();
-            abort_if(!$editing, 404);
+            abort_if(! $editing, 404);
         }
 
         return view('kelompok.logbook.create', compact('editing'));
@@ -35,9 +41,9 @@ class LogBookController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $kelompokId = $this->getKelompokId();
-        abort_if(!$kelompokId, 404);
+        abort_if(! $kelompokId, 404);
 
-        $peserta = \App\Models\PesertaKkn::where('mahasiswa_id', auth()->user()->mahasiswa->user_id)
+        $peserta = PesertaKkn::where('mahasiswa_id', auth()->user()->mahasiswa->user_id)
             ->where('kelompok_kkn_id', $kelompokId)->firstOrFail();
 
         $request->validate([
@@ -63,7 +69,7 @@ class LogBookController extends Controller
 
         LogBook::create($data);
 
-        return redirect()->route('kelompok.index', ['tab'=>'logbook'])->with('success', 'Log book berhasil ditambahkan.');
+        return redirect()->route('kelompok.index', ['tab' => 'logbook'])->with('success', 'Log book berhasil ditambahkan.');
     }
 
     public function update(Request $request, LogBook $logbook): RedirectResponse
@@ -77,12 +83,14 @@ class LogBookController extends Controller
             'file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
-        $data = $request->only(['tanggal','judul','deskripsi']);
+        $data = $request->only(['tanggal', 'judul', 'deskripsi']);
         $data['status'] = 'menunggu';
         $data['komentar_dpl'] = null;
 
         if ($request->hasFile('file')) {
-            if ($logbook->file_path) Storage::disk('public')->delete($logbook->file_path);
+            if ($logbook->file_path) {
+                Storage::disk('public')->delete($logbook->file_path);
+            }
             $data['file_path'] = $request->file('file')->store('logbook', 'public');
             $data['file_name'] = $request->file('file')->getClientOriginalName();
         }
@@ -97,15 +105,18 @@ class LogBookController extends Controller
         if ($logbook->status === 'tervalidasi') {
             return back()->with('error', 'Log book yang sudah divalidasi tidak dapat dihapus.');
         }
-        if ($logbook->file_path) Storage::disk('public')->delete($logbook->file_path);
+        if ($logbook->file_path) {
+            Storage::disk('public')->delete($logbook->file_path);
+        }
         $logbook->delete();
+
         return back()->with('success', 'Log book dihapus.');
     }
 
     public function validateAll(Request $request): RedirectResponse
     {
         $pesertaId = $request->peserta_id;
-        $peserta = \App\Models\PesertaKkn::with('kelompokKkn')->findOrFail($pesertaId);
+        $peserta = PesertaKkn::with('kelompokKkn')->findOrFail($pesertaId);
 
         $dpl = auth()->user()->dosenPembimbingLapangan;
         $isAdmin = auth()->user()->hasRole('superadmin');
@@ -116,7 +127,7 @@ class LogBookController extends Controller
             // admin can validate any
         } else {
             $kelompokId = $this->getKelompokId();
-            abort_if(!$kelompokId || $peserta->kelompok_kkn_id !== $kelompokId, 403);
+            abort_if(! $kelompokId || $peserta->kelompok_kkn_id !== $kelompokId, 403);
         }
 
         LogBook::where('peserta_kkn_id', $pesertaId)
@@ -130,7 +141,7 @@ class LogBookController extends Controller
 
         $previous = url()->previous();
         $parsed = parse_url($previous);
-        if (!$parsed || !isset($parsed['host'])) {
+        if (! $parsed || ! isset($parsed['host'])) {
             return back()->with('success', 'Semua log book anggota ini berhasil divalidasi.');
         }
         $query = [];
@@ -139,13 +150,13 @@ class LogBookController extends Controller
         }
         unset($query['tab']);
         $query['tab'] = 'logbook';
-        $port = isset($parsed['port']) ? ':' . $parsed['port'] : '';
-        $url = ($parsed['scheme'] ?? 'https') . '://' . ($parsed['host'] ?? '') . $port . ($parsed['path'] ?? '/') . '?' . http_build_query($query);
+        $port = isset($parsed['port']) ? ':'.$parsed['port'] : '';
+        $url = ($parsed['scheme'] ?? 'https').'://'.($parsed['host'] ?? '').$port.($parsed['path'] ?? '/').'?'.http_build_query($query);
 
         return redirect($url)->with('success', 'Semua log book anggota ini berhasil divalidasi.');
     }
 
-    public function review(Request $request, LogBook $logbook): \Symfony\Component\HttpFoundation\Response
+    public function review(Request $request, LogBook $logbook): Response
     {
         $request->validate([
             'action' => 'required|in:terima,tolak',
@@ -157,7 +168,7 @@ class LogBookController extends Controller
 
         if ($dpl) {
             abort_if($logbook->pesertaKkn->kelompokKkn->dosen_pembimbing_lapangan_id !== $dpl->id, 403);
-        } elseif (!$isAdmin) {
+        } elseif (! $isAdmin) {
             abort(403);
         }
 
@@ -181,6 +192,7 @@ class LogBookController extends Controller
 
         if ($request->wantsJson() || $request->ajax()) {
             $pesertaId = $logbook->peserta_kkn_id;
+
             return response()->json([
                 'status' => $logbook->status,
                 'komentar' => $logbook->komentar_dpl,
@@ -193,7 +205,7 @@ class LogBookController extends Controller
 
         $previous = url()->previous();
         $parsed = parse_url($previous);
-        if (!$parsed || !isset($parsed['host'])) {
+        if (! $parsed || ! isset($parsed['host'])) {
             return back()->with('success', 'Log book di-review.');
         }
         $query = [];
@@ -202,8 +214,8 @@ class LogBookController extends Controller
         }
         $tab = str_contains($parsed['path'] ?? '', '/kelompok-kkn/') ? 'admin-logbook' : 'logbook';
         $query['tab'] = $tab;
-        $port = isset($parsed['port']) ? ':' . $parsed['port'] : '';
-        $url = ($parsed['scheme'] ?? 'https') . '://' . ($parsed['host'] ?? '') . $port . ($parsed['path'] ?? '/') . '?' . http_build_query($query);
+        $port = isset($parsed['port']) ? ':'.$parsed['port'] : '';
+        $url = ($parsed['scheme'] ?? 'https').'://'.($parsed['host'] ?? '').$port.($parsed['path'] ?? '/').'?'.http_build_query($query);
 
         return redirect($url)->with('success', 'Log book di-review.');
     }

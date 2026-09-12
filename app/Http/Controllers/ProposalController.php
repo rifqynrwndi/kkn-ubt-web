@@ -1,9 +1,11 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\KelompokProposal;
-use Illuminate\Http\Request;
+use App\Models\PesertaKkn;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ProposalController extends Controller
@@ -11,8 +13,11 @@ class ProposalController extends Controller
     private function getKelompok()
     {
         $mhs = auth()->user()->mahasiswa;
-        if (! $mhs) return null;
-        return \App\Models\PesertaKkn::where('mahasiswa_id', $mhs->user_id)
+        if (! $mhs) {
+            return null;
+        }
+
+        return PesertaKkn::where('mahasiswa_id', $mhs->user_id)
             ->whereNotNull('kelompok_kkn_id')->with('kelompokKkn')->first()?->kelompokKkn;
     }
 
@@ -27,7 +32,7 @@ class ProposalController extends Controller
         abort_if(! $kelompok, 404);
 
         $proposal = $this->getProposal($kelompok->id);
-        $isKetua = $kelompok->ketua_peserta_id === \App\Models\PesertaKkn::where('mahasiswa_id', auth()->user()->mahasiswa->user_id)->whereNotNull('kelompok_kkn_id')->value('id');
+        $isKetua = $kelompok->ketua_peserta_id === PesertaKkn::where('mahasiswa_id', auth()->user()->mahasiswa->user_id)->whereNotNull('kelompok_kkn_id')->value('id');
         $isDpl = $kelompok->dosen_pembimbing_lapangan_id === auth()->user()->dosenPembimbingLapangan?->id;
 
         return view('kelompok.proposal.index', compact('kelompok', 'proposal', 'isKetua', 'isDpl'));
@@ -37,7 +42,7 @@ class ProposalController extends Controller
     {
         $kelompok = $this->getKelompok();
         abort_if(! $kelompok, 404);
-        abort_if($kelompok->ketua_peserta_id !== \App\Models\PesertaKkn::where('mahasiswa_id', auth()->user()->mahasiswa->user_id)->whereNotNull('kelompok_kkn_id')->value('id'), 403);
+        abort_if($kelompok->ketua_peserta_id !== PesertaKkn::where('mahasiswa_id', auth()->user()->mahasiswa->user_id)->whereNotNull('kelompok_kkn_id')->value('id'), 403);
 
         $proposal = $this->getProposal($kelompok->id);
         if ($proposal && $proposal->status !== 'draft' && $proposal->status !== 'ditolak') {
@@ -80,12 +85,13 @@ class ProposalController extends Controller
                 'rancangan_program' => purifier($request->rancangan_program),
                 'solusi_ide' => purifier($request->solusi_ide),
                 'status' => $action === 'submit' ? 'diajukan' : 'draft',
-                'submitted_by' => $action === 'submit' ? \App\Models\PesertaKkn::where('mahasiswa_id', auth()->user()->mahasiswa->user_id)->whereNotNull('kelompok_kkn_id')->value('id') : null,
+                'submitted_by' => $action === 'submit' ? PesertaKkn::where('mahasiswa_id', auth()->user()->mahasiswa->user_id)->whereNotNull('kelompok_kkn_id')->value('id') : null,
                 'submitted_at' => $action === 'submit' ? now() : null,
             ]
         );
 
         $msg = $action === 'submit' ? 'Proposal berhasil diajukan.' : 'Draft proposal disimpan.';
+
         return redirect()->route('kelompok.index', ['tab' => 'proposal'])->with('success', $msg);
     }
 

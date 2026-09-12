@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\KelompokKkn;
@@ -13,11 +14,11 @@ class StatusController extends Controller
     {
         $current = $service->getCurrentStage($kelompok);
         $history = $service->getHistory($kelompok);
-        $stages  = StatusService::STAGES;
-        $isDpl   = $kelompok->dosen_pembimbing_lapangan_id === auth()->user()->dosenPembimbingLapangan?->id;
+        $stages = StatusService::STAGES;
+        $isDpl = $kelompok->dosen_pembimbing_lapangan_id === auth()->user()->dosenPembimbingLapangan?->id;
         $isAdmin = auth()->user()->hasRole('superadmin');
 
-        return view('kelompok.status.index', compact('kelompok','current','history','stages','isDpl','isAdmin'));
+        return view('kelompok.status.index', compact('kelompok', 'current', 'history', 'stages', 'isDpl', 'isAdmin'));
     }
 
     public function change(Request $request, KelompokKkn $kelompok, StatusService $service): RedirectResponse

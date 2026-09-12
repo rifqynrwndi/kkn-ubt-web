@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\DosenPembimbingLapangan;
+use App\Models\Fakultas;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -130,15 +131,16 @@ class DplSeeder extends Seeder
             $fakultas_id = null;
 
             if (! empty($data['fakultas'])) {
-                $fakultas = \App\Models\Fakultas::where('nama_fakultas', $data['fakultas'])->first();
+                $fakultas = Fakultas::where('nama_fakultas', $data['fakultas'])->first();
                 if (! $fakultas) {
-                    $this->command?->warn('Fakultas tidak ditemukan: ' . $data['fakultas']);
+                    $this->command?->warn('Fakultas tidak ditemukan: '.$data['fakultas']);
+
                     continue;
                 }
                 $fakultas_id = $fakultas->id;
             }
 
-            $email = $data['nidn'] . '@ubt.ac.id';
+            $email = $data['nidn'].'@ubt.ac.id';
 
             $user = User::firstOrCreate(
                 ['email' => $email],
@@ -161,6 +163,6 @@ class DplSeeder extends Seeder
             );
         }
 
-        $this->command?->info('DPL Seeder selesai. ' . count($dpls) . ' records.');
+        $this->command?->info('DPL Seeder selesai. '.count($dpls).' records.');
     }
 }

@@ -1,11 +1,13 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Gelombang;
 use App\Models\KelompokKkn;
 use App\Models\TugasKelompok;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -21,28 +23,28 @@ class TugasAdminController extends Controller
         $selectedGelombang = $request->input('gelombang_id', $gelombangs->first()?->id);
 
         $tugasList = TugasKelompok::with('submissions')
-            ->when($selectedGelombang, fn($q) => $q->whereHas('kelompokKkn.desaGelombang', fn($dg) => $dg->where('gelombang_id', $selectedGelombang)))
+            ->when($selectedGelombang, fn ($q) => $q->whereHas('kelompokKkn.desaGelombang', fn ($dg) => $dg->where('gelombang_id', $selectedGelombang)))
             ->get()
             ->groupBy('nama_tugas')
-            ->map(fn($group) => [
+            ->map(fn ($group) => [
                 'nama_tugas' => $group->first()->nama_tugas,
                 'kategori' => $group->first()->kategori,
                 'total_kelompok' => $group->count(),
-                'total_submissions' => $group->sum(fn($t) => $t->submissions->count()),
+                'total_submissions' => $group->sum(fn ($t) => $t->submissions->count()),
                 'ids' => $group->pluck('id')->toArray(),
                 'first_id' => $group->first()->id,
             ])
             ->sortBy('kategori')
             ->values();
 
-        $wn = ['Program Kerja','Video Profil Desa','Draft Artikel','Laporan Program KKN'];
+        $wn = ['Program Kerja', 'Video Profil Desa', 'Draft Artikel', 'Laporan Program KKN'];
         $semuaTasks = TugasKelompok::whereIn('nama_tugas', $wn)->get();
 
         $kelompoks = KelompokKkn::with(['desaGelombang.desa.kecamatan',
-            'tugasKelompok' => fn($q) => $q->whereIn('nama_tugas', $wn)]);
+            'tugasKelompok' => fn ($q) => $q->whereIn('nama_tugas', $wn)]);
 
         if ($selectedGelombang) {
-            $kelompoks->whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $selectedGelombang));
+            $kelompoks->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $selectedGelombang));
         }
 
         $rekap = $kelompoks->orderBy('nama_kelompok')->get();
@@ -62,10 +64,10 @@ class TugasAdminController extends Controller
             'dosenPembimbingLapangan.user',
             'pesertaKkn.mahasiswa.user',
             'tugasKelompok.submissions.pesertaKkn.mahasiswa.user',
-        ])->whereHas('desaGelombang', fn($q) => $q->where('gelombang_id', $gelombangId))
+        ])->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $gelombangId))
             ->orderBy('nama_kelompok')->get();
 
-        $kabupatens = $kelompoks->groupBy(fn($k) => $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? 'Unknown');
+        $kabupatens = $kelompoks->groupBy(fn ($k) => $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? 'Unknown');
 
         $katLabels = ['tugas_kelompok' => 'Tugas Kelompok', 'luaran_wajib' => 'Luaran Wajib', 'luaran_lain' => 'Luaran Tambahan', 'laporan' => 'Laporan'];
         $statusLabels = ['tervalidasi' => 'Tervalidasi', 'ditolak' => 'Ditolak', 'menunggu' => 'Menunggu', 'belum' => 'Belum dikumpulkan'];
@@ -97,7 +99,7 @@ class TugasAdminController extends Controller
                 $sheet = $spreadsheet->createSheet();
             }
 
-            $safeName = mb_substr(str_replace(['\\','/','*','?','[',']',':'], '', $kabupaten), 0, 31);
+            $safeName = mb_substr(str_replace(['\\', '/', '*', '?', '[', ']', ':'], '', $kabupaten), 0, 31);
             $sheet->setTitle($safeName);
 
             $headers = ['No', 'Kelompok', 'Nama Tugas', 'Kategori', 'Pengumpul', 'Status', 'Link File', 'Tanggal'];
@@ -115,10 +117,11 @@ class TugasAdminController extends Controller
                 $tugasRows = $k->tugasKelompok->isEmpty() ? collect() : $k->tugasKelompok->sortBy('nama_tugas');
 
                 if ($tugasRows->isEmpty()) {
-                    $sheet->fromArray([[$no++, $k->nama_kelompok . "\n(" . $k->kode_kelompok . ')', 'Belum ada tugas', '-', '-', $statusLabels['belum'], '', '']], null, "A{$row}");
+                    $sheet->fromArray([[$no++, $k->nama_kelompok."\n(".$k->kode_kelompok.')', 'Belum ada tugas', '-', '-', $statusLabels['belum'], '', '']], null, "A{$row}");
                     $style = ($no % 2 === 1) ? $altRowStyle : $rowStyle;
                     $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray($style);
                     $row++;
+
                     continue;
                 }
 
@@ -128,7 +131,7 @@ class TugasAdminController extends Controller
                     $totalRows += $tugas->submissions->isEmpty() ? 1 : $tugas->submissions->count();
                 }
 
-                $namaKelompok = $k->nama_kelompok . "\n(" . $k->kode_kelompok . ')';
+                $namaKelompok = $k->nama_kelompok."\n(".$k->kode_kelompok.')';
                 $firstOfBlock = true;
 
                 foreach ($tugasRows as $tugas) {
@@ -137,7 +140,7 @@ class TugasAdminController extends Controller
 
                     $rowsToWrite = $tugas->submissions->isEmpty()
                         ? [[$namaTugas, $kategori, '-', $statusLabels['belum'], '', '', '']]
-                        : $tugas->submissions->map(fn($sub) => [
+                        : $tugas->submissions->map(fn ($sub) => [
                             $namaTugas,
                             $kategori,
                             $sub->pesertaKkn?->mahasiswa?->user?->name ?? '-',
@@ -156,10 +159,10 @@ class TugasAdminController extends Controller
                         ]], null, "A{$row}");
 
                         if ($linkUrl) {
-                            $sheet->getCell('G' . $row)->getHyperlink()->setUrl($linkUrl);
-                            $sheet->getCell('G' . $row)->getHyperlink()->setTooltip($linkUrl);
-                            $sheet->getStyle('G' . $row)->getFont()->getColor()->setARGB('0563C1');
-                            $sheet->getStyle('G' . $row)->getFont()->setUnderline(true);
+                            $sheet->getCell('G'.$row)->getHyperlink()->setUrl($linkUrl);
+                            $sheet->getCell('G'.$row)->getHyperlink()->setTooltip($linkUrl);
+                            $sheet->getStyle('G'.$row)->getFont()->getColor()->setARGB('0563C1');
+                            $sheet->getStyle('G'.$row)->getFont()->setUnderline(true);
                         }
 
                         $style = ($no % 2 === 1) ? $altRowStyle : $rowStyle;
@@ -210,7 +213,8 @@ class TugasAdminController extends Controller
                 $m = $p->mahasiswa;
                 $nama = $m?->user?->name ?? '-';
                 $npm = $m?->npm ?? '';
-                return ($i + 1) . ". {$nama} | {$npm}";
+
+                return ($i + 1).". {$nama} | {$npm}";
             })->implode("\n");
 
             $sheetKel->fromArray([[$no++, $k->nama_kelompok, $k->kode_kelompok, $desa, $kec, $kab, $dpl, $anggotaList]], null, "A{$row}");
@@ -228,20 +232,21 @@ class TugasAdminController extends Controller
         $spreadsheet->setActiveSheetIndex(0);
 
         $writer = new Xlsx($spreadsheet);
-        $namaGelombang = str_replace(['\\','/',' ',':'], '_', $gelombang->nama_gelombang ?? 'Gelombang_' . $gelombangId);
-        $filename = 'rekap-tugas-kelompok-' . $namaGelombang . '-' . now()->format('Ymd-His') . '.xlsx';
+        $namaGelombang = str_replace(['\\', '/', ' ', ':'], '_', $gelombang->nama_gelombang ?? 'Gelombang_'.$gelombangId);
+        $filename = 'rekap-tugas-kelompok-'.$namaGelombang.'-'.now()->format('Ymd-His').'.xlsx';
 
         return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 
     public function create(): View
     {
         $kelompoks = KelompokKkn::with('desaGelombang.desa.kecamatan')->orderBy('nama_kelompok')->get();
+
         return view('tugas-admin.create', compact('kelompoks'));
     }
 
@@ -273,11 +278,12 @@ class TugasAdminController extends Controller
         $count = 0;
         foreach ($tugasGroup as $t) {
             foreach ($t->submissions as $sub) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($sub->file_path);
+                Storage::disk('public')->delete($sub->file_path);
             }
             $t->delete();
             $count++;
         }
+
         return back()->with('success', "Tugas \"{$nama}\" dihapus dari {$count} kelompok.");
     }
 
@@ -285,6 +291,7 @@ class TugasAdminController extends Controller
     {
         $nama = $request->query('nama_tugas');
         $tugas = TugasKelompok::where('nama_tugas', $nama)->firstOrFail();
+
         return view('tugas-admin.edit', compact('tugas'));
     }
 
