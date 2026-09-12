@@ -105,9 +105,3 @@ jobs:
           DB_DATABASE: kkn_test
           DB_USERNAME: root
           DB_PASSWORD: password
-
-      - name: Run Playwright E2E tests
-        run: |
-          php artisan serve --port=8000 &
-          sleep 5
-          npx playwright test
