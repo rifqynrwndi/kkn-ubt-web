@@ -48,3 +48,4 @@ database/*.sqlite
 PLAN.md
 test-results/
 .phpunit.result.cache
+*prompt.md
