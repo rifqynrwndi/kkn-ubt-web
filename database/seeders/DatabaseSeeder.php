@@ -10,7 +10,6 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             // ── Core system (wajib di semua environment) ──
-            SettingSeeder::class,
             RolePermissionSeeder::class,
             SuperAdminSeeder::class,
 
