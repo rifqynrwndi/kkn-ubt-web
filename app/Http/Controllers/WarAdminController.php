@@ -345,11 +345,11 @@ class WarAdminController extends Controller
             ->withCount('pesertaKkn')
             ->get()
             ->map(fn ($k) => [
-            'id' => $k->id,
-            'terisi' => $k->peserta_kkn_count,
-            'kuota' => $k->kuota,
-            'status' => $k->status,
-        ]);
+                'id' => $k->id,
+                'terisi' => $k->peserta_kkn_count,
+                'kuota' => $k->kuota,
+                'status' => $k->status,
+            ]);
 
         return response()->json(['kelompoks' => $kelompoks]);
     }
