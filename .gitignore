@@ -46,3 +46,5 @@ database/*.sqlite
 
 *PRD.md
 PLAN.md
+test-results/
+.phpunit.result.cache

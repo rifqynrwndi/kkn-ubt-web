@@ -9,6 +9,7 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Http\RedirectResponse;
 use App\Models\DosenPembimbingLapangan;
 use App\Models\KelompokKkn;
@@ -70,7 +71,7 @@ class DosenPembimbingLapanganController extends Controller
         $user = User::create([
             'name'     => $request->name,
             'email'    => $request->email,
-            'password' => Hash::make('kknubt2026'),
+            'password' => Hash::make(env('DPL_DEFAULT_PASSWORD', Str::random(20))),
             'email_verified_at' => now(),
         ]);
 

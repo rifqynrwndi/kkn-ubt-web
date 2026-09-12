@@ -5,8 +5,16 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
 jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -51,7 +59,7 @@ jobs:
             Port ${{ secrets.SSH_PORT || '22' }}
             User ${{ secrets.SSH_USERNAME }}
             IdentityFile ~/.ssh/deploy_key
-            StrictHostKeyChecking no
+            StrictHostKeyChecking accept-new
             UserKnownHostsFile /dev/null
           SSHCONFIG
           chmod 600 ~/.ssh/config
@@ -82,3 +90,13 @@ jobs:
           sudo systemctl reload nginx 2>/dev/null || true
           echo "Deploy completed successfully"
           REMOTE
+
+      - name: Verify deployment health
+        run: |
+          sleep 10
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://kknubt.id/up" || echo "000")
+          if [ "$STATUS" != "200" ]; then
+            echo "Health check failed with status: $STATUS"
+            exit 1
+          fi
+          echo "Health check passed (HTTP $STATUS)"

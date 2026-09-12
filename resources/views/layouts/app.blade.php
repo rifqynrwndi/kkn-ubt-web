@@ -128,22 +128,22 @@
     <!-- Flash Messages via IziToast -->
     @if(session('success'))
     <script>
-        iziToast.success({ title: 'Berhasil', message: '{!! addslashes(session('success')) !!}', position: 'topRight', timeout: 5000 });
+        iziToast.success({ title: 'Berhasil', message: @json(session('success')), position: 'topRight', timeout: 5000 });
     </script>
     @endif
     @if(session('error'))
     <script>
-        iziToast.error({ title: 'Gagal', message: '{!! addslashes(session('error')) !!}', position: 'topRight', timeout: 8000 });
+        iziToast.error({ title: 'Gagal', message: @json(session('error')), position: 'topRight', timeout: 8000 });
     </script>
     @endif
     @if(session('info'))
     <script>
-        iziToast.info({ title: 'Info', message: '{!! addslashes(session('info')) !!}', position: 'topRight', timeout: 5000 });
+        iziToast.info({ title: 'Info', message: @json(session('info')), position: 'topRight', timeout: 5000 });
     </script>
     @endif
     @if(session('warning'))
     <script>
-        iziToast.warning({ title: 'Perhatian', message: '{!! addslashes(session('warning')) !!}', position: 'topRight', timeout: 6000 });
+        iziToast.warning({ title: 'Perhatian', message: @json(session('warning')), position: 'topRight', timeout: 6000 });
     </script>
     @endif
 
