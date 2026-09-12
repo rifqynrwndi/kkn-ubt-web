@@ -227,6 +227,15 @@
     @if(session('success'))
     <script>iziToast.success({ title:'Berhasil', message:'{!! addslashes(session('success')) !!}', position:'topRight', timeout:5000 });</script>
     @endif
+    @if(session('error'))
+    <script>iziToast.error({ title:'Gagal', message:'{!! addslashes(session('error')) !!}', position:'topRight', timeout:5000 });</script>
+    @endif
+    @if(session('warning'))
+    <script>iziToast.warning({ title:'Perhatian', message:'{!! addslashes(session('warning')) !!}', position:'topRight', timeout:5000 });</script>
+    @endif
+    @if(session('info'))
+    <script>iziToast.info({ title:'Info', message:'{!! addslashes(session('info')) !!}', position:'topRight', timeout:5000 });</script>
+    @endif
     @livewireScripts
     @stack('scripts')
 </body>
