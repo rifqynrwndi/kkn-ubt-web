@@ -73,12 +73,12 @@ class ProposalController extends Controller
         KelompokProposal::updateOrCreate(
             ['kelompok_kkn_id' => $kelompok->id],
             [
-                'pendahuluan' => $request->pendahuluan,
-                'tujuan' => $request->tujuan,
-                'manfaat' => $request->manfaat,
-                'hasil_observasi' => $request->hasil_observasi,
-                'rancangan_program' => $request->rancangan_program,
-                'solusi_ide' => $request->solusi_ide,
+                'pendahuluan' => purifier($request->pendahuluan),
+                'tujuan' => purifier($request->tujuan),
+                'manfaat' => purifier($request->manfaat),
+                'hasil_observasi' => purifier($request->hasil_observasi),
+                'rancangan_program' => purifier($request->rancangan_program),
+                'solusi_ide' => purifier($request->solusi_ide),
                 'status' => $action === 'submit' ? 'diajukan' : 'draft',
                 'submitted_by' => $action === 'submit' ? \App\Models\PesertaKkn::where('mahasiswa_id', auth()->user()->mahasiswa->user_id)->whereNotNull('kelompok_kkn_id')->value('id') : null,
                 'submitted_at' => $action === 'submit' ? now() : null,

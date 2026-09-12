@@ -69,9 +69,11 @@ Route::get('/sitemap.xml', function () {
         ->header('Cache-Control', 'public, max-age=3600');
 });
 
-Auth::routes();
+Auth::routes(['register' => true, 'reset' => true, 'verify' => true]);
 
-Route::get('/s3/{path}', [FileProxyController::class, 'streamS3'])->where('path', '.*')->name('s3.proxy');
+Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register'])->middleware('throttle:register')->name('register');
+
+Route::get('/s3/{path}', [FileProxyController::class, 'streamS3'])->where('path', '.*')->name('s3.proxy')->middleware('auth');
 
 // Custom error pages
 Route::get('/errors/413', fn () => view('errors.413'))->name('error.413');
@@ -82,7 +84,7 @@ Route::get('/errors/413', fn () => view('errors.413'))->name('error.413');
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'throttle:global'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------

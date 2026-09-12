@@ -50,7 +50,7 @@ class HakaksesController extends Controller
     public function update(Request $request, int $id): RedirectResponse
     {
         $request->validate([
-            'role' => ['required', 'string', 'in:user,superadmin'],
+            'role' => ['required', 'string', 'in:mahasiswa,pembimbing,superadmin'],
         ]);
 
         $user = User::findOrFail($id);

@@ -144,7 +144,7 @@ class DplSeeder extends Seeder
                 ['email' => $email],
                 [
                     'name' => $data['nama'],
-                    'password' => Hash::make('kknubt2026'),
+                    'password' => Hash::make(env('DPL_DEFAULT_PASSWORD', 'kknubt2026')),
                     'email_verified_at' => now(),
                 ]
             );

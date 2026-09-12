@@ -52,7 +52,7 @@ class TugasController extends Controller
         
         $request->validate([
             'judul' => 'required|string|max:255',
-            'file' => 'required|file|max:10240',
+            'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
         ]);
 
         $mhs = auth()->user()->mahasiswa;

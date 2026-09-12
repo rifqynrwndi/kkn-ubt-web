@@ -225,16 +225,16 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
     @if(session('success'))
-    <script>iziToast.success({ title:'Berhasil', message:'{!! addslashes(session('success')) !!}', position:'topRight', timeout:5000 });</script>
+    <script>iziToast.success({ title:'Berhasil', message:@json(session('success')), position:'topRight', timeout:5000 });</script>
     @endif
     @if(session('error'))
-    <script>iziToast.error({ title:'Gagal', message:'{!! addslashes(session('error')) !!}', position:'topRight', timeout:5000 });</script>
+    <script>iziToast.error({ title:'Gagal', message:@json(session('error')), position:'topRight', timeout:5000 });</script>
     @endif
     @if(session('warning'))
-    <script>iziToast.warning({ title:'Perhatian', message:'{!! addslashes(session('warning')) !!}', position:'topRight', timeout:5000 });</script>
+    <script>iziToast.warning({ title:'Perhatian', message:@json(session('warning')), position:'topRight', timeout:5000 });</script>
     @endif
     @if(session('info'))
-    <script>iziToast.info({ title:'Info', message:'{!! addslashes(session('info')) !!}', position:'topRight', timeout:5000 });</script>
+    <script>iziToast.info({ title:'Info', message:@json(session('info')), position:'topRight', timeout:5000 });</script>
     @endif
     @livewireScripts
     @stack('scripts')

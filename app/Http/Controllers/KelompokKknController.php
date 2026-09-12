@@ -631,6 +631,9 @@ class KelompokKknController extends Controller
 
     public function laporanStore(Request $request, KelompokKkn $kelompok_kkn): RedirectResponse
     {
+        $isKetua = $kelompok_kkn->ketua_peserta_id && auth()->user()->pesertaKkn?->where('kelompok_kkn_id', $kelompok_kkn->id)->first()?->id === $kelompok_kkn->ketua_peserta_id;
+        abort_unless($isKetua || auth()->user()->hasRole('superadmin'), 403, 'Hanya ketua kelompok atau admin yang dapat mengunggah laporan.');
+
         $request->validate([
             'jenis' => 'required|in:monev,artikel,haki',
             'judul' => 'required|string|max:255',
@@ -655,6 +658,9 @@ class KelompokKknController extends Controller
 
     public function laporanDestroy(KelompokKkn $kelompok_kkn, LaporanDpl $laporan): RedirectResponse
     {
+        $isKetua = $kelompok_kkn->ketua_peserta_id && auth()->user()->pesertaKkn?->where('kelompok_kkn_id', $kelompok_kkn->id)->first()?->id === $kelompok_kkn->ketua_peserta_id;
+        abort_unless($isKetua || auth()->user()->hasRole('superadmin'), 403, 'Hanya ketua kelompok atau admin yang dapat menghapus laporan.');
+
         if ($laporan->file_path) \Illuminate\Support\Facades\Storage::disk('public')->delete($laporan->file_path);
         $laporan->delete();
         return back()->with('success', 'Laporan dihapus.');

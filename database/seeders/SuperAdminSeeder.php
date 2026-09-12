@@ -18,7 +18,7 @@ class SuperAdminSeeder extends Seeder
             ],
             [
                 'name' => 'Super Admin',
-                'password' => Hash::make(env('SUPERADMIN_PASSWORD', 'ChangeMe123!')),
+                'password' => Hash::make(env('SUPERADMIN_PASSWORD') ?: \Illuminate\Support\Str::random(20)),
                 'email_verified_at' => now(),
             ]
         );
