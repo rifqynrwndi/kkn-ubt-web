@@ -47,6 +47,7 @@ database/*.sqlite
 
 *PRD.md
 PLAN.md
+DESIGN-BRIEF.md
 test-results/
 .phpunit.result.cache
 *prompt.md
