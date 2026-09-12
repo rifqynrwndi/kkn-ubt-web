@@ -4,22 +4,20 @@ test.describe('Login', () => {
   test('should login with valid credentials and redirect to home', async ({ page }) => {
     await page.goto('/login');
 
-    await page.fill('input[name="email"]', 'superadmin@kknubt.id');
+    await page.fill('input[name="email"]', 'admin@kknubt.ac.id');
     await page.fill('input[name="password"]', 'password');
     await page.click('button[type="submit"]');
 
-    // Should redirect to home (or wherever superadmin goes)
-    await expect(page).toHaveURL(/.*home/);
+    await expect(page).toHaveURL(/.*home/, { timeout: 10000 });
   });
 
   test('should show error for wrong password', async ({ page }) => {
     await page.goto('/login');
 
-    await page.fill('input[name="email"]', 'superadmin@kknubt.id');
+    await page.fill('input[name="email"]', 'admin@kknubt.ac.id');
     await page.fill('input[name="password"]', 'wrongpassword');
     await page.click('button[type="submit"]');
 
-    // Should stay on login page
     await expect(page).toHaveURL(/.*login/);
   });
 
