@@ -2,9 +2,16 @@
 
 namespace Tests\Feature\Security;
 
+use App\Models\DesaGelombang;
+use App\Models\Gelombang;
 use App\Models\KelompokKkn;
 use App\Models\PesertaKkn;
+use App\Models\ProgramStudi;
 use App\Models\User;
+use Database\Seeders\DesaSeeder;
+use Database\Seeders\FakultasProdiSeeder;
+use Database\Seeders\GelombangSeeder;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
@@ -13,37 +20,51 @@ class FileUploadSecurityTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function createKetua(): User
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(RolePermissionSeeder::class);
+        $this->seed(FakultasProdiSeeder::class);
+        $this->seed(GelombangSeeder::class);
+        $this->seed(DesaSeeder::class);
+    }
+
+    private function createKetua(): array
     {
         $user = User::factory()->create();
         $user->assignRole('mahasiswa');
 
-        $mahasiswa = $user->mahasiswa()->create([
+        $prodiId = ProgramStudi::first()->id;
+        $user->mahasiswa()->create([
             'npm' => '1234567890',
             'jenis_kelamin' => 'L',
-            'prodi_id' => 1,
+            'prodi_id' => $prodiId,
             'is_biodata_complete' => true,
         ]);
 
+        $desaGelombang = DesaGelombang::first();
+        $gelombang = Gelombang::first();
         $kelompok = KelompokKkn::create([
+            'desa_gelombang_id' => $desaGelombang->id,
             'nama_kelompok' => 'Test Kelompok',
+            'nomor_kelompok' => 1,
             'kuota' => 10,
         ]);
 
         $peserta = PesertaKkn::create([
             'mahasiswa_id' => $user->id,
             'kelompok_kkn_id' => $kelompok->id,
+            'gelombang_id' => $gelombang->id,
         ]);
 
         $kelompok->update(['ketua_peserta_id' => $peserta->id]);
 
-        return $user;
+        return ['user' => $user, 'kelompok' => $kelompok];
     }
 
     public function test_php_file_rejected_on_tugas_submission(): void
     {
-        $user = $this->createKetua();
-        $kelompok = $user->pesertaKkn()->first()->kelompokKkn;
+        ['user' => $user, 'kelompok' => $kelompok] = $this->createKetua();
 
         $tugas = $kelompok->tugasKelompok()->create([
             'nama_tugas' => 'Test Tugas',
@@ -62,8 +83,7 @@ class FileUploadSecurityTest extends TestCase
 
     public function test_exe_file_rejected_on_tugas_submission(): void
     {
-        $user = $this->createKetua();
-        $kelompok = $user->pesertaKkn()->first()->kelompokKkn;
+        ['user' => $user, 'kelompok' => $kelompok] = $this->createKetua();
 
         $tugas = $kelompok->tugasKelompok()->create([
             'nama_tugas' => 'Test Tugas',
@@ -82,8 +102,7 @@ class FileUploadSecurityTest extends TestCase
 
     public function test_valid_pdf_accepted_on_tugas_submission(): void
     {
-        $user = $this->createKetua();
-        $kelompok = $user->pesertaKkn()->first()->kelompokKkn;
+        ['user' => $user, 'kelompok' => $kelompok] = $this->createKetua();
 
         $tugas = $kelompok->tugasKelompok()->create([
             'nama_tugas' => 'Test Tugas',
@@ -102,8 +121,7 @@ class FileUploadSecurityTest extends TestCase
 
     public function test_oversized_file_rejected(): void
     {
-        $user = $this->createKetua();
-        $kelompok = $user->pesertaKkn()->first()->kelompokKkn;
+        ['user' => $user, 'kelompok' => $kelompok] = $this->createKetua();
 
         $tugas = $kelompok->tugasKelompok()->create([
             'nama_tugas' => 'Test Tugas',

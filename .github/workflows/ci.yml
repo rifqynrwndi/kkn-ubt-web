@@ -98,6 +98,13 @@ jobs:
 
       - name: Run PHPUnit tests
         run: php artisan test --stop-on-failure
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: kkn_test
+          DB_USERNAME: root
+          DB_PASSWORD: password
 
       - name: Run Playwright E2E tests
         run: |
