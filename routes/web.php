@@ -1,41 +1,39 @@
 <?php
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\BiodataController;
+use App\Http\Controllers\DesaController;
+use App\Http\Controllers\DokumenPendaftaranController;
+use App\Http\Controllers\DosenPembimbingLapanganController;
+use App\Http\Controllers\DplController;
+use App\Http\Controllers\FakultasProdiController;
+use App\Http\Controllers\FileManagerController;
+use App\Http\Controllers\FileProxyController;
+use App\Http\Controllers\GelombangController;
+use App\Http\Controllers\HakaksesController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\KelompokController;
+use App\Http\Controllers\KelompokKknController;
+use App\Http\Controllers\LogBookController;
+use App\Http\Controllers\MahasiswaManagementController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PendaftaranKknController;
+use App\Http\Controllers\PenilaianAdminController;
+use App\Http\Controllers\PenilaianController;
+use App\Http\Controllers\PenilaianDplController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProposalController;
+use App\Http\Controllers\StatusController;
+use App\Http\Controllers\TugasAdminController;
+use App\Http\Controllers\TugasController;
+use App\Http\Controllers\VerifikasiDokumenController;
+use App\Http\Controllers\WarAdminController;
+use App\Http\Controllers\WarController;
+use App\Http\Controllers\WarMonitorController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
-
-use App\Http\Controllers\{
-    BiodataController,
-    FakultasProdiController,
-    FileManagerController,
-    FileProxyController,
-    GelombangController,
-    HakaksesController,
-    HomeController,
-    MahasiswaManagementController,
-    NotificationController,
-    DosenPembimbingLapanganController,
-    DesaController,
-    PendaftaranKknController,
-    DokumenPendaftaranController,
-    DplController,
-    VerifikasiDokumenController,
-    KelompokKknController,
-    KelompokController,
-    ProposalController,
-    StatusController,
-    TugasController,
-    LogBookController,
-    PenilaianController,
-    PenilaianAdminController,
-    PenilaianDplController,
-    TugasAdminController,
-    WarAdminController,
-    WarController,
-    WarMonitorController,
-    ProfileController,
-};
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,16 +51,16 @@ Route::get('/sitemap.xml', function () {
         ['loc' => '/pendaftaran-kkn', 'priority' => '0.9', 'changefreq' => 'weekly'],
     ];
 
-    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
     foreach ($pages as $page) {
         $xml .= "  <url>\n";
-        $xml .= "    <loc>" . e(url($page['loc'])) . "</loc>\n";
-        $xml .= "    <changefreq>" . e($page['changefreq']) . "</changefreq>\n";
-        $xml .= "    <priority>" . e($page['priority']) . "</priority>\n";
+        $xml .= '    <loc>'.e(url($page['loc']))."</loc>\n";
+        $xml .= '    <changefreq>'.e($page['changefreq'])."</changefreq>\n";
+        $xml .= '    <priority>'.e($page['priority'])."</priority>\n";
         $xml .= "  </url>\n";
     }
-    $xml .= "</urlset>";
+    $xml .= '</urlset>';
 
     return response($xml, 200)
         ->header('Content-Type', 'application/xml')
@@ -71,7 +69,7 @@ Route::get('/sitemap.xml', function () {
 
 Auth::routes(['register' => true, 'reset' => true, 'verify' => true]);
 
-Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register'])->middleware('throttle:register')->name('register');
+Route::post('/register', [RegisterController::class, 'register'])->middleware('throttle:register')->name('register');
 
 Route::get('/s3/{path}', [FileProxyController::class, 'streamS3'])->where('path', '.*')->name('s3.proxy')->middleware('auth');
 
@@ -103,7 +101,7 @@ Route::middleware(['auth', 'throttle:global'])->group(function () {
     });
 
     Route::prefix('pendaftaran-kkn')->name('pendaftaran-kkn.')->group(function () {
-        Route::get('/', [PendaftaranKknController::class,'index'])->name('index');
+        Route::get('/', [PendaftaranKknController::class, 'index'])->name('index');
         Route::get('/gelombang', [PendaftaranKknController::class, 'gelombang'])->name('gelombang');
         Route::post('/store', [PendaftaranKknController::class, 'store'])->name('store');
         Route::get('/plotting', [PendaftaranKknController::class, 'plotting'])->name('plotting');
@@ -127,16 +125,16 @@ Route::middleware(['auth', 'throttle:global'])->group(function () {
                 'success' => true,
                 'message' => 'Link verifikasi telah dikirim ke email Anda.',
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             logger()->error('Verification email failed', [
                 'user_id' => $request->user()->id,
-                'email'   => $request->user()->email,
-                'error'   => $e->getMessage(),
+                'email' => $request->user()->email,
+                'error' => $e->getMessage(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengirim verifikasi. ' . $e->getMessage(),
+                'message' => 'Gagal mengirim verifikasi. '.$e->getMessage(),
             ], 500);
         }
     })->middleware(['throttle:10,1'])->name('verification.send');
@@ -293,7 +291,7 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
         */
 
         Route::resource('mahasiswa', MahasiswaManagementController::class);
-    Route::get('/mahasiswa-export', [MahasiswaManagementController::class, 'export'])->name('mahasiswa.export');
+        Route::get('/mahasiswa-export', [MahasiswaManagementController::class, 'export'])->name('mahasiswa.export');
 
         /*
         |--------------------------------------------------------------------------
@@ -344,12 +342,12 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
 
         Route::resource('kelompok-kkn', KelompokKknController::class);
 
-        Route::get('kelompok-kkn/{kelompok_kkn}/anggota/create',[KelompokKknController::class, 'createAnggota'])->name('kelompok-kkn.anggota.create');
-        Route::post('kelompok-kkn/{kelompok_kkn}/anggota',[KelompokKknController::class, 'tambahAnggota'])->name('kelompok-kkn.anggota.store');
-        Route::delete('kelompok-kkn/{kelompok_kkn}/anggota/{peserta}',[KelompokKknController::class, 'hapusAnggota'])->name('kelompok-kkn.anggota.destroy');
-        Route::put('kelompok-kkn/{kelompok_kkn}/buka',[KelompokKknController::class, 'buka'])->name('kelompok-kkn.buka');
-        Route::put('kelompok-kkn/{kelompok_kkn}/tutup',[KelompokKknController::class, 'tutup'])->name('kelompok-kkn.tutup');
-        Route::put('kelompok-kkn/{kelompok_kkn}/ketua/{peserta}',[KelompokKknController::class, 'setKetua'])->name('kelompok-kkn.ketua');
+        Route::get('kelompok-kkn/{kelompok_kkn}/anggota/create', [KelompokKknController::class, 'createAnggota'])->name('kelompok-kkn.anggota.create');
+        Route::post('kelompok-kkn/{kelompok_kkn}/anggota', [KelompokKknController::class, 'tambahAnggota'])->name('kelompok-kkn.anggota.store');
+        Route::delete('kelompok-kkn/{kelompok_kkn}/anggota/{peserta}', [KelompokKknController::class, 'hapusAnggota'])->name('kelompok-kkn.anggota.destroy');
+        Route::put('kelompok-kkn/{kelompok_kkn}/buka', [KelompokKknController::class, 'buka'])->name('kelompok-kkn.buka');
+        Route::put('kelompok-kkn/{kelompok_kkn}/tutup', [KelompokKknController::class, 'tutup'])->name('kelompok-kkn.tutup');
+        Route::put('kelompok-kkn/{kelompok_kkn}/ketua/{peserta}', [KelompokKknController::class, 'setKetua'])->name('kelompok-kkn.ketua');
         Route::get('kelompok-kkn-export', [KelompokKknController::class, 'exportXlsx'])->name('kelompok-kkn.export');
         Route::post('kelompok-kkn/{kelompok_kkn}/laporan', [KelompokKknController::class, 'laporanStore'])->name('kelompok-kkn.laporan.store');
         Route::delete('kelompok-kkn/{kelompok_kkn}/laporan/{laporan}', [KelompokKknController::class, 'laporanDestroy'])->name('kelompok-kkn.laporan.destroy');
@@ -472,8 +470,8 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
             Route::get('/', [VerifikasiDokumenController::class, 'index'])->name('index');
             Route::get('/{id}', [VerifikasiDokumenController::class, 'show'])->name('show');
             Route::put('/dokumen/{id}', [VerifikasiDokumenController::class, 'update'])->name('update');
-            Route::post('/bulk-approve',[VerifikasiDokumenController::class, 'bulkApprove'])->name('bulk-approve');
-            Route::put('/{peserta}/bulk-update',[VerifikasiDokumenController::class, 'bulkUpdate'])->name('bulk-update');
+            Route::post('/bulk-approve', [VerifikasiDokumenController::class, 'bulkApprove'])->name('bulk-approve');
+            Route::put('/{peserta}/bulk-update', [VerifikasiDokumenController::class, 'bulkUpdate'])->name('bulk-update');
         });
 
         Route::prefix('admin/tugas')->name('admin.tugas.')->group(function () {

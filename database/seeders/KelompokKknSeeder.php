@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\DesaGelombang;
 use App\Models\KelompokKkn;
+use Illuminate\Database\Seeder;
 
 class KelompokKknSeeder extends Seeder
 {
@@ -19,6 +19,7 @@ class KelompokKknSeeder extends Seeder
 
         if ($desaGelombangs->isEmpty()) {
             $this->command->warn('Data Desa Gelombang kosong. Silakan jalankan DesaSeeder terlebih dahulu.');
+
             return;
         }
 
@@ -26,7 +27,7 @@ class KelompokKknSeeder extends Seeder
 
             // Format nama kelompok: Nama Desa - Nama Gelombang
             // Contoh: Apung - KKN XIX PERIODE 1
-            $namaKelompok = $dg->desa->nama_desa . ' - ' . $dg->gelombang->nama_gelombang;
+            $namaKelompok = $dg->desa->nama_desa.' - '.$dg->gelombang->nama_gelombang;
 
             // Kita gunakan firstOrCreate agar jika seeder dijalankan ulang,
             // tidak terjadi duplikasi kelompok di desa yang sama
@@ -35,8 +36,8 @@ class KelompokKknSeeder extends Seeder
             ], [
                 'dosen_pembimbing_lapangan_id' => null, // DPL masih kosong
                 'nama_kelompok' => $namaKelompok,
-                'kuota'         => 12,                  // Mengikuti kuota total desa_gelombang
-                'status'        => 'dibuka',            // Status dibuka agar bisa langsung dipilih mahasiswa
+                'kuota' => 12,                  // Mengikuti kuota total desa_gelombang
+                'status' => 'dibuka',            // Status dibuka agar bisa langsung dipilih mahasiswa
             ]);
         }
 

@@ -41,10 +41,10 @@ class KuotaFakultasDesa extends Model
         return KelompokMember::whereHas('pesertaKkn.mahasiswa', function ($query) {
             $query->where('fakultas_id', $this->fakultas_id);
         })
-        ->whereHas('kelompok', function ($query) {
-            $query->where('desa_gelombang_id', $this->desa_gelombang_id);
-        })
-        ->count();
+            ->whereHas('kelompok', function ($query) {
+                $query->where('desa_gelombang_id', $this->desa_gelombang_id);
+            })
+            ->count();
     }
 
     public function getSisaAttribute(): int

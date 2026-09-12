@@ -7,6 +7,7 @@ use App\Models\PesertaKkn;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class SuperAdminSeeder extends Seeder
 {
@@ -18,7 +19,7 @@ class SuperAdminSeeder extends Seeder
             ],
             [
                 'name' => 'Super Admin',
-                'password' => Hash::make(env('SUPERADMIN_PASSWORD') ?: \Illuminate\Support\Str::random(20)),
+                'password' => Hash::make(env('SUPERADMIN_PASSWORD') ?: Str::random(20)),
                 'email_verified_at' => now(),
             ]
         );

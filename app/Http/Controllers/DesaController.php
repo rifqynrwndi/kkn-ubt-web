@@ -6,8 +6,8 @@ use App\Models\Desa;
 use App\Models\DesaGelombang;
 use App\Models\Gelombang;
 use App\Models\Kecamatan;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class DesaController extends Controller
@@ -31,7 +31,7 @@ class DesaController extends Controller
             $query->where(
                 'nama_desa',
                 'like',
-                '%' . $request->search . '%'
+                '%'.$request->search.'%'
             );
         }
 
@@ -82,9 +82,9 @@ class DesaController extends Controller
             ->get();
 
         $gelombang = Gelombang::whereIn(
-                'status',
-                ['persiapan', 'pendaftaran', 'berjalan', 'selesai']
-            )
+            'status',
+            ['persiapan', 'pendaftaran', 'berjalan', 'selesai']
+        )
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -165,10 +165,10 @@ class DesaController extends Controller
             ->sum('kuota_total');
 
         $desaGelombangAktif = $desa->desaGelombang
-                ->whereIn(
-                    'status',
-                    ['draft', 'dibuka', 'penuh']
-                );
+            ->whereIn(
+                'status',
+                ['draft', 'dibuka', 'penuh']
+            );
 
         return view('desa.show', compact(
             'desa',
@@ -187,9 +187,9 @@ class DesaController extends Controller
             ->get();
 
         $gelombang = Gelombang::whereIn(
-                'status',
-                ['persiapan', 'pendaftaran', 'berjalan', 'selesai']
-            )
+            'status',
+            ['persiapan', 'pendaftaran', 'berjalan', 'selesai']
+        )
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -236,7 +236,7 @@ class DesaController extends Controller
         ]);
 
         if ($request->filled('kabupaten')) {
-            \App\Models\Kecamatan::where('id', $validated['kecamatan_id'])
+            Kecamatan::where('id', $validated['kecamatan_id'])
                 ->update(['kabupaten' => $validated['kabupaten']]);
         }
 
@@ -357,11 +357,9 @@ class DesaController extends Controller
     ): RedirectResponse {
 
         $request->validate([
-            'nama_kecamatan' =>
-                'required|unique:kecamatan,nama_kecamatan,' . $kecamatan->id,
+            'nama_kecamatan' => 'required|unique:kecamatan,nama_kecamatan,'.$kecamatan->id,
 
-            'kabupaten' =>
-                'required|string|max:255',
+            'kabupaten' => 'required|string|max:255',
         ]);
 
         $kecamatan->update(

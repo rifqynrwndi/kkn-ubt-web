@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\WarSession;
-use App\Models\PesertaKkn;
 
 class WarLog extends Model
 {

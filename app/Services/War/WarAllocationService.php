@@ -9,6 +9,7 @@ use App\Models\WarFaculty;
 use App\Models\WarLog;
 use App\Models\WarParticipant;
 use App\Models\WarSession;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -32,7 +33,7 @@ class WarAllocationService
             while ($attempt < $maxRetries) {
                 try {
                     return $this->executeTransaction($session, $peserta, $kelompok);
-                } catch (\Illuminate\Database\QueryException $e) {
+                } catch (QueryException $e) {
                     $attempt++;
                     if ($attempt >= $maxRetries || ! str_contains($e->getMessage(), 'Deadlock')) {
                         throw $e;
@@ -115,21 +116,21 @@ class WarAllocationService
     }
 
     private function persistAllocation(
-        WarSession  $session,
-        PesertaKkn  $peserta,
+        WarSession $session,
+        PesertaKkn $peserta,
         KelompokKkn $kelompok,
-        int         $membersBefore,
+        int $membersBefore,
     ): WarParticipant {
         $peserta->update(['kelompok_kkn_id' => $kelompok->id]);
 
         $kelompok->generateKetua();
 
         $participant = WarParticipant::create([
-            'war_session_id'  => $session->id,
-            'peserta_kkn_id'  => $peserta->id,
+            'war_session_id' => $session->id,
+            'peserta_kkn_id' => $peserta->id,
             'kelompok_kkn_id' => $kelompok->id,
-            'status'          => 'joined',
-            'joined_at'       => now(),
+            'status' => 'joined',
+            'joined_at' => now(),
         ]);
 
         if (($membersBefore + 1) >= WarRuleService::MAX_KELOMPOK_SIZE) {
@@ -143,12 +144,12 @@ class WarAllocationService
         WarLog::create([
             'war_session_id' => $session->id,
             'peserta_kkn_id' => $peserta->id,
-            'action'         => 'join_success',
-            'meta'           => json_encode([
-                'kelompok_id'   => $kelompok->id,
+            'action' => 'join_success',
+            'meta' => json_encode([
+                'kelompok_id' => $kelompok->id,
                 'kelompok_nama' => $kelompok->nama_kelompok,
-                'member_count'  => $membersBefore + 1,
-                'ip'            => request()->ip(),
+                'member_count' => $membersBefore + 1,
+                'ip' => request()->ip(),
             ]),
         ]);
 
@@ -177,5 +178,4 @@ class WarAllocationService
             throw new \RuntimeException('Kamu sudah join di sesi WAR ini.');
         }
     }
-
 }

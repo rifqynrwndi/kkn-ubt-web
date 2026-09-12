@@ -39,5 +39,3 @@ class Gelombang extends Model
         return $this->hasMany(WarSession::class);
     }
 }
-
-

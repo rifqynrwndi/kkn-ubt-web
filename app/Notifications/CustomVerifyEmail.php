@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class CustomVerifyEmail extends VerifyEmail
 {
@@ -18,7 +19,7 @@ class CustomVerifyEmail extends VerifyEmail
     {
         $verificationUrl = $this->verificationUrl($notifiable);
 
-        return (new \Illuminate\Notifications\Messages\MailMessage)
+        return (new MailMessage)
             ->subject('Verifikasi Email — KKN Universitas Borneo Tarakan')
             ->greeting('Halo!')
             ->line('Terima kasih telah mendaftar di Sistem Informasi KKN Universitas Borneo Tarakan.')

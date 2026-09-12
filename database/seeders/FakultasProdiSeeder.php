@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Fakultas;
 use App\Models\ProgramStudi;
+use Illuminate\Database\Seeder;
 
 class FakultasProdiSeeder extends Seeder
 {

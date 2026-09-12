@@ -29,7 +29,7 @@ return new class extends Migration
                 'revision',
                 'approved',
                 'rejected',
-                'expired'
+                'expired',
             ])->default('draft');
 
             $table->timestamp('submitted_at')->nullable();

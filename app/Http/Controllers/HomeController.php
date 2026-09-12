@@ -28,7 +28,7 @@ class HomeController extends Controller
         if ($dpl) {
             $dpl->load(['kelompokKkn' => function ($q) {
                 $q->withCount('pesertaKkn')
-                  ->with(['desaGelombang.desa.kecamatan']);
+                    ->with(['desaGelombang.desa.kecamatan']);
             }]);
         }
 
@@ -51,9 +51,9 @@ class HomeController extends Controller
             'incomplete_biodata' => User::role('mahasiswa')
                 ->where(function ($q) {
                     $q->whereDoesntHave('mahasiswa')
-                    ->orWhereHas('mahasiswa', function ($q2) {
-                        $q2->where('is_biodata_complete', false);
-                    });
+                        ->orWhereHas('mahasiswa', function ($q2) {
+                            $q2->where('is_biodata_complete', false);
+                        });
                 })
                 ->count(),
         ];
@@ -61,7 +61,7 @@ class HomeController extends Controller
         $gelombangs = Gelombang::withCount([
             'pesertaKkn as peserta_kkn_count' => function ($q) {
                 $q->where('status_pendaftaran', 'approved');
-            }
+            },
         ])->get();
 
         $gelombangChart = [
@@ -77,10 +77,10 @@ class HomeController extends Controller
         $reminders = [];
 
         if ($stats['incomplete_biodata'] > 0) {
-            $reminders[] = $stats['incomplete_biodata'] . ' mahasiswa belum melengkapi biodata.';
+            $reminders[] = $stats['incomplete_biodata'].' mahasiswa belum melengkapi biodata.';
         }
 
-        if (!$activeGelombang) {
+        if (! $activeGelombang) {
             $reminders[] = 'Tidak ada gelombang aktif saat ini.';
         }
 
@@ -115,11 +115,11 @@ class HomeController extends Controller
 
         $reminders = [];
 
-        if (!$user->hasCompletedBiodata()) {
+        if (! $user->hasCompletedBiodata()) {
             $reminders[] = 'Lengkapi biodata Anda sebelum mendaftar KKN.';
         }
 
-        if (!$pendaftaran) {
+        if (! $pendaftaran) {
             $reminders[] = 'Anda belum mendaftar KKN.';
         }
 

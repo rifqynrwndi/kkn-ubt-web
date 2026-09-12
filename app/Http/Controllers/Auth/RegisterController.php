@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Mahasiswa;
 use App\Models\ProgramStudi;
+use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends Controller
 {
@@ -62,7 +62,8 @@ class RegisterController extends Controller
             return $user;
         } catch (\Exception $e) {
             report($e);
-            return back()->withInput()->with('error', 'Registrasi gagal: ' . $e->getMessage());
+
+            return back()->withInput()->with('error', 'Registrasi gagal: '.$e->getMessage());
         }
     }
 
@@ -77,6 +78,7 @@ class RegisterController extends Controller
     public function showRegistrationForm()
     {
         $prodis = ProgramStudi::all();
+
         return view('auth.register', compact('prodis'));
     }
 }

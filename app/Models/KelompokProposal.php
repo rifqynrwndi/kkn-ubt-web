@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +20,18 @@ class KelompokProposal extends Model
         'reviewed_at' => 'datetime',
     ];
 
-    public function kelompokKkn() { return $this->belongsTo(KelompokKkn::class); }
-    public function submittedBy() { return $this->belongsTo(PesertaKkn::class, 'submitted_by'); }
-    public function reviewedBy() { return $this->belongsTo(User::class, 'reviewed_by'); }
+    public function kelompokKkn()
+    {
+        return $this->belongsTo(KelompokKkn::class);
+    }
+
+    public function submittedBy()
+    {
+        return $this->belongsTo(PesertaKkn::class, 'submitted_by');
+    }
+
+    public function reviewedBy()
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
 }

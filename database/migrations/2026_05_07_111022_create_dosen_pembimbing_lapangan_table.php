@@ -26,14 +26,14 @@ return new class extends Migration
 
             $table->enum('jenis_kelamin', [
                 'laki_laki',
-                'perempuan'
+                'perempuan',
             ])->nullable();
 
             $table->text('alamat')->nullable();
 
             $table->enum('status', [
                 'aktif',
-                'nonaktif'
+                'nonaktif',
             ])->default('aktif');
 
             $table->timestamps();

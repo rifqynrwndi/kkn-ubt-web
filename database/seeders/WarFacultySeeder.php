@@ -11,11 +11,12 @@ class WarFacultySeeder extends Seeder
 {
     public function run(): void
     {
-        $sessions     = WarSession::all();
+        $sessions = WarSession::all();
         $fakultasList = Fakultas::orderBy('id')->get();
 
         if ($sessions->isEmpty()) {
             $this->command->warn('Tidak ada WarSession.');
+
             return;
         }
 
@@ -24,23 +25,24 @@ class WarFacultySeeder extends Seeder
 
             if ($existing) {
                 $this->command->warn("Session [{$session->name}] sudah punya war_faculties, skip.");
+
                 continue;
             }
 
             $slotDurasiMenit = 120;
-            $waktuMulai      = $session->start_at->copy();
-            $rows            = [];
+            $waktuMulai = $session->start_at->copy();
+            $rows = [];
 
             foreach ($fakultasList as $fakultas) {
                 $rows[] = [
                     'war_session_id' => $session->id,
-                    'fakultas_id'    => $fakultas->id,
-                    'quota'          => 0,
-                    'taken'          => 0,
-                    'start_at'       => $waktuMulai->copy(),
-                    'end_at'         => $waktuMulai->copy()->addMinutes($slotDurasiMenit),
-                    'created_at'     => now(),
-                    'updated_at'     => now(),
+                    'fakultas_id' => $fakultas->id,
+                    'quota' => 0,
+                    'taken' => 0,
+                    'start_at' => $waktuMulai->copy(),
+                    'end_at' => $waktuMulai->copy()->addMinutes($slotDurasiMenit),
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ];
 
                 $waktuMulai->addMinutes($slotDurasiMenit);

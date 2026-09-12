@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\KelompokKkn;
+use App\Models\PesertaKkn;
 use App\Models\WarLog;
 use App\Models\WarParticipant;
 use App\Models\WarSession;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class WarMonitorController extends Controller
 {
@@ -18,7 +21,7 @@ class WarMonitorController extends Controller
     | Admin monitor page (Blade). Data awal diload di sini,
     | lalu update realtime via AJAX polling ke endpoint di bawah.
     */
-    public function show(WarSession $session): \Illuminate\View\View
+    public function show(WarSession $session): View
     {
         $session->load([
             'gelombang',
@@ -56,9 +59,9 @@ class WarMonitorController extends Controller
             ->get();
 
         $kelompokStats = [
-            'total'  => $kelompoks->count(),
-            'penuh'  => $kelompoks->where('status', 'penuh')->count(),
-            'tersisa'=> $kelompoks->where('status', '!=', 'penuh')->count(),
+            'total' => $kelompoks->count(),
+            'penuh' => $kelompoks->where('status', 'penuh')->count(),
+            'tersisa' => $kelompoks->where('status', '!=', 'penuh')->count(),
         ];
 
         /*
@@ -66,7 +69,7 @@ class WarMonitorController extends Controller
         | PESERTA TOTAL (semua yang terdaftar di gelombang ini)
         |--------------------------------------------------------------------------
         */
-        $totalPesertaGelombang = \App\Models\PesertaKkn::where('gelombang_id', $session->gelombang_id)->count();
+        $totalPesertaGelombang = PesertaKkn::where('gelombang_id', $session->gelombang_id)->count();
 
         /*
         |--------------------------------------------------------------------------
@@ -79,31 +82,31 @@ class WarMonitorController extends Controller
         $groupIds = $kelompoks->pluck('id');
 
         $fakultasStats = $session->faculties->map(function ($wf) use ($groupIds) {
-            $filled = \App\Models\PesertaKkn::whereIn('kelompok_kkn_id', $groupIds)
+            $filled = PesertaKkn::whereIn('kelompok_kkn_id', $groupIds)
                 ->whereHas('mahasiswa.prodi', fn ($q) => $q->where('fakultas_id', $wf->fakultas_id))
                 ->count();
 
             return [
                 'fakultas_id' => $wf->fakultas_id,
-                'nama'        => $wf->fakultas?->nama_fakultas ?? 'N/A',
-                'quota'       => $wf->quota,
-                'filled'      => $filled,
-                'sisa'        => max($wf->quota - $filled, 0),
-                'persen'      => $wf->quota > 0
+                'nama' => $wf->fakultas?->nama_fakultas ?? 'N/A',
+                'quota' => $wf->quota,
+                'filled' => $filled,
+                'sisa' => max($wf->quota - $filled, 0),
+                'persen' => $wf->quota > 0
                     ? round(($filled / $wf->quota) * 100, 1)
                     : 0,
-                'status'      => $wf->status_jadwal,
+                'status' => $wf->status_jadwal,
             ];
         });
 
         return response()->json([
-            'war_status'              => $session->status,
-            'total_peserta'           => $session->participants_count,
+            'war_status' => $session->status,
+            'total_peserta' => $session->participants_count,
             'total_peserta_gelombang' => $totalPesertaGelombang,
-            'kelompok'                => $kelompokStats,
-            'fakultas'                => $fakultasStats,
-            'server_time'             => now()->toISOString(),
-            'end_at'                  => $session->end_at?->toISOString(),
+            'kelompok' => $kelompokStats,
+            'fakultas' => $fakultasStats,
+            'server_time' => now()->toISOString(),
+            'end_at' => $session->end_at?->toISOString(),
         ]);
     }
 
@@ -117,30 +120,30 @@ class WarMonitorController extends Controller
     public function kelompoks(WarSession $session): JsonResponse
     {
         $kelompoks = KelompokKkn::with([
-                'desaGelombang.desa',
-                'pesertaKkn.mahasiswa.prodi.fakultas',
-            ])
+            'desaGelombang.desa',
+            'pesertaKkn.mahasiswa.prodi.fakultas',
+        ])
             ->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $session->gelombang_id))
             ->orderBy('nama_kelompok')
             ->get()
             ->map(fn ($k) => [
-                'id'       => $k->id,
-                'nama'     => $k->nama_kelompok,
-                'desa'     => $k->desaGelombang?->desa?->nama_desa ?? '-',
-                'terisi'   => $k->pesertaKkn->count(),
-                'kuota'    => $k->kuota,
-                'is_full'  => $k->is_full,
-                'status'   => $k->status,
-                'anggota'  => $k->pesertaKkn->map(fn ($p) => [
-                    'nama'      => $p->mahasiswa?->user?->name ?? '-',
-                    'prodi'     => $p->mahasiswa?->prodi?->nama_prodi ?? '-',
-                    'fakultas'  => $p->mahasiswa?->prodi?->fakultas?->nama_fakultas ?? '-',
-                    'gender'    => $p->mahasiswa?->jenis_kelamin ?? '-',
+                'id' => $k->id,
+                'nama' => $k->nama_kelompok,
+                'desa' => $k->desaGelombang?->desa?->nama_desa ?? '-',
+                'terisi' => $k->pesertaKkn->count(),
+                'kuota' => $k->kuota,
+                'is_full' => $k->is_full,
+                'status' => $k->status,
+                'anggota' => $k->pesertaKkn->map(fn ($p) => [
+                    'nama' => $p->mahasiswa?->user?->name ?? '-',
+                    'prodi' => $p->mahasiswa?->prodi?->nama_prodi ?? '-',
+                    'fakultas' => $p->mahasiswa?->prodi?->fakultas?->nama_fakultas ?? '-',
+                    'gender' => $p->mahasiswa?->jenis_kelamin ?? '-',
                 ]),
             ]);
 
         return response()->json([
-            'kelompoks'   => $kelompoks,
+            'kelompoks' => $kelompoks,
             'server_time' => now()->toISOString(),
         ]);
     }
@@ -162,16 +165,16 @@ class WarMonitorController extends Controller
             ->limit($limit)
             ->get()
             ->map(fn ($log) => [
-                'id'        => $log->id,
-                'action'    => $log->action,
-                'peserta'   => $log->pesertaKkn?->mahasiswa?->user?->name ?? 'N/A',
-                'meta'      => is_string($log->meta) ? json_decode($log->meta, true) : $log->meta,
-                'created'   => $log->created_at->toISOString(),
-                'human'     => $log->created_at->diffForHumans(),
+                'id' => $log->id,
+                'action' => $log->action,
+                'peserta' => $log->pesertaKkn?->mahasiswa?->user?->name ?? 'N/A',
+                'meta' => is_string($log->meta) ? json_decode($log->meta, true) : $log->meta,
+                'created' => $log->created_at->toISOString(),
+                'human' => $log->created_at->diffForHumans(),
             ]);
 
         return response()->json([
-            'logs'        => $logs,
+            'logs' => $logs,
             'server_time' => now()->toISOString(),
         ]);
     }
@@ -196,19 +199,19 @@ class WarMonitorController extends Controller
 
         return response()->json([
             'data' => collect($participants->items())->map(fn ($p) => [
-                'peserta_id'    => $p->peserta_kkn_id,
-                'nama'          => $p->pesertaKkn?->mahasiswa?->user?->name ?? '-',
-                'prodi'         => $p->pesertaKkn?->mahasiswa?->prodi?->nama_prodi ?? '-',
-                'fakultas'      => $p->pesertaKkn?->mahasiswa?->prodi?->fakultas?->nama_fakultas ?? '-',
-                'kelompok'      => $p->kelompokKkn?->nama_kelompok ?? '-',
-                'desa'          => $p->kelompokKkn?->desaGelombang?->desa?->nama_desa ?? '-',
-                'joined_at'     => $p->joined_at?->toISOString(),
-                'joined_human'  => $p->joined_at?->diffForHumans(),
+                'peserta_id' => $p->peserta_kkn_id,
+                'nama' => $p->pesertaKkn?->mahasiswa?->user?->name ?? '-',
+                'prodi' => $p->pesertaKkn?->mahasiswa?->prodi?->nama_prodi ?? '-',
+                'fakultas' => $p->pesertaKkn?->mahasiswa?->prodi?->fakultas?->nama_fakultas ?? '-',
+                'kelompok' => $p->kelompokKkn?->nama_kelompok ?? '-',
+                'desa' => $p->kelompokKkn?->desaGelombang?->desa?->nama_desa ?? '-',
+                'joined_at' => $p->joined_at?->toISOString(),
+                'joined_human' => $p->joined_at?->diffForHumans(),
             ]),
-            'total'       => $participants->total(),
-            'per_page'    => $participants->perPage(),
-            'current_page'=> $participants->currentPage(),
-            'last_page'   => $participants->lastPage(),
+            'total' => $participants->total(),
+            'per_page' => $participants->perPage(),
+            'current_page' => $participants->currentPage(),
+            'last_page' => $participants->lastPage(),
             'server_time' => now()->toISOString(),
         ]);
     }
@@ -218,12 +221,12 @@ class WarMonitorController extends Controller
     | EXPORT LOG — download CSV
     |--------------------------------------------------------------------------
     */
-    public function exportLog(WarSession $session): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function exportLog(WarSession $session): StreamedResponse
     {
-        $filename = 'war-log-' . $session->id . '-' . now()->format('YmdHis') . '.csv';
+        $filename = 'war-log-'.$session->id.'-'.now()->format('YmdHis').'.csv';
 
         $headers = [
-            'Content-Type'        => 'text/csv',
+            'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 

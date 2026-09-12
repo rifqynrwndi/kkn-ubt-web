@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class KelompokKkn extends Model
 {
@@ -71,7 +70,7 @@ class KelompokKkn extends Model
         if ($randomKetua) {
 
             $this->updateQuietly([
-                'ketua_peserta_id' => $randomKetua->id
+                'ketua_peserta_id' => $randomKetua->id,
             ]);
 
         }
@@ -108,7 +107,7 @@ class KelompokKkn extends Model
 
                 $randomWord = $words[array_rand($words)];
 
-                $kode = $randomWord . now()->timestamp . rand(10, 99);
+                $kode = $randomWord.now()->timestamp.rand(10, 99);
 
             } while (
                 self::where('kode_kelompok', $kode)->exists()

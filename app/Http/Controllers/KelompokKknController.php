@@ -4,15 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Models\DesaGelombang;
 use App\Models\DosenPembimbingLapangan;
+use App\Models\Kecamatan;
 use App\Models\KelompokKkn;
-use App\Models\KelompokKuota;
+use App\Models\KelompokProposal;
 use App\Models\LaporanDpl;
+use App\Models\LogBook;
+use App\Models\PenilaianIndividu;
+use App\Models\PenilaianKelompok;
+use App\Models\PenilaianKomponen;
 use App\Models\PesertaKkn;
-use App\Models\ProgramStudi;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
+use App\Models\TugasKelompok;
+use App\Models\WarParticipant;
+use App\Services\StatusService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class KelompokKknController extends Controller
 {
@@ -34,10 +47,10 @@ class KelompokKknController extends Controller
         if ($request->filled('search')) {
 
             $query->where(function ($q) use ($request) {
-                $q->where('kode_kelompok', 'like', '%' . $request->search . '%')
-                  ->orWhere('nama_kelompok', 'like', '%' . $request->search . '%')
-                  ->orWhereHas('pesertaKkn.mahasiswa.user', fn($uq) => $uq->where('name', 'like', '%' . $request->search . '%'))
-                  ->orWhereHas('pesertaKkn.mahasiswa', fn($mq) => $mq->where('npm', 'like', '%' . $request->search . '%'));
+                $q->where('kode_kelompok', 'like', '%'.$request->search.'%')
+                    ->orWhere('nama_kelompok', 'like', '%'.$request->search.'%')
+                    ->orWhereHas('pesertaKkn.mahasiswa.user', fn ($uq) => $uq->where('name', 'like', '%'.$request->search.'%'))
+                    ->orWhereHas('pesertaKkn.mahasiswa', fn ($mq) => $mq->where('npm', 'like', '%'.$request->search.'%'));
             });
 
         }
@@ -81,12 +94,12 @@ class KelompokKknController extends Controller
 
         }
 
-        $kabupatens = \App\Models\Kecamatan::select('kabupaten')->distinct()->orderBy('kabupaten')->pluck('kabupaten');
+        $kabupatens = Kecamatan::select('kabupaten')->distinct()->orderBy('kabupaten')->pluck('kabupaten');
         $kecamatans = collect();
         $selectedKabupaten = $request->get('kabupaten');
 
         if ($selectedKabupaten) {
-            $kecamatans = \App\Models\Kecamatan::where('kabupaten', $selectedKabupaten)
+            $kecamatans = Kecamatan::where('kabupaten', $selectedKabupaten)
                 ->orderBy('nama_kecamatan')
                 ->get();
         }
@@ -126,17 +139,13 @@ class KelompokKknController extends Controller
     {
         $validated = $request->validate([
 
-            'desa_gelombang_id' =>
-                'required|exists:desa_gelombang,id',
+            'desa_gelombang_id' => 'required|exists:desa_gelombang,id',
 
-            'dosen_pembimbing_lapangan_id' =>
-                'nullable|exists:dosen_pembimbing_lapangan,id',
+            'dosen_pembimbing_lapangan_id' => 'nullable|exists:dosen_pembimbing_lapangan,id',
 
-            'kuota' =>
-                'required|integer|min:1|max:20',
+            'kuota' => 'required|integer|min:1|max:20',
 
-            'status' =>
-                'required|in:draft,dibuka,ditutup',
+            'status' => 'required|in:draft,dibuka,ditutup',
 
         ]);
 
@@ -155,7 +164,7 @@ class KelompokKknController extends Controller
 
         $validated['nama_kelompok'] =
             $desaGelombang->desa->nama_desa
-            . ' - ' .
+            .' - '.
             $desaGelombang->gelombang->nama_gelombang;
 
         $kelompok = KelompokKkn::create($validated);
@@ -170,7 +179,7 @@ class KelompokKknController extends Controller
             ['kategori' => 'laporan', 'nama_tugas' => 'Laporan Program KKN'],
         ];
         foreach ($templates as $t) {
-            \App\Models\TugasKelompok::create([
+            TugasKelompok::create([
                 'kelompok_kkn_id' => $kelompok->id,
                 'kategori' => $t['kategori'],
                 'nama_tugas' => $t['nama_tugas'],
@@ -199,17 +208,17 @@ class KelompokKknController extends Controller
             'desaGelombang.desa.kecamatan',
         ]);
 
-        $proposal = \App\Models\KelompokProposal::where('kelompok_kkn_id', $kelompok_kkn->id)->first();
-        $statusService = app(\App\Services\StatusService::class);
-        $statusStages = \App\Services\StatusService::STAGES;
+        $proposal = KelompokProposal::where('kelompok_kkn_id', $kelompok_kkn->id)->first();
+        $statusService = app(StatusService::class);
+        $statusStages = StatusService::STAGES;
         $statusCurrent = $statusService->getCurrentStage($kelompok_kkn);
         $statusHistory = $statusService->getHistory($kelompok_kkn);
-        $tugasList = \App\Models\TugasKelompok::where('kelompok_kkn_id', $kelompok_kkn->id)->with(['submissions.pesertaKkn.mahasiswa.user'])->get()->groupBy('kategori');
-        $logbookData = \App\Models\LogBook::where('kelompok_kkn_id', $kelompok_kkn->id)->with(['pesertaKkn.mahasiswa.user'])->latest('tanggal')->get()->groupBy('peserta_kkn_id');
-        $komponenList = \App\Models\PenilaianKomponen::orderBy('urutan')->get();
-        $penilaianData = \App\Models\PenilaianKelompok::where('kelompok_kkn_id', $kelompok_kkn->id)->with('komponen')->get()->keyBy('komponen_id');
+        $tugasList = TugasKelompok::where('kelompok_kkn_id', $kelompok_kkn->id)->with(['submissions.pesertaKkn.mahasiswa.user'])->get()->groupBy('kategori');
+        $logbookData = LogBook::where('kelompok_kkn_id', $kelompok_kkn->id)->with(['pesertaKkn.mahasiswa.user'])->latest('tanggal')->get()->groupBy('peserta_kkn_id');
+        $komponenList = PenilaianKomponen::orderBy('urutan')->get();
+        $penilaianData = PenilaianKelompok::where('kelompok_kkn_id', $kelompok_kkn->id)->with('komponen')->get()->keyBy('komponen_id');
 
-        $penilaianIndividu = \App\Models\PenilaianIndividu::where('kelompok_kkn_id', $kelompok_kkn->id)->get();
+        $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $kelompok_kkn->id)->get();
 
         $dplKomponen = $komponenList->firstWhere('nama_komponen', 'Nilai DPL');
         $dplScores = $penilaianIndividu->where('komponen_id', $dplKomponen?->id)->pluck('nilai');
@@ -219,12 +228,12 @@ class KelompokKknController extends Controller
         $desaScores = $penilaianIndividu->where('komponen_id', $desaKomponen?->id)->pluck('nilai');
         $desaScore = $desaScores->isNotEmpty() ? round($desaScores->avg(), 2) : null;
 
-        $lppmScore = $penilaianData->first(fn($v) => $v->komponen->nama_komponen === 'Nilai LPPM')?->nilai;
+        $lppmScore = $penilaianData->first(fn ($v) => $v->komponen->nama_komponen === 'Nilai LPPM')?->nilai;
 
-        $finalScore = (!is_null($dplScore) && !is_null($desaScore) && !is_null($lppmScore))
+        $finalScore = (! is_null($dplScore) && ! is_null($desaScore) && ! is_null($lppmScore))
             ? round(($dplScore * 0.40 + $desaScore * 0.30 + $lppmScore * 0.30), 2)
             : null;
-        $laporans = \App\Models\LaporanDpl::where('kelompok_kkn_id', $kelompok_kkn->id)->latest()->get()->groupBy('jenis');
+        $laporans = LaporanDpl::where('kelompok_kkn_id', $kelompok_kkn->id)->latest()->get()->groupBy('jenis');
 
         return view(
             'kelompok-kkn.show',
@@ -235,10 +244,13 @@ class KelompokKknController extends Controller
     private function calcScore($komponenList, $penilaianData): ?float
     {
         $totalBobot = $komponenList->sum('bobot');
-        if ($totalBobot === 0) return null;
+        if ($totalBobot === 0) {
+            return null;
+        }
         $totalNilai = $komponenList->sum(function ($k) use ($penilaianData) {
             return ($penilaianData[$k->id]->nilai ?? 0) * $k->bobot;
         });
+
         return $totalNilai > 0 ? round($totalNilai / $totalBobot, 2) : null;
     }
 
@@ -272,17 +284,13 @@ class KelompokKknController extends Controller
 
         $validated = $request->validate([
 
-            'desa_gelombang_id' =>
-                'required|exists:desa_gelombang,id',
+            'desa_gelombang_id' => 'required|exists:desa_gelombang,id',
 
-            'dosen_pembimbing_lapangan_id' =>
-                'nullable|exists:dosen_pembimbing_lapangan,id',
+            'dosen_pembimbing_lapangan_id' => 'nullable|exists:dosen_pembimbing_lapangan,id',
 
-            'kuota' =>
-                'required|integer|min:1|max:20',
+            'kuota' => 'required|integer|min:1|max:20',
 
-            'status' =>
-                'required|in:draft,dibuka,ditutup,penuh',
+            'status' => 'required|in:draft,dibuka,ditutup,penuh',
 
         ]);
 
@@ -301,7 +309,7 @@ class KelompokKknController extends Controller
 
         $validated['nama_kelompok'] =
             $desaGelombang->desa->nama_desa
-            . ' - ' .
+            .' - '.
             $desaGelombang->gelombang->nama_gelombang;
 
         /*
@@ -367,7 +375,7 @@ class KelompokKknController extends Controller
         }
 
         $kelompok_kkn->update([
-            'status' => 'dibuka'
+            'status' => 'dibuka',
         ]);
 
         return back()->with(
@@ -381,7 +389,7 @@ class KelompokKknController extends Controller
     ): RedirectResponse {
 
         $kelompok_kkn->update([
-            'status' => 'ditutup'
+            'status' => 'ditutup',
         ]);
 
         return back()->with(
@@ -397,8 +405,7 @@ class KelompokKknController extends Controller
         $peserta = PesertaKkn::with('mahasiswa.user', 'mahasiswa.prodi.fakultas')
             ->where('gelombang_id', $gelombangId)
             ->whereNull('kelompok_kkn_id')
-            ->when(request('search'), fn($q) => $q->whereHas('mahasiswa.user', fn($q) =>
-                $q->where('name', 'like', '%'.request('search').'%')
+            ->when(request('search'), fn ($q) => $q->whereHas('mahasiswa.user', fn ($q) => $q->where('name', 'like', '%'.request('search').'%')
             ))
             ->paginate(20)
             ->withQueryString();
@@ -492,7 +499,7 @@ class KelompokKknController extends Controller
                 $kelompok_kkn->updateQuietly(['ketua_peserta_id' => null]);
             }
 
-            \App\Models\WarParticipant::where('peserta_kkn_id', $peserta->id)->delete();
+            WarParticipant::where('peserta_kkn_id', $peserta->id)->delete();
 
         });
 
@@ -507,7 +514,7 @@ class KelompokKknController extends Controller
         if ($kelompok_kkn->status === 'penuh' && $kelompok_kkn->terisi < $kelompok_kkn->kuota) {
 
             $kelompok_kkn->updateQuietly([
-                'status' => 'dibuka'
+                'status' => 'dibuka',
             ]);
 
         }
@@ -532,7 +539,7 @@ class KelompokKknController extends Controller
 
         return back()->with(
             'success',
-            'Ketua kelompok berhasil diubah menjadi ' . ($peserta->mahasiswa?->user?->name ?? 'Unknown') . '.'
+            'Ketua kelompok berhasil diubah menjadi '.($peserta->mahasiswa?->user?->name ?? 'Unknown').'.'
         );
     }
 
@@ -545,37 +552,37 @@ class KelompokKknController extends Controller
             'desaGelombang.desa.kecamatan',
         ])->orderBy('nama_kelompok')->get();
 
-        $grouped = $kelompoks->groupBy(fn($k) => $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? 'Tanpa Kabupaten');
+        $grouped = $kelompoks->groupBy(fn ($k) => $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? 'Tanpa Kabupaten');
 
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $first = true;
 
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '2D3A8A']],
-            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER, 'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
-            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN, 'color' => ['rgb' => 'FFFFFF']]],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2D3A8A']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'FFFFFF']]],
         ];
 
         $rowStripeStyle = [
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F0F2FA']],
-            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN, 'color' => ['rgb' => 'D0D5E8']]],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F0F2FA']],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'D0D5E8']]],
         ];
 
         $rowStyle = [
-            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN, 'color' => ['rgb' => 'D0D5E8']]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'D0D5E8']]],
         ];
 
         $altRowStyle = [
-            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN, 'color' => ['rgb' => 'D0D5E8']]],
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F8F9FC']],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'D0D5E8']]],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F8F9FC']],
         ];
 
         foreach ($grouped as $kabupaten => $kels) {
             $sheet = $first ? $spreadsheet->getActiveSheet() : $spreadsheet->createSheet();
             $first = false;
 
-            $safeName = mb_substr(str_replace(['\\','/','*','?','[',']',':'], '', $kabupaten), 0, 31);
+            $safeName = mb_substr(str_replace(['\\', '/', '*', '?', '[', ']', ':'], '', $kabupaten), 0, 31);
             $sheet->setTitle($safeName);
 
             $headers = ['No', 'Kelompok', 'DPL', 'Lokasi', 'Anggota'];
@@ -598,17 +605,18 @@ class KelompokKknController extends Controller
                     $npm = $m?->npm ?? '';
                     $prodi = $m?->prodi?->nama_prodi ?? '';
                     $fakultas = $m?->prodi?->fakultas?->nama_fakultas ?? '';
-                    return ($i + 1) . ". {$nama} | {$npm} | {$prodi} | {$fakultas}";
+
+                    return ($i + 1).". {$nama} | {$npm} | {$prodi} | {$fakultas}";
                 })->implode("\n");
 
-                $rowData = [$no++, $k->nama_kelompok . "\n(" . $k->kode_kelompok . ')', $dpl, "{$desa}\n{$kec}", $anggotaList];
+                $rowData = [$no++, $k->nama_kelompok."\n(".$k->kode_kelompok.')', $dpl, "{$desa}\n{$kec}", $anggotaList];
 
                 $sheet->fromArray([$rowData], null, "A{$row}");
                 $style = ($no % 2 === 1) ? $rowStripeStyle : $altRowStyle;
                 $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray($style);
                 $sheet->getRowDimension($row)->setRowHeight(max(36, $k->pesertaKkn->count() * 18));
-                $sheet->getStyle("A{$row}:{$lastCol}{$row}")->getAlignment()->setWrapText(true)->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
-                $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("A{$row}:{$lastCol}{$row}")->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_TOP);
+                $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $row++;
             }
 
@@ -619,8 +627,8 @@ class KelompokKknController extends Controller
             $sheet->getColumnDimension('E')->setWidth(50);
         }
 
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        $filename = 'data-kelompok-kkn-' . now()->format('Ymd-His') . '.xlsx';
+        $writer = new Xlsx($spreadsheet);
+        $filename = 'data-kelompok-kkn-'.now()->format('Ymd-His').'.xlsx';
 
         return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
@@ -653,6 +661,7 @@ class KelompokKknController extends Controller
             $data['file_name'] = $request->file('file')->getClientOriginalName();
         }
         LaporanDpl::create($data);
+
         return back()->with('success', 'Laporan berhasil diupload.');
     }
 
@@ -661,8 +670,11 @@ class KelompokKknController extends Controller
         $isKetua = $kelompok_kkn->ketua_peserta_id && auth()->user()->pesertaKkn?->where('kelompok_kkn_id', $kelompok_kkn->id)->first()?->id === $kelompok_kkn->ketua_peserta_id;
         abort_unless($isKetua || auth()->user()->hasRole('superadmin'), 403, 'Hanya ketua kelompok atau admin yang dapat menghapus laporan.');
 
-        if ($laporan->file_path) \Illuminate\Support\Facades\Storage::disk('public')->delete($laporan->file_path);
+        if ($laporan->file_path) {
+            Storage::disk('public')->delete($laporan->file_path);
+        }
         $laporan->delete();
+
         return back()->with('success', 'Laporan dihapus.');
     }
 }

@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use Illuminate\Http\Request;
-use App\Models\Fakultas;
-use Illuminate\View\View;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use Illuminate\Http\RedirectResponse;
 use App\Models\DosenPembimbingLapangan;
+use App\Models\Fakultas;
 use App\Models\KelompokKkn;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 class DosenPembimbingLapanganController extends Controller
 {
@@ -20,16 +20,16 @@ class DosenPembimbingLapanganController extends Controller
     {
         $query = DosenPembimbingLapangan::with([
             'user',
-            'fakultas'
+            'fakultas',
         ]);
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->whereHas('user', fn($uq) => $uq->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('email', 'like', '%' . $request->search . '%'))
-                  ->orWhere('nidn', 'like', '%' . $request->search . '%')
-                  ->orWhere('no_hp', 'like', '%' . $request->search . '%')
-                  ->orWhereHas('fakultas', fn($fq) => $fq->where('nama_fakultas', 'like', '%' . $request->search . '%'));
+                $q->whereHas('user', fn ($uq) => $uq->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('email', 'like', '%'.$request->search.'%'))
+                    ->orWhere('nidn', 'like', '%'.$request->search.'%')
+                    ->orWhere('no_hp', 'like', '%'.$request->search.'%')
+                    ->orWhereHas('fakultas', fn ($fq) => $fq->where('nama_fakultas', 'like', '%'.$request->search.'%'));
             });
         }
 
@@ -68,12 +68,12 @@ class DosenPembimbingLapanganController extends Controller
 
         DB::transaction(function () use ($request) {
 
-        $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'password' => Hash::make(env('DPL_DEFAULT_PASSWORD', Str::random(20))),
-            'email_verified_at' => now(),
-        ]);
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make(env('DPL_DEFAULT_PASSWORD', Str::random(20))),
+                'email_verified_at' => now(),
+            ]);
 
             $user->assignRole('pembimbing');
 
@@ -136,7 +136,7 @@ class DosenPembimbingLapanganController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
 
-            'email' => 'required|email|unique:users,email,' . $dpl->user->id,
+            'email' => 'required|email|unique:users,email,'.$dpl->user->id,
 
             'nidn' => 'nullable|string|max:50',
 

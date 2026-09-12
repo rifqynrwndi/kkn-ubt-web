@@ -8,13 +8,14 @@ use Illuminate\Support\Facades\Storage;
 class MigrateStorageToS3 extends Command
 {
     protected $signature = 'storage:migrate-to-s3';
+
     protected $description = 'Migrasi semua file dari local/public storage ke S3 (IDCloudHost)';
 
     public function handle(): int
     {
         $this->info('Memulai migrasi file ke S3...');
 
-        if (env('FILESYSTEM_DISK') !== 's3' && !$this->confirm('FILESYSTEM_DISK belum di-set ke s3. Tetap lanjutkan?')) {
+        if (env('FILESYSTEM_DISK') !== 's3' && ! $this->confirm('FILESYSTEM_DISK belum di-set ke s3. Tetap lanjutkan?')) {
             return self::FAILURE;
         }
 
@@ -28,6 +29,7 @@ class MigrateStorageToS3 extends Command
 
         if ($count === 0) {
             $this->warn('Tidak ada file di storage public. Lewati.');
+
             return self::SUCCESS;
         }
 
@@ -42,14 +44,23 @@ class MigrateStorageToS3 extends Command
         foreach ($allFiles as $filePath) {
             if ($filePath === '.gitignore') {
                 $bar->advance();
+
                 continue;
             }
 
             try {
                 // Skip jika sudah ada di S3 (resume support)
                 $exists = false;
-                try { $exists = Storage::disk($targetDisk)->exists($filePath); } catch (\Throwable $e) {}
-                if ($exists) { $skipped++; $bar->advance(); continue; }
+                try {
+                    $exists = Storage::disk($targetDisk)->exists($filePath);
+                } catch (\Throwable $e) {
+                }
+                if ($exists) {
+                    $skipped++;
+                    $bar->advance();
+
+                    continue;
+                }
 
                 $contents = Storage::disk($sourceDisk)->get($filePath);
                 $mimeType = Storage::disk($sourceDisk)->mimeType($filePath);
@@ -68,12 +79,12 @@ class MigrateStorageToS3 extends Command
         $bar->finish();
         $this->newLine(2);
 
-        $this->info("Migrasi selesai.");
+        $this->info('Migrasi selesai.');
         $this->info("  Berhasil: {$migrated}");
         $this->info("  Dilewati (sudah ada): {$skipped}");
-        $this->info("  Gagal: " . count($errors));
+        $this->info('  Gagal: '.count($errors));
 
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             $this->error('Gagal:');
             foreach ($errors as $e) {
                 $this->line("  - {$e}");
@@ -87,7 +98,7 @@ class MigrateStorageToS3 extends Command
     {
         $this->info("Testing koneksi ke disk '{$disk}'...");
         try {
-            Storage::disk($disk)->put('migration-test.txt', 'test-' . now());
+            Storage::disk($disk)->put('migration-test.txt', 'test-'.now());
             Storage::disk($disk)->delete('migration-test.txt');
             $this->info('  OK - Koneksi berhasil.');
         } catch (\Throwable $e) {

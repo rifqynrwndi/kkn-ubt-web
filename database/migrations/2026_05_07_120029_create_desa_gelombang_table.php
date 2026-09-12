@@ -29,7 +29,7 @@ return new class extends Migration
                 'draft',
                 'dibuka',
                 'ditutup',
-                'penuh'
+                'penuh',
             ])->default('draft');
 
             $table->foreignId('dosen_pembimbing_lapangan_id')
