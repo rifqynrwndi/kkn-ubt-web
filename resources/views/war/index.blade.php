@@ -3,138 +3,7 @@
 @section('title', 'Plotting KKN — Pemilihan Kelompok')
 
 @push('css')
-<style>
-    /* ── HERO WAR ──────────────────────────────────── */
-    .war-hero {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-        border-radius: 20px;
-        padding: 48px 36px;
-        color: #fff;
-        position: relative;
-        overflow: hidden;
-        margin-bottom: 28px;
-    }
-    .war-hero::before {
-        content: '';
-        position: absolute;
-        top: -60px; right: -60px;
-        width: 280px; height: 280px;
-        background: rgba(255,59,59,.12);
-        border-radius: 50%;
-    }
-    .war-hero::after {
-        content: '';
-        position: absolute;
-        bottom: -80px; left: -40px;
-        width: 220px; height: 220px;
-        background: rgba(103,119,239,.1);
-        border-radius: 50%;
-    }
-    .war-hero-content { position: relative; z-index: 1; }
-
-    .war-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(255,59,59,.2);
-        border: 1px solid rgba(255,59,59,.5);
-        color: #ff6b6b;
-        padding: 6px 16px;
-        border-radius: 30px;
-        font-size: 13px;
-        font-weight: 700;
-        letter-spacing: 1px;
-        margin-bottom: 16px;
-    }
-    .war-badge .blink {
-        width: 8px; height: 8px;
-        background: #ff6b6b;
-        border-radius: 50%;
-        animation: blink 1s infinite;
-    }
-    @keyframes blink {
-        0%, 100% { opacity: 1; }
-        50%       { opacity: 0; }
-    }
-
-    .war-hero h1 {
-        font-size: 2.4rem;
-        font-weight: 800;
-        margin-bottom: 8px;
-        letter-spacing: -0.5px;
-    }
-    .war-hero p { font-size: 1rem; opacity: .75; margin-bottom: 0; }
-
-    /* ── KARTU STATUS ──────────────────────────────── */
-    .status-card {
-        border: none;
-        border-radius: 16px;
-        padding: 28px 24px;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-        transition: transform .2s, box-shadow .2s;
-    }
-    .status-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 32px rgba(0,0,0,.1);
-    }
-    .status-card .icon-wrap {
-        width: 64px; height: 64px;
-        border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 26px;
-        margin: 0 auto 16px;
-    }
-    .status-card h2 { font-size: 2rem; font-weight: 800; margin-bottom: 4px; }
-    .status-card p  { font-size: 13px; margin-bottom: 0; opacity: .75; }
-
-    .sc-blue   { background: linear-gradient(135deg, #e8ecff, #dde3ff); color: #4f5ece; }
-    .sc-green  { background: linear-gradient(135deg, #e8fff0, #d3f9df); color: #2f9e44; }
-    .sc-red    { background: linear-gradient(135deg, #fff0f0, #ffd8d8); color: #c92a2a; }
-    .sc-orange { background: linear-gradient(135deg, #fff8e1, #ffe0a0); color: #d08800; }
-
-    .sc-blue   .icon-wrap { background: rgba(79,94,206,.15); }
-    .sc-green  .icon-wrap { background: rgba(47,158,68,.15); }
-    .sc-red    .icon-wrap { background: rgba(201,42,42,.15); }
-    .sc-orange .icon-wrap { background: rgba(208,136,0,.15); }
-
-    /* ── BLOK STATUS WAR ───────────────────────────── */
-    .state-block {
-        border-radius: 16px;
-        padding: 40px;
-        text-align: center;
-    }
-
-    .btn-war {
-        background: linear-gradient(135deg, #ff416c, #ff4b2b);
-        color: #fff;
-        border: none;
-        border-radius: 12px;
-        padding: 14px 40px;
-        font-size: 1.05rem;
-        font-weight: 700;
-        letter-spacing: .5px;
-        transition: all .25s;
-        box-shadow: 0 6px 20px rgba(255,65,108,.35);
-    }
-    .btn-war:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 28px rgba(255,65,108,.45);
-        color: #fff;
-    }
-    .btn-war:active { transform: translateY(0); }
-
-    .schedule-row td { vertical-align: middle !important; }
-
-    #war-countdown {
-        font-size: 2rem;
-        font-weight: 800;
-        color: #ff416c;
-        letter-spacing: 2px;
-        font-family: 'Courier New', monospace;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/war.css') }}">
 @endpush
 
 @section('content')
@@ -158,8 +27,8 @@
             <div class="war-hero-content">
 
                 @if($activeWar)
-                    <div class="war-badge">
-                        <span class="blink"></span>
+                    <div class="war-badge" role="status" aria-label="Status sesi plotting">
+                        <span class="blink" aria-hidden="true"></span>
                         LIVE — SESI PLOTTING SEDANG BERLANGSUNG
                     </div>
                     <h1>{{ $activeWar->name }}</h1>
@@ -181,7 +50,9 @@
 
             <div class="card">
                 <div class="card-body state-block">
-                    <span style="font-size:56px;display:block;margin-bottom:16px;">📅</span>
+                    <span class="state-block-icon" aria-hidden="true">
+                        <i class="fas fa-calendar-times"></i>
+                    </span>
                     <h4 class="font-weight-bold mb-2">Tidak Ada Sesi Plotting yang Sedang Aktif</h4>
                     <p class="text-muted mb-0">
                         Belum ada sesi Plotting yang aktif saat ini. Pantau jadwal yang akan datang di bawah ini.
@@ -191,8 +62,8 @@
 
         @elseif($warStatus === 'not_registered')
 
-            <div class="alert alert-warning d-flex align-items-center shadow-sm">
-                <i class="fas fa-exclamation-triangle fa-lg mr-3"></i>
+            <div class="alert alert-warning d-flex align-items-center shadow-sm" role="alert">
+                <i class="fas fa-exclamation-triangle fa-lg mr-3" aria-hidden="true"></i>
                 <div>
                     <strong>Kamu belum terdaftar</strong> di gelombang Plotting yang sedang aktif.
                     Pastikan kamu telah mendaftar KKN di gelombang yang sesuai.
@@ -201,8 +72,8 @@
 
         @elseif($warStatus === 'not_approved')
 
-            <div class="alert alert-warning d-flex align-items-center shadow-sm">
-                <i class="fas fa-hourglass-half fa-lg mr-3"></i>
+            <div class="alert alert-warning d-flex align-items-center shadow-sm" role="alert">
+                <i class="fas fa-hourglass-half fa-lg mr-3" aria-hidden="true"></i>
                 <div>
                     <strong>Pendaftaran KKN-mu belum disetujui.</strong>
                     Status saat ini: <strong>{{ $peserta?->status_pendaftaran }}</strong>.
@@ -212,8 +83,8 @@
 
         @elseif($warStatus === 'already_joined')
 
-            <div class="alert alert-success d-flex align-items-center shadow-sm">
-                <i class="fas fa-check-circle fa-lg mr-3"></i>
+            <div class="alert alert-success d-flex align-items-center shadow-sm" role="status">
+                <i class="fas fa-check-circle fa-lg mr-3" aria-hidden="true"></i>
                 <div>
                     Kamu sudah bergabung ke kelompok
                     <strong>{{ $peserta?->kelompokKkn?->nama_kelompok }}</strong>.
@@ -227,13 +98,15 @@
 
             <div class="card">
                 <div class="card-body state-block">
-                    <span style="font-size:56px;display:block;margin-bottom:16px;">⚡</span>
+                    <span class="state-block-icon" aria-hidden="true">
+                        <i class="fas fa-bolt"></i>
+                    </span>
                     <h4 class="font-weight-bold mb-2">Sesi Plotting Sedang Berlangsung!</h4>
                     <p class="text-muted mb-4">
                         Kamu eligible untuk ikut pemilihan kelompok. Segera masuk sebelum kuota penuh!
                     </p>
-                    <a href="{{ route('war.arena', $activeWar) }}" class="btn btn-war btn-lg">
-                        <i class="fas fa-hand-pointer mr-2"></i>
+                    <a href="{{ route('war.arena', $activeWar) }}" class="btn btn-war btn-lg" aria-label="Pilih kelompok sekarang">
+                        <i class="fas fa-hand-pointer mr-2" aria-hidden="true"></i>
                         Pilih Kelompok Sekarang
                     </a>
                 </div>
@@ -244,11 +117,11 @@
         {{-- ── STATISTIK WAR AKTIF ──────────────────── --}}
         @if($activeWar)
 
-            <div class="row mt-4" id="war-stats-row">
+            <div class="row mt-4" id="war-stats-row" role="region" aria-label="Statistik sesi plotting">
 
                 <div class="col-6 col-md-3 mb-3">
                     <div class="status-card sc-blue">
-                        <div class="icon-wrap"><i class="fas fa-users"></i></div>
+                        <div class="icon-wrap"><i class="fas fa-users" aria-hidden="true"></i></div>
                         <h2 id="stat-peserta">{{ $warStats['total_peserta'] ?? '–' }}</h2>
                         <p>Peserta Bergabung</p>
                     </div>
@@ -256,7 +129,7 @@
 
                 <div class="col-6 col-md-3 mb-3">
                     <div class="status-card sc-green">
-                        <div class="icon-wrap"><i class="fas fa-home"></i></div>
+                        <div class="icon-wrap"><i class="fas fa-home" aria-hidden="true"></i></div>
                         <h2 id="stat-kelompok-sisa">{{ $warStats['kelompok_sisa'] ?? '–' }}</h2>
                         <p>Kelompok Tersisa</p>
                     </div>
@@ -264,7 +137,7 @@
 
                 <div class="col-6 col-md-3 mb-3">
                     <div class="status-card sc-red">
-                        <div class="icon-wrap"><i class="fas fa-lock"></i></div>
+                        <div class="icon-wrap"><i class="fas fa-lock" aria-hidden="true"></i></div>
                         <h2 id="stat-kelompok-penuh">{{ $warStats['kelompok_penuh'] ?? '–' }}</h2>
                         <p>Kelompok Penuh</p>
                     </div>
@@ -272,8 +145,8 @@
 
                 <div class="col-6 col-md-3 mb-3">
                     <div class="status-card sc-orange">
-                        <div class="icon-wrap"><i class="fas fa-clock"></i></div>
-                        <div id="war-countdown">–</div>
+                        <div class="icon-wrap"><i class="fas fa-clock" aria-hidden="true"></i></div>
+                        <div id="war-countdown" aria-live="polite" aria-label="Waktu tersisa">–</div>
                         <p>Waktu Tersisa</p>
                     </div>
                 </div>
@@ -289,7 +162,7 @@
 
                 <div class="card-header">
                     <h4 class="mb-0">
-                        <i class="fas fa-calendar-alt mr-2 text-primary"></i>
+                        <i class="fas fa-calendar-alt mr-2 text-primary" aria-hidden="true"></i>
                         Jadwal Sesi Plotting Mendatang
                     </h4>
                 </div>
@@ -299,11 +172,11 @@
                         <table class="table table-hover mb-0">
                             <thead>
                                 <tr>
-                                    <th>Nama Sesi Plotting</th>
-                                    <th>Gelombang</th>
-                                    <th>Waktu Mulai</th>
-                                    <th>Waktu Selesai</th>
-                                    <th>Status</th>
+                                    <th scope="col">Nama Sesi Plotting</th>
+                                    <th scope="col">Gelombang</th>
+                                    <th scope="col">Waktu Mulai</th>
+                                    <th scope="col">Waktu Selesai</th>
+                                    <th scope="col">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -315,7 +188,7 @@
                                         <td>{{ $war->end_at?->format('d M Y, H:i') }}</td>
                                         <td>
                                             <span class="badge badge-warning" style="border-radius:20px;padding:5px 12px;">
-                                                <i class="fas fa-clock mr-1"></i> Terjadwal
+                                                <i class="fas fa-clock mr-1" aria-hidden="true"></i> Terjadwal
                                             </span>
                                         </td>
                                     </tr>

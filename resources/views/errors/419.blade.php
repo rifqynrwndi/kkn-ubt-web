@@ -5,7 +5,9 @@
 @section('content')
 <div class="auth-card">
     <div class="auth-card-header">
-        <div style="font-size: 60px; margin-bottom: 16px;">⏰</div>
+        <div style="font-size: 60px; margin-bottom: 16px; color: var(--war-warning);">
+            <i class="fas fa-clock"></i>
+        </div>
         <h3>Sesi Telah Berakhir</h3>
         <p>Sesi Anda telah berakhir karena tidak ada aktivitas dalam waktu lama.<br>Silakan refresh halaman untuk melanjutkan.</p>
     </div>
@@ -21,7 +23,8 @@
     let sec = 5;
     setInterval(() => {
         sec--;
-        document.getElementById('countdown').textContent = sec;
+        const el = document.getElementById('countdown');
+        if (el) el.textContent = sec;
         if (sec <= 0) location.reload();
     }, 1000);
 </script>
