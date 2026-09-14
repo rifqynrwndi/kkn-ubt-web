@@ -69,7 +69,8 @@ Route::get('/sitemap.xml', function () {
 
 Auth::routes(['register' => false, 'reset' => true, 'verify' => true]);
 
-Route::post('/register', [RegisterController::class, 'register'])->middleware('throttle:register')->name('register');
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register'])->middleware('throttle:register')->name('register.post');
 
 Route::get('/s3/{path}', [FileProxyController::class, 'streamS3'])->where('path', '.*')->name('s3.proxy')->middleware('auth');
 
