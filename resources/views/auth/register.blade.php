@@ -12,7 +12,7 @@
         <p>Buat akun untuk mengikuti program KKN</p>
     </div>
 
-    <form method="POST" action="{{ route('register') }}">
+    <form method="POST" action="{{ route('register.post') }}">
         @csrf
 
         <div class="mb-3">
