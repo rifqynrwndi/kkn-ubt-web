@@ -2,8 +2,115 @@
  *
  * You can write your CSS code here, DO NOT touch the default JavaScript file
  * because it will make it harder for you to update.
- * 
+ *
  */
+
+/* ── UBT BRAND COLORS ───────────────────────────────── */
+:root {
+    --ubt-navy: #2c3e6e;
+    --ubt-navy-light: #3a5088;
+    --ubt-navy-dark: #2a2d36;
+    --ubt-green: #2e7d32;
+    --ubt-green-light: #4caf50;
+}
+
+/* ── SIDEBAR — REACT COMPONENT THEME ────────────────── */
+.main-sidebar {
+    background-color: #fff !important;
+    border-right: 1px solid #e5e7eb;
+}
+
+.main-sidebar .sidebar-brand a {
+    color: #111827;
+    font-weight: 700;
+}
+
+.main-sidebar .sidebar-menu li.menu-header {
+    color: #6b7280;
+}
+
+.main-sidebar .sidebar-menu li a {
+    color: #4b5563;
+}
+
+.main-sidebar .sidebar-menu li a:hover {
+    background-color: #f9fafb;
+    color: #111827;
+}
+
+.main-sidebar .sidebar-menu li.active > a {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    border-radius: 0;
+    margin: 0;
+    padding: 10px 15px;
+    font-weight: 600;
+}
+
+.main-sidebar .sidebar-menu li ul.dropdown-menu {
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+}
+
+.main-sidebar .sidebar-menu li ul.dropdown-menu li a {
+    color: #4b5563;
+}
+
+.main-sidebar .sidebar-menu li ul.dropdown-menu li a:hover {
+    background-color: #f9fafb;
+    color: #111827;
+}
+
+.main-sidebar .sidebar-menu li ul.dropdown-menu li.active > a {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+}
+
+body.sidebar-mini .main-sidebar {
+    width: 65px;
+}
+
+body.sidebar-mini .main-sidebar::after {
+    background-color: #fff !important;
+}
+
+body.sidebar-mini .sidebar-menu li.active > a {
+    background-color: #eff6ff;
+    margin: 0;
+}
+
+/* ── DARK MODE SIDEBAR — UBT NAVY ──────────────────── */
+[data-bs-theme="dark"] .main-sidebar {
+    background-color: #2a2d36 !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-bs-theme="dark"] .main-sidebar .sidebar-brand a {
+    color: #fff;
+}
+
+[data-bs-theme="dark"] body.sidebar-mini .main-sidebar,
+[data-bs-theme="dark"] body.sidebar-mini .main-sidebar::after {
+    background-color: #2a2d36 !important;
+}
+
+[data-bs-theme="dark"] .main-sidebar .sidebar-menu li a {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+[data-bs-theme="dark"] .main-sidebar .sidebar-menu li a:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .main-sidebar .sidebar-menu li.active > a {
+    background-color: #2a2d36;
+    color: #f1f3f8;
+    border-radius: 0;
+    margin: 0;
+    padding: 10px 15px;
+    font-weight: 600;
+}
 
 .modal-header .close {
     position: absolute;
@@ -84,3 +191,117 @@
     color: #d6d9df;
 }
 /*# sourceMappingURL=custom.css.map */
+
+/* ── BADGE OUTLINE CLASSES ───────────────────────────── */
+.badge-outline-primary {
+    border: 1px solid #6777ef;
+    color: #6777ef;
+    background: transparent;
+}
+.badge-outline-secondary {
+    border: 1px solid #cdd3d8;
+    color: #6c757d;
+    background: transparent;
+}
+.badge-outline-info {
+    border: 1px solid #3abaf4;
+    color: #3abaf4;
+    background: transparent;
+}
+.badge-outline-success {
+    border: 1px solid #47c363;
+    color: #47c363;
+    background: transparent;
+}
+.badge-outline-warning {
+    border: 1px solid #ffa426;
+    color: #ffa426;
+    background: transparent;
+}
+.badge-outline-danger {
+    border: 1px solid #fc544b;
+    color: #fc544b;
+    background: transparent;
+}
+
+[data-bs-theme="dark"] .badge-outline-primary {
+    border-color: #6777ef;
+    color: #8b97f5;
+}
+[data-bs-theme="dark"] .badge-outline-secondary {
+    border-color: #555c6e;
+    color: #8892a6;
+}
+[data-bs-theme="dark"] .badge-outline-info {
+    border-color: #3abaf4;
+    color: #5ec5f7;
+}
+[data-bs-theme="dark"] .badge-outline-success {
+    border-color: #47c363;
+    color: #6bd882;
+}
+[data-bs-theme="dark"] .badge-outline-warning {
+    border-color: #ffa426;
+    color: #ffb84d;
+}
+[data-bs-theme="dark"] .badge-outline-danger {
+    border-color: #fc544b;
+    color: #fd7c77;
+}
+
+/* ── NAVBAR — REACT COMPONENT THEME ─────────────────── */
+.navbar-bg {
+    background-color: #ffffff !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid #e5e7eb;
+    height: 70px;
+}
+
+.navbar {
+    background-color: transparent !important;
+    border-bottom: none;
+}
+
+.navbar .nav-link {
+    color: #4b5563 !important;
+}
+
+.navbar .nav-link.nav-link-user {
+    color: #4b5563 !important;
+}
+
+.navbar .nav-link.nav-link-user img {
+    border: 2px solid #e5e7eb;
+}
+
+.navbar .dropdown-title {
+    color: #111827 !important;
+}
+
+[data-bs-theme="dark"] .navbar-bg {
+    background-color: #2a2d36 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid #3a3f4b;
+    height: 70px;
+}
+
+[data-bs-theme="dark"] .navbar {
+    background-color: transparent !important;
+    border-bottom: none;
+}
+
+[data-bs-theme="dark"] .navbar .nav-link {
+    color: #b5bccd !important;
+}
+
+[data-bs-theme="dark"] .navbar .nav-link.nav-link-user {
+    color: #b5bccd !important;
+}
+
+[data-bs-theme="dark"] .navbar .nav-link.nav-link-user img {
+    border-color: #3a3f4b;
+}
+
+[data-bs-theme="dark"] .navbar .dropdown-title {
+    color: #f1f3f8 !important;
+}

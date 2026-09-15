@@ -28,7 +28,7 @@
                 <a class="nav-link"
                    href="{{ route('home') }}">
 
-                    <i class="fas fa-fire"></i>
+                    <i class="fas fa-home"></i>
                     <span>Dashboard</span>
 
                 </a>

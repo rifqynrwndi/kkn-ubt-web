@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\KelompokKkn;
 use App\Models\PenilaianIndividu;
 use App\Models\PenilaianKelompok;
 use App\Models\PenilaianKomponen;
+use App\Services\StatusService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -43,6 +45,11 @@ class PenilaianController extends Controller
             ['kelompok_kkn_id' => $kelompokId, 'komponen_id' => $komponen->id],
             ['nilai' => $request->nilai, 'input_by' => auth()->id(), 'input_at' => now()]
         );
+
+        $kelompok = KelompokKkn::find($kelompokId);
+        if ($kelompok) {
+            app(StatusService::class)->checkAutoAdvance($kelompok);
+        }
 
         return back()->with('success', 'Nilai berhasil disimpan.');
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LogBook;
 use App\Models\PesertaKkn;
+use App\Services\StatusService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -139,6 +140,10 @@ class LogBookController extends Controller
                 'validated_at' => now(),
             ]);
 
+        if ($peserta->kelompokKkn) {
+            app(StatusService::class)->checkAutoAdvance($peserta->kelompokKkn);
+        }
+
         $previous = url()->previous();
         $parsed = parse_url($previous);
         if (! $parsed || ! isset($parsed['host'])) {
@@ -180,6 +185,10 @@ class LogBookController extends Controller
                 'validated_at' => now(),
                 'komentar_dpl' => $request->komentar_dpl,
             ]);
+
+            if ($logbook->pesertaKkn?->kelompokKkn) {
+                app(StatusService::class)->checkAutoAdvance($logbook->pesertaKkn->kelompokKkn);
+            }
         } else {
             $logbook->update([
                 'status' => 'ditolak',

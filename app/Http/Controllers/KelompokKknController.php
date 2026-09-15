@@ -330,6 +330,10 @@ class KelompokKknController extends Controller
 
         $kelompok_kkn->update($validated);
 
+        if (! empty($validated['dosen_pembimbing_lapangan_id']) && $kelompok_kkn->status_tahap === 2) {
+            app(StatusService::class)->onDplAssigned($kelompok_kkn);
+        }
+
         return redirect()
             ->route('kelompok-kkn.index')
             ->with(
