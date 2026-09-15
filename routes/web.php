@@ -247,10 +247,14 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
             ->middleware('throttle:10,1'); // maks 10 request/menit per user
 
         // Status check — AJAX polling (apakah war masih aktif? sudah dapat kelompok?)
-        Route::get('/{session}/status', [WarController::class, 'status'])->name('status');
+        Route::get('/{session}/status', [WarController::class, 'status'])
+            ->name('status')
+            ->middleware('throttle:30,1');
 
         // Kelompok list — AJAX untuk live refresh daftar kelompok
-        Route::get('/{session}/kelompoks', [WarController::class, 'kelompokList'])->name('kelompoks');
+        Route::get('/{session}/kelompoks', [WarController::class, 'kelompokList'])
+            ->name('kelompoks')
+            ->middleware('throttle:30,1');
 
     });
 

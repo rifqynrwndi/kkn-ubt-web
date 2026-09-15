@@ -36,7 +36,7 @@ class KelompokKkn extends Model
 
     public function getTerisiAttribute()
     {
-        return $this->pesertaKkn()->count();
+        return $this->pesertaKkn->count();
     }
 
     public function getSisaKuotaAttribute()

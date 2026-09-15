@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\KelompokKkn;
 use App\Models\PesertaKkn;
-use App\Models\ProgramStudi;
 use App\Models\WarParticipant;
 use App\Models\WarSession;
 use App\Services\War\WarRuleService;
@@ -12,12 +11,14 @@ use App\Services\War\WarService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class WarController extends Controller
 {
     public function __construct(
         private readonly WarService $warService,
+        private readonly WarRuleService $ruleService,
     ) {}
 
     /*
@@ -148,34 +149,18 @@ class WarController extends Controller
         | DATA KELOMPOK
         |--------------------------------------------------------------------------
         */
-        $kelompoks = KelompokKkn::with([
-            'desaGelombang.desa.kecamatan',
-            'pesertaKkn.mahasiswa.prodi.fakultas',
-            'kuotaFakultas.fakultas',
-        ])
-            ->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $session->gelombang_id))
-            ->orderBy('nama_kelompok')
-            ->get()
+        $kelompoks = Cache::remember("war:kelompok:{$session->id}", 2, function () use ($session, $peserta) {
+            return KelompokKkn::with([
+                'desaGelombang.desa.kecamatan',
+                'pesertaKkn.mahasiswa.prodi.fakultas',
+                'kuotaFakultas.fakultas',
+            ])
+                ->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $session->gelombang_id))
+                ->orderBy('nama_kelompok')
+                ->get();
+        })
             ->each(function ($k) use ($peserta) {
-                $fakultasId = $peserta->mahasiswa->prodi->fakultas_id;
-                $prodiId = $peserta->mahasiswa->prodi_id;
-                $gender = $peserta->mahasiswa->jenis_kelamin;
-
-                $kuotaFakultas = $k->kuotaFakultas->where('fakultas_id', $fakultasId)->first();
-                $fakCount = $k->pesertaKkn->filter(fn ($p) => $p->mahasiswa?->prodi?->fakultas_id === $fakultasId
-                )->count();
-                $prodiCount = $k->pesertaKkn->filter(fn ($p) => $p->mahasiswa?->prodi_id === $prodiId
-                )->count();
-                $genderCount = $k->pesertaKkn->filter(fn ($p) => $p->mahasiswa?->jenis_kelamin === $gender
-                )->count();
-
-                $fakOver = $kuotaFakultas && $fakCount >= $kuotaFakultas->kuota;
-                $fakProdiCount = $peserta->mahasiswa->prodi->fakultas->prodi()->count();
-                $prodiOver = $fakProdiCount <= 1 ? false : ($prodiCount >= WarRuleService::MAX_SAME_PRODI);
-                $genderMax = $gender === 'L' ? WarRuleService::MAX_LAKI : WarRuleService::MAX_PEREMPUAN;
-                $genderOver = $genderCount >= $genderMax;
-
-                $k->can_join = ! $k->is_full && $k->status !== 'penuh' && ! $fakOver && ! $prodiOver && ! $genderOver;
+                $k->can_join = $this->ruleService->checkCanJoin($k, $peserta);
             })
             ->sortBy(function ($k) {
                 $kab = $k->desaGelombang->desa->kecamatan->kabupaten ?? 'Z';
@@ -316,30 +301,23 @@ class WarController extends Controller
         abort_if($session->status !== 'active', 403, 'WAR tidak aktif.');
 
         $mahasiswa = auth()->user()->mahasiswa;
-        $fakultasId = $mahasiswa?->prodi?->fakultas_id;
-        $prodiId = $mahasiswa?->prodi_id;
-        $gender = $mahasiswa?->jenis_kelamin;
 
-        $kelompoks = KelompokKkn::with([
-            'desaGelombang.desa',
-            'pesertaKkn.mahasiswa.prodi',
-            'kuotaFakultas',
-        ])
-            ->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $session->gelombang_id))
-            ->orderBy('nama_kelompok')
-            ->get()
-            ->map(function ($k) use ($fakultasId, $prodiId, $gender) {
-                $kuotaFakultas = $k->kuotaFakultas->where('fakultas_id', $fakultasId)->first();
-                $fakCount = $k->pesertaKkn->filter(fn ($p) => $p->mahasiswa?->prodi?->fakultas_id === $fakultasId)->count();
-                $prodiCount = $k->pesertaKkn->filter(fn ($p) => $p->mahasiswa?->prodi_id === $prodiId)->count();
-                $genderCount = $k->pesertaKkn->filter(fn ($p) => $p->mahasiswa?->jenis_kelamin === $gender)->count();
+        $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswa?->user_id)
+            ->where('gelombang_id', $session->gelombang_id)
+            ->with(['mahasiswa.prodi.fakultas'])
+            ->first();
 
-                $fakOver = $kuotaFakultas && $fakCount >= $kuotaFakultas->kuota;
-                $fakProdiCount = ProgramStudi::where('fakultas_id', $fakultasId)->count();
-                $prodiOver = $fakProdiCount <= 1 ? false : ($prodiCount >= WarRuleService::MAX_SAME_PRODI);
-                $genderMax = $gender === 'L' ? WarRuleService::MAX_LAKI : WarRuleService::MAX_PEREMPUAN;
-                $genderOver = $genderCount >= $genderMax;
-
+        $kelompoks = Cache::remember("war:kelompok:{$session->id}", 2, function () use ($session) {
+            return KelompokKkn::with([
+                'desaGelombang.desa',
+                'pesertaKkn.mahasiswa.prodi',
+                'kuotaFakultas',
+            ])
+                ->whereHas('desaGelombang', fn ($q) => $q->where('gelombang_id', $session->gelombang_id))
+                ->orderBy('nama_kelompok')
+                ->get();
+        })
+            ->map(function ($k) use ($peserta) {
                 return [
                     'id' => $k->id,
                     'nama' => $k->nama_kelompok,
@@ -349,7 +327,7 @@ class WarController extends Controller
                     'sisa' => $k->sisa_kuota,
                     'is_full' => $k->is_full,
                     'status' => $k->status,
-                    'can_join' => ! $k->is_full && $k->status !== 'penuh' && ! $fakOver && ! $prodiOver && ! $genderOver,
+                    'can_join' => $this->ruleService->checkCanJoin($k, $peserta),
                 ];
             })
             ->sortBy(function ($k) {

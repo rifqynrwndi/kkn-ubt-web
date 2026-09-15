@@ -92,4 +92,40 @@ class WarRuleService
 
         return null;
     }
+
+    public function checkCanJoin(
+        KelompokKkn $kelompok,
+        PesertaKkn $peserta,
+        ?KelompokKuota $kuota = null,
+        bool $checkProdi = true,
+    ): bool {
+        if ($kelompok->status === 'penuh') {
+            return false;
+        }
+
+        $members = $kelompok->pesertaKkn()->with('mahasiswa.prodi')->get()->toArray();
+
+        if (count($members) >= $kelompok->kuota) {
+            return false;
+        }
+
+        if ($this->checkGenderQuota($peserta, $members) !== null) {
+            return false;
+        }
+
+        $kuota = $kuota ?? $kelompok->kuotaFakultas()
+            ->with('fakultas')
+            ->where('fakultas_id', $peserta->mahasiswa->prodi->fakultas_id)
+            ->first();
+
+        if ($kuota && $this->checkFakultasPerKelompok($peserta, $members, $kuota) !== null) {
+            return false;
+        }
+
+        if ($checkProdi && $this->checkProdiQuota($peserta, $members) !== null) {
+            return false;
+        }
+
+        return true;
+    }
 }
