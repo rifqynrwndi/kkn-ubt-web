@@ -327,11 +327,15 @@ class ExportService
         $spreadsheet->setActiveSheetIndex(0);
         $writer = new Xlsx($spreadsheet);
 
-        echo response()->streamDownload(function () use ($writer) {
+        $callback = function () use ($writer) {
             $writer->save('php://output');
-        }, $filename, [
+        };
+
+        $response = response()->streamDownload($callback, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ])->send();
+        ]);
+
+        $response->send();
         exit;
     }
 }

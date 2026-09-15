@@ -103,7 +103,9 @@ class WarRuleService
             return false;
         }
 
-        $members = $kelompok->pesertaKkn()->with('mahasiswa.prodi')->get()->toArray();
+        $members = $kelompok->relationLoaded('pesertaKkn')
+            ? $kelompok->getRelation('pesertaKkn')->toArray()
+            : $kelompok->pesertaKkn()->with('mahasiswa.prodi')->get()->toArray();
 
         if (count($members) >= $kelompok->kuota) {
             return false;
@@ -113,10 +115,14 @@ class WarRuleService
             return false;
         }
 
-        $kuota = $kuota ?? $kelompok->kuotaFakultas()
-            ->with('fakultas')
-            ->where('fakultas_id', $peserta->mahasiswa->prodi->fakultas_id)
-            ->first();
+        $kuota = $kuota ?? ($kelompok->relationLoaded('kuotaFakultas')
+            ? $kelompok->getRelation('kuotaFakultas')
+                ->where('fakultas_id', $peserta->mahasiswa->prodi->fakultas_id)
+                ->first()
+            : $kelompok->kuotaFakultas()
+                ->with('fakultas')
+                ->where('fakultas_id', $peserta->mahasiswa->prodi->fakultas_id)
+                ->first());
 
         if ($kuota && $this->checkFakultasPerKelompok($peserta, $members, $kuota) !== null) {
             return false;

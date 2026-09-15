@@ -307,7 +307,7 @@ class WarController extends Controller
             ->with(['mahasiswa.prodi.fakultas'])
             ->first();
 
-        $kelompoks = Cache::remember("war:kelompok:{$session->id}", 2, function () use ($session) {
+        $kelompoks = Cache::remember("war:list:{$session->id}", 2, function () use ($session) {
             return KelompokKkn::with([
                 'desaGelombang.desa',
                 'pesertaKkn.mahasiswa.prodi',
