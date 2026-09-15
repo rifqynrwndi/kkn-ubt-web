@@ -23,10 +23,16 @@ class Mahasiswa extends Model
         'no_hp_ortu',
         'alamat_ortu',
         'is_biodata_complete',
+        'dhs_path',
+        'dhs_status',
+        'dhs_verified_by',
+        'dhs_verified_at',
+        'dhs_catatan',
     ];
 
     protected $casts = [
         'is_biodata_complete' => 'boolean',
+        'dhs_verified_at' => 'datetime',
     ];
 
     public function user()
@@ -42,6 +48,16 @@ class Mahasiswa extends Model
     public function pesertaKkn()
     {
         return $this->hasMany(PesertaKkn::class, 'mahasiswa_id', 'user_id');
+    }
+
+    public function dhsVerifier()
+    {
+        return $this->belongsTo(User::class, 'dhs_verified_by');
+    }
+
+    public function hasDhsVerified(): bool
+    {
+        return $this->dhs_status === 'verified';
     }
 
     public function getNameAttribute(): ?string

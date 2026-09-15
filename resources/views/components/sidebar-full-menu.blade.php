@@ -256,18 +256,6 @@
                     </a>
                 </li>
 
-                <li class="{{ Request::is('notifications*') ? 'active' : '' }}">
-                    <a class="nav-link"
-                       href="{{ route('notifications.index') }}">
-
-                        <i class="fas fa-bell"></i>
-                        <span>Notifikasi</span>
-
-                        <livewire:notification-badge />
-
-                    </a>
-                </li>
-
             @endrole
 
 
@@ -309,7 +297,7 @@
                    href="{{ route('profile.change-password') }}">
 
                     <i class="fas fa-key"></i>
-                    <span>Ubah Password</span>
+                    <span>Ubah Kata Sandi</span>
 
                 </a>
             </li>

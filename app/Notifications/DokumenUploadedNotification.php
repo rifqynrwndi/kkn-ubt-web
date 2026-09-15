@@ -27,6 +27,7 @@ class DokumenUploadedNotification extends Notification
                 ' telah mengunggah dokumen pendaftaran KKN.',
             'peserta_kkn_id' => $this->peserta->id,
             'type' => 'dokumen_uploaded',
+            'url' => '/verifikasi-dokumen',
         ];
     }
 }

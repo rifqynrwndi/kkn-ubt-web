@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BiodataController;
 use App\Http\Controllers\DesaController;
+use App\Http\Controllers\DhsController;
 use App\Http\Controllers\DokumenPendaftaranController;
 use App\Http\Controllers\DosenPembimbingLapanganController;
 use App\Http\Controllers\DplController;
@@ -99,9 +100,10 @@ Route::middleware(['auth', 'throttle:global'])->group(function () {
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/change-password', [ProfileController::class, 'changePassword'])->name('change-password');
         Route::put('/password', [ProfileController::class, 'password'])->name('password');
+        Route::post('/dhs', [DhsController::class, 'store'])->name('dhs.store');
     });
 
-    Route::prefix('pendaftaran-kkn')->name('pendaftaran-kkn.')->group(function () {
+    Route::prefix('pendaftaran-kkn')->name('pendaftaran-kkn.')->middleware('dhs.verified')->group(function () {
         Route::get('/', [PendaftaranKknController::class, 'index'])->name('index');
         Route::get('/gelombang', [PendaftaranKknController::class, 'gelombang'])->name('gelombang');
         Route::post('/store', [PendaftaranKknController::class, 'store'])->name('store');
@@ -155,6 +157,7 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
         Route::get('/unread-count', [NotificationController::class, 'unreadCount'])->name('unread-count');
         Route::get('/recent', [NotificationController::class, 'recent'])->name('recent');
 
+        Route::get('/mark-read/{id}', [NotificationController::class, 'markAsRead'])->name('mark-read');
         Route::post('/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('mark-as-read');
         Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
 
@@ -474,9 +477,15 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
 
         Route::prefix('verifikasi-dokumen')->name('verifikasi-dokumen.')->group(function () {
             Route::get('/', [VerifikasiDokumenController::class, 'index'])->name('index');
+            Route::post('/bulk-approve', [VerifikasiDokumenController::class, 'bulkApprove'])->name('bulk-approve');
+
+            Route::prefix('dhs')->name('dhs.')->group(function () {
+                Route::put('/{id}/verify', [VerifikasiDokumenController::class, 'dhsVerify'])->name('verify');
+                Route::put('/{id}/reject', [VerifikasiDokumenController::class, 'dhsReject'])->name('reject');
+            });
+
             Route::get('/{id}', [VerifikasiDokumenController::class, 'show'])->name('show');
             Route::put('/dokumen/{id}', [VerifikasiDokumenController::class, 'update'])->name('update');
-            Route::post('/bulk-approve', [VerifikasiDokumenController::class, 'bulkApprove'])->name('bulk-approve');
             Route::put('/{peserta}/bulk-update', [VerifikasiDokumenController::class, 'bulkUpdate'])->name('bulk-update');
         });
 

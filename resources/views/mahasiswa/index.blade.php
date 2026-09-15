@@ -115,10 +115,16 @@
                             </td>
 
                             <td class="text-center">
-                                @if($mhs->mahasiswa?->is_biodata_complete)
-                                    <span class="badge badge-success">Complete</span>
+                                @if($mhs->mahasiswa?->is_biodata_complete && $mhs->mahasiswa?->dhs_status === 'verified')
+                                    <span class="badge badge-success">Lengkap</span>
+                                @elseif($mhs->mahasiswa?->is_biodata_complete && $mhs->mahasiswa?->dhs_status === 'rejected')
+                                    <span class="badge badge-danger">DHS Ditolak</span>
+                                @elseif($mhs->mahasiswa?->is_biodata_complete && $mhs->mahasiswa?->dhs_path)
+                                    <span class="badge badge-warning">Menunggu DHS</span>
+                                @elseif($mhs->mahasiswa?->is_biodata_complete)
+                                    <span class="badge badge-info">Biodata OK</span>
                                 @else
-                                    <span class="badge badge-danger">Incomplete</span>
+                                    <span class="badge badge-secondary">Belum Lengkap</span>
                                 @endif
                             </td>
 

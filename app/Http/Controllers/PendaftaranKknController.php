@@ -149,13 +149,7 @@ class PendaftaranKknController extends Controller
         | CEK DOKUMEN WAJIB UPLOAD
         |-----------------------------------------
         */
-        $requiredDocs = [
-            'dhs',
-            'surat_pernyataan',
-            'surat_ortu',
-            'surat_vaksin',
-            'surat_dokter',
-        ];
+        $requiredDocs = $pendaftaran->gelombang->getRequiredDocumentTypesAttribute();
 
         $uploadedDocs = $pendaftaran->dokumenPendaftaran
             ->pluck('jenis_dokumen')
