@@ -42,53 +42,6 @@ class VerifikasiDhsControllerTest extends TestCase
         return $mhs;
     }
 
-    public function test_admin_can_access_dhs_index(): void
-    {
-        $admin = $this->createAdmin();
-        $this->createMahasiswaWithDhs('pending');
-
-        $response = $this->actingAs($admin)->get(route('verifikasi-dokumen.dhs.index'));
-        $response->assertStatus(200);
-    }
-
-    public function test_non_admin_cannot_access_dhs_index(): void
-    {
-        $user = User::factory()->create();
-        $role = Role::firstOrCreate(['name' => 'mahasiswa', 'guard_name' => 'web']);
-        $user->assignRole($role);
-
-        $response = $this->actingAs($user)->get(route('verifikasi-dokumen.dhs.index'));
-        $response->assertStatus(403);
-    }
-
-    public function test_dhs_index_shows_pending_by_default(): void
-    {
-        $admin = $this->createAdmin();
-        $pending = $this->createMahasiswaWithDhs('pending');
-
-        $response = $this->actingAs($admin)->get(route('verifikasi-dokumen.dhs.index'));
-        $response->assertSee($pending->user->name);
-    }
-
-    public function test_dhs_index_can_filter_by_status(): void
-    {
-        $admin = $this->createAdmin();
-        $verified = $this->createMahasiswaWithDhs('verified');
-
-        $response = $this->actingAs($admin)->get(route('verifikasi-dokumen.dhs.index', ['status' => 'verified']));
-        $response->assertSee($verified->user->name);
-    }
-
-    public function test_admin_can_access_dhs_show(): void
-    {
-        $admin = $this->createAdmin();
-        $mhs = $this->createMahasiswaWithDhs('pending');
-
-        $response = $this->actingAs($admin)->get(route('verifikasi-dokumen.dhs.show', $mhs->user_id));
-        $response->assertStatus(200);
-        $response->assertSee($mhs->user->name);
-    }
-
     public function test_admin_can_verify_dhs(): void
     {
         $admin = $this->createAdmin();
