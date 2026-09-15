@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use App\Models\Mahasiswa;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\DatabaseMessage;
 use Illuminate\Notifications\Notification;
 
 class DhsUploadedNotification extends Notification

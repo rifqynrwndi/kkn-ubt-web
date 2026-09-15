@@ -5,7 +5,6 @@ namespace Tests\Unit\Services\War;
 use App\Models\Fakultas;
 use App\Models\KelompokKkn;
 use App\Models\PesertaKkn;
-use App\Models\ProgramStudi;
 use App\Models\WarFaculty;
 use App\Models\WarSession;
 use App\Services\War\WarValidationService;
@@ -20,10 +19,15 @@ class WarValidationServiceTest extends TestCase
     private WarValidationService $service;
 
     private int $userId;
+
     private int $fakultasId;
+
     private int $prodiId;
+
     private int $gelombangId;
+
     private int $kelompokId;
+
     private int $warSessionId;
 
     protected function setUp(): void
@@ -116,7 +120,7 @@ class WarValidationServiceTest extends TestCase
             'kuota' => 12,
             'status' => 'dibuka',
             'status_tahap' => 0,
-            'kode_kelompok' => 'KLT-' . rand(100, 999),
+            'kode_kelompok' => 'KLT-'.rand(100, 999),
         ];
 
         $id = DB::table('kelompok_kkn')->insertGetId(array_merge($defaults, $overrides));

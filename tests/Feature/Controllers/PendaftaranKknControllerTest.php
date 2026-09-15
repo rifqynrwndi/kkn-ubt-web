@@ -14,7 +14,9 @@ class PendaftaranKknControllerTest extends TestCase
     use RefreshDatabase;
 
     private int $userId;
+
     private int $gelombangId;
+
     private int $kelompokId;
 
     protected function setUp(): void

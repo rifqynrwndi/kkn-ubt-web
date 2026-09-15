@@ -6,10 +6,10 @@ use App\Models\Gelombang;
 use App\Models\KelompokKkn;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ExportService
@@ -121,6 +121,7 @@ class ExportService
                     $style = ($no % 2 === 1) ? $this->altRowStyle() : $this->rowStyle();
                     $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray($style);
                     $row++;
+
                     continue;
                 }
 

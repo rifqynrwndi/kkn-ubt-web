@@ -14,20 +14,13 @@ use App\Models\PenilaianKelompok;
 use App\Models\PenilaianKomponen;
 use App\Models\PesertaKkn;
 use App\Models\TugasKelompok;
-use App\Models\WarParticipant;
 use App\Services\ExportService;
 use App\Services\KelompokService;
 use App\Services\StatusService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class KelompokKknController extends Controller
 {

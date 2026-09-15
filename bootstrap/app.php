@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureBiodataComplete;
+use App\Http\Middleware\EnsureDhsVerified;
 use App\Http\Middleware\EnsureEmailVerifiedExceptSuperadmin;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\Superadmin;
@@ -28,7 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             'biodata.complete' => EnsureBiodataComplete::class,
             'email.verified.except.superadmin' => EnsureEmailVerifiedExceptSuperadmin::class,
-            'dhs.verified' => \App\Http\Middleware\EnsureDhsVerified::class,
+            'dhs.verified' => EnsureDhsVerified::class,
         ]);
 
         if (env('REDIS_THROTTLE', false)) {

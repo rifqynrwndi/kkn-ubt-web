@@ -15,6 +15,7 @@ class WarRuleServiceCheckCanJoinTest extends TestCase
     use RefreshDatabase;
 
     private WarRuleService $service;
+
     private int $gelombangId;
 
     protected function setUp(): void

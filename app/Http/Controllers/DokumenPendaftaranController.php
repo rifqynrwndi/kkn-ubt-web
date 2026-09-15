@@ -215,7 +215,7 @@ class DokumenPendaftaranController extends Controller
         $requiredTypes = $peserta->gelombang->getRequiredDocumentTypesAttribute();
 
         $request->validate([
-            'jenis_dokumen' => ['required', 'string', 'in:' . implode(',', $requiredTypes)],
+            'jenis_dokumen' => ['required', 'string', 'in:'.implode(',', $requiredTypes)],
             'file' => 'required|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
