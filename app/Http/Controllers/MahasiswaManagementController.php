@@ -215,6 +215,15 @@ class MahasiswaManagementController extends Controller
             ->with('success', 'Data mahasiswa berhasil diperbarui.');
     }
 
+    public function verifyEmail($id)
+    {
+        $user = User::role('mahasiswa')->findOrFail($id);
+        $user->email_verified_at = now();
+        $user->save();
+
+        return back()->with('success', 'Email '.$user->email.' berhasil diverifikasi.');
+    }
+
     public function destroy($id)
     {
         $user = User::with('mahasiswa')->findOrFail($id);

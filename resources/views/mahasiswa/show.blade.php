@@ -55,6 +55,12 @@
                                         <span class="badge badge-danger">
                                             Not Verified
                                         </span>
+                                        <form action="{{ route('mahasiswa.verify-email', $mahasiswa->id) }}" method="POST" class="d-inline ml-2">
+                                            @csrf
+                                            <button class="btn btn-outline-success btn-sm" onclick="return confirm('Verifikasi email {{ $mahasiswa->email }}?')">
+                                                <i class="fas fa-check"></i> Verifikasi
+                                            </button>
+                                        </form>
                                     @endif
                                 </td>
                             </tr>
