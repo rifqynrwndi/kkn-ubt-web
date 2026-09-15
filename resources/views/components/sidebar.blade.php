@@ -38,14 +38,6 @@
                     </a>
                 </li>
 
-                <li class="{{ Request::is('notifications*') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ route('notifications.index') }}">
-                        <i class="fas fa-bell"></i>
-                        <span>Notifications</span>
-                        <livewire:notification-badge />
-                    </a>
-                </li>
-
                 @if($biodataIncomplete)
 
                     <li class="menu-header">Biodata</li>
@@ -60,7 +52,7 @@
                     <li class="{{ Request::is('profile/change-password') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ url('profile/change-password') }}">
                             <i class="fas fa-key"></i>
-                            <span>Change Password</span>
+                            <span>Ubah Kata Sandi</span>
                         </a>
                     </li>
 
@@ -79,12 +71,3 @@
     </aside>
 </div>
 @endauth
-
-@if(auth()->user()?->hasRole('mahasiswa') && !auth()->user()->mahasiswa?->is_biodata_complete)
-<div class="alert alert-warning">
-    Biodata Anda belum lengkap.
-    <a href="{{ route('biodata.edit') }}" class="alert-link">
-        Klik di sini untuk melengkapi biodata.
-    </a>
-</div>
-@endif

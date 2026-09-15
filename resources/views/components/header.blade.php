@@ -30,6 +30,95 @@
             </a>
         </li>
 
+        {{-- NOTIFICATION DROPDOWN --}}
+        @php
+            $unreadCount = auth()->user()->unreadNotifications->count();
+            $notifications = auth()->user()->notifications()->latest()->take(10)->get();
+
+            $notificationMap = [
+                'App\\Notifications\\DhsUploadedNotification' => [
+                    'title' => 'DHS Diunggah',
+                    'icon' => 'fas fa-file-alt text-primary',
+                    'url' => '/home',
+                ],
+                'App\\Notifications\\DhsVerifiedNotification' => [
+                    'title' => 'DHS Diverifikasi',
+                    'icon' => 'fas fa-check-circle text-success',
+                    'url' => '/biodata/edit',
+                ],
+                'App\\Notifications\\DokumenUploadedNotification' => [
+                    'title' => 'Dokumen Diunggah',
+                    'icon' => 'fas fa-file-upload text-info',
+                    'url' => '/verifikasi-dokumen',
+                ],
+                'App\\Notifications\\DokumenVerifiedNotification' => [
+                    'title' => 'Dokumen Diverifikasi',
+                    'icon' => 'fas fa-check-circle text-success',
+                    'url' => '/verifikasi-dokumen',
+                ],
+                'App\\Notifications\\BulkDokumenVerifiedNotification' => [
+                    'title' => 'Dokumen Diverifikasi',
+                    'icon' => 'fas fa-check-double text-success',
+                    'url' => '/pendaftaran-kkn',
+                ],
+                'App\\Notifications\\GeneralNotification' => [
+                    'title' => 'Info',
+                    'icon' => 'fas fa-bell text-warning',
+                    'url' => '/home',
+                ],
+            ];
+        @endphp
+        <li class="dropdown">
+            <a href="#" data-toggle="dropdown" class="nav-link nav-link-lg position-relative">
+                <i class="fas fa-bell"></i>
+                @if($unreadCount > 0)
+                    <span class="notification-badge-dot"></span>
+                @endif
+            </a>
+
+            <div class="dropdown-menu dropdown-menu-right notification-dropdown-menu">
+                <div class="notification-dropdown-header">
+                    <span class="fw-bold">Notifikasi</span>
+                    @if($unreadCount > 0)
+                        <span class="text-primary small">{{ $unreadCount }} baru</span>
+                    @endif
+                </div>
+
+                <div class="notification-dropdown-list" id="notification-list">
+                    @forelse($notifications as $notification)
+                        @php
+                            $map = $notificationMap[$notification->type] ?? ['title' => 'Notifikasi', 'icon' => 'fas fa-bell text-secondary', 'url' => '/home'];
+                            $notifTitle = $notification->data['title'] ?? $map['title'];
+                            $notifMessage = $notification->data['message'] ?? '';
+                            $redirectUrl = $notification->data['url'] ?? $notification->data['action_url'] ?? $map['url'];
+                        @endphp
+                        <a href="#"
+                           class="notification-dropdown-item {{ $notification->read_at ? '' : 'unread' }}"
+                           data-url="{{ $redirectUrl }}"
+                           data-id="{{ $notification->id }}"
+                           onclick="markNotifRead(event, this)">
+                            <div class="notification-dropdown-icon">
+                                <i class="{{ $map['icon'] }}"></i>
+                            </div>
+                            <div class="notification-dropdown-content">
+                                <div class="notification-dropdown-title">{{ $notifTitle }}</div>
+                                <div class="notification-dropdown-desc">{{ Str::limit($notifMessage, 60) }}</div>
+                                <div class="notification-dropdown-time">{{ $notification->created_at->diffForHumans() }}</div>
+                            </div>
+                            @if(!$notification->read_at)
+                                <span class="notification-unread-dot"></span>
+                            @endif
+                        </a>
+                    @empty
+                        <div class="notification-dropdown-empty">
+                            <i class="fas fa-bell-slash"></i>
+                            <span>Belum ada notifikasi</span>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </li>
+
         <li class="dropdown">
             <a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
                 <img
@@ -70,4 +159,24 @@
         </li>
     </ul>
 </nav>
+
+<script>
+function markNotifRead(e, el) {
+    e.preventDefault();
+    const id = el.dataset.id;
+    const url = el.dataset.url;
+
+    fetch('/notifications/' + id + '/mark-as-read', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        }
+    }).then(() => {
+        window.location.href = url;
+    }).catch(() => {
+        window.location.href = url;
+    });
+}
+</script>
 @endauth

@@ -17,31 +17,36 @@
 
     .message-column {
         white-space: normal !important;
-        min-width: 250px;
-        max-width: 350px;
+        min-width: 180px;
+        max-width: 250px;
         word-break: break-word;
         line-height: 1.5;
     }
 
     .recipient-column {
-        min-width: 220px;
+        min-width: 160px;
+        max-width: 200px;
     }
 
     .action-column {
         white-space: nowrap !important;
-        min-width: 90px;
+        min-width: 70px;
     }
 
     .badge-custom {
-        padding: 6px 10px;
-        font-size: 12px;
+        padding: 4px 8px;
+        font-size: 11px;
         border-radius: 6px;
     }
 
     .recipient-wrap {
         display: flex;
         flex-wrap: wrap;
-        gap: 5px;
+        gap: 4px;
+    }
+
+    .status-column {
+        white-space: nowrap;
     }
 </style>
 
@@ -92,14 +97,13 @@
 
                     <thead>
                         <tr>
-                            <th width="50" class="text-center">No</th>
-                            <th>Judul</th>
-                            <th>Pesan</th>
-                            <th>Penerima</th>
-                            <th class="text-center">Tipe</th>
-                            <th>Pengirim</th>
-                            <th class="text-center">Status</th>
-                            <th>Dikirim</th>
+                            <th width="35" class="text-center">No</th>
+                            <th style="min-width:100px">Judul</th>
+                            <th style="min-width:140px">Pesan</th>
+                            <th style="min-width:130px">Penerima</th>
+                            <th class="text-center" style="width:60px">Tipe</th>
+                            <th style="width:80px">Pengirim</th>
+                            <th class="text-center" style="min-width:100px">Status</th>
                             <th class="text-center action-column">Aksi</th>
                         </tr>
                     </thead>
@@ -198,26 +202,18 @@
                                     {{ $item->sender->name ?? '-' }}
                                 </td>
 
-                                <td class="text-center">
+                                <td class="text-center status-column">
 
                                     @if($unreadCount > 0)
                                         <span class="badge badge-warning">
-                                            {{ $unreadCount }} Belum Dibaca
+                                            {{ $unreadCount }} Belum
                                         </span>
                                     @else
                                         <span class="badge badge-success">
-                                            Sudah Dibaca
+                                            Dibaca
                                         </span>
                                     @endif
 
-                                </td>
-
-                                <td style="white-space: nowrap;">
-                                    {{ $item->created_at->format('d M Y') }}
-                                    <br>
-                                    <small class="text-muted">
-                                        {{ $item->created_at->format('H:i') }}
-                                    </small>
                                 </td>
 
                                 <td class="text-center action-column">
@@ -243,7 +239,7 @@
                         @empty
 
                             <tr>
-                                <td colspan="9" class="text-center text-muted py-5">
+                                <td colspan="7" class="text-center text-muted py-5">
                                     <i class="fas fa-bell-slash fa-2x mb-3 d-block"></i>
                                     Belum ada riwayat notifikasi
                                 </td>

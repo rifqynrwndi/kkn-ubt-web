@@ -55,6 +55,8 @@ class DokumenVerifiedNotification extends Notification
             'peserta_kkn_id' => $this->peserta->id,
 
             'type' => 'dokumen_verified',
+
+            'url' => '/verifikasi-dokumen',
         ];
     }
 

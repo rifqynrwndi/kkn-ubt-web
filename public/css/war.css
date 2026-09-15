@@ -1,0 +1,685 @@
+/* ═══════════════════════════════════════════════════════════
+   WAR (Plotting) — Shared Styles
+   Extracted from: arena.blade.php, index.blade.php, joined.blade.php, monitor.blade.php
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── CSS VARIABLES ──────────────────────────────────────── */
+:root {
+    --war-navy: #0f3460;
+    --war-navy-dark: #1a1a2e;
+    --war-navy-mid: #16213e;
+    --war-primary: #6777ef;
+    --war-primary-dark: #4f5ece;
+    --war-success: #47c363;
+    --war-success-dark: #2f9e44;
+    --war-danger: #fc544b;
+    --war-danger-dark: #c92a2a;
+    --war-warning: #ffa426;
+    --war-warning-dark: #e67700;
+    --war-purple: #8860d0;
+    --war-purple-dark: #6c3bb3;
+    --war-red-accent: #ff416c;
+    --war-red-accent-dark: #ff4b2b;
+    --war-text: #1a1a2e;
+    --war-text-muted: #6c757d;
+    --war-border: #f1f1f1;
+    --war-bg-subtle: #fafafa;
+    --war-bg-hover: #f8f9ff;
+    --war-num-bg: #eef0ff;
+    --war-bar-bg: #e9ecef;
+    --war-full-bg: #fff0f0;
+    --war-near-bg: #fff8e1;
+    --war-available-bg: #e8f5e9;
+}
+
+[data-bs-theme="dark"] {
+    --war-text: #f1f3f8;
+    --war-text-muted: #8892a6;
+    --war-border: rgba(255,255,255,.08);
+    --war-bg-subtle: rgba(255,255,255,.03);
+    --war-bg-hover: rgba(103,119,239,.05);
+    --war-hero-dark-bg: #252a3a;
+}
+
+[data-bs-theme="dark"] .war-hero,
+[data-bs-theme="dark"] .arena-header,
+[data-bs-theme="dark"] .mon-header {
+    background: #2a2d36;
+    border: 1px solid rgba(255,255,255,.08);
+}
+
+[data-bs-theme="dark"] .status-card,
+[data-bs-theme="dark"] .mon-stat-card,
+[data-bs-theme="dark"] .sec-card,
+[data-bs-theme="dark"] .info-card {
+    border: 1px solid rgba(255,255,255,.06);
+}
+
+[data-bs-theme="dark"] .kelompok-list-item,
+[data-bs-theme="dark"] .kl-row {
+    border-bottom-color: rgba(255,255,255,.06);
+}
+
+[data-bs-theme="dark"] .anggota-item {
+    border-bottom-color: rgba(255,255,255,.06);
+}
+
+[data-bs-theme="dark"] .detail-row {
+    border-bottom-color: rgba(255,255,255,.06);
+}
+
+[data-bs-theme="dark"] .detail-value {
+    color: var(--war-text);
+}
+
+[data-bs-theme="dark"] .kl-name {
+    color: var(--war-text);
+}
+
+[data-bs-theme="dark"] .badge-faculty {
+    background: rgba(103,119,239,.15);
+    color: #8b9cf7;
+}
+
+[data-bs-theme="dark"] .anggota-avatar.L {
+    background: rgba(103,119,239,.15);
+    color: #8b9cf7;
+}
+
+[data-bs-theme="dark"] .anggota-avatar.P {
+    background: rgba(236,72,153,.15);
+    color: #f472b6;
+}
+
+[data-bs-theme="dark"] .kl-full-badge {
+    background: rgba(252,84,75,.12);
+    color: #f87171;
+}
+
+[data-bs-theme="dark"] .kl-full-badge.fak-penuh {
+    background: rgba(255,164,38,.12);
+    color: #fbbf24;
+}
+
+[data-bs-theme="dark"] .kl-bar {
+    background: rgba(255,255,255,.08);
+}
+
+[data-bs-theme="dark"] .fak-bar {
+    background: rgba(255,255,255,.08);
+}
+
+/* ── HERO / HEADER ─────────────────────────────────────── */
+.war-hero,
+.arena-header,
+.mon-header {
+    background: var(--war-navy-dark);
+    border-radius: 20px;
+    padding: 40px 36px;
+    color: #fff;
+    margin-bottom: 28px;
+    text-align: center;
+}
+
+.war-hero-content,
+.arena-header-content,
+.mh-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* ── WAR BADGE (LIVE) ──────────────────────────────────── */
+.war-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,59,59,.2);
+    border: 1px solid rgba(255,59,59,.5);
+    color: #ff6b6b;
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+}
+
+.war-badge .blink {
+    width: 8px; height: 8px;
+    background: #ff6b6b;
+    border-radius: 50%;
+    animation: war-blink 1s infinite;
+}
+
+@keyframes war-blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0; }
+}
+
+/* ── HERO TYPOGRAPHY ───────────────────────────────────── */
+.war-hero h1,
+.arena-title,
+.mh-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.war-hero p,
+.arena-subtitle,
+.mh-meta {
+    font-size: .95rem;
+    opacity: .75;
+    margin-bottom: 0;
+}
+
+/* ── COUNTDOWN ─────────────────────────────────────────── */
+.countdown-box,
+.mh-countdown,
+#war-countdown {
+    background: rgba(255,255,255,0.15);
+    display: inline-block;
+    padding: 10px 28px;
+    border-radius: 50px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.3);
+    letter-spacing: 1px;
+    font-family: 'Courier New', monospace;
+}
+
+#war-countdown {
+    font-size: 2rem;
+    color: var(--war-red-accent);
+}
+
+/* ── STATUS CARDS ──────────────────────────────────────── */
+.status-card {
+    border: none;
+    border-radius: 16px;
+    padding: 28px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+}
+
+.status-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,.1);
+}
+
+.status-card .icon-wrap {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    margin: 0 auto 16px;
+}
+
+.status-card h2 { font-size: 2rem; font-weight: 800; margin-bottom: 4px; }
+.status-card p  { font-size: 13px; margin-bottom: 0; opacity: .75; }
+
+.sc-blue   { background: linear-gradient(135deg, #e8ecff, #dde3ff); color: var(--war-primary-dark); }
+.sc-green  { background: linear-gradient(135deg, #e8fff0, #d3f9df); color: var(--war-success-dark); }
+.sc-red    { background: linear-gradient(135deg, #fff0f0, #ffd8d8); color: var(--war-danger-dark); }
+.sc-orange { background: linear-gradient(135deg, #fff8e1, #ffe0a0); color: var(--war-warning-dark); }
+.sc-purple { background: linear-gradient(135deg, #f3e8ff, #e8d5f5); color: var(--war-purple-dark); }
+
+.sc-blue   .icon-wrap { background: rgba(79,94,206,.15); }
+.sc-green  .icon-wrap { background: rgba(47,158,68,.15); }
+.sc-red    .icon-wrap { background: rgba(201,42,42,.15); }
+.sc-orange .icon-wrap { background: rgba(208,136,0,.15); }
+.sc-purple .icon-wrap { background: rgba(136,96,208,.15); }
+
+/* ── STATE BLOCK ───────────────────────────────────────── */
+.state-block {
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+}
+
+.state-block-icon {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 16px;
+}
+
+/* ── BUTTON WAR ────────────────────────────────────────── */
+.btn-war {
+    background: linear-gradient(135deg, var(--war-red-accent), var(--war-red-accent-dark));
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 40px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: .5px;
+    transition: all .25s;
+    box-shadow: 0 6px 20px rgba(255,65,108,.35);
+}
+
+.btn-war:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(255,65,108,.45);
+    color: #fff;
+}
+
+.btn-war:active { transform: translateY(0); }
+
+/* ── KELOMPOK LIST (Arena) ─────────────────────────────── */
+.kelompok-list-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--war-border);
+    gap: 14px;
+    transition: background .15s;
+}
+
+.kelompok-list-item:last-child { border-bottom: none; }
+.kelompok-list-item:hover { background: var(--war-bg-hover); }
+
+.kl-number,
+.kl-num {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--war-num-bg);
+    color: var(--war-primary);
+    font-weight: 800;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+
+.kl-num {
+    border-radius: 10px;
+    font-size: 13px;
+    width: 32px; height: 32px;
+}
+
+.kl-info { flex-grow: 1; min-width: 0; }
+
+.kl-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--war-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.kl-location,
+.kl-loc {
+    font-size: 12px;
+    color: var(--war-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.kl-quota {
+    text-align: center;
+    min-width: 80px;
+    flex-shrink: 0;
+}
+
+.kl-quota .q-num {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--war-primary);
+    line-height: 1;
+}
+
+.kl-quota .q-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--war-text-muted);
+    margin-top: 2px;
+}
+
+/* ── PROGRESS BAR ──────────────────────────────────────── */
+.kl-bar-wrap { width: 80px; flex-shrink: 0; }
+.kl-bar-col { width: 130px; flex-shrink: 0; }
+
+.kl-bar {
+    height: 6px;
+    border-radius: 4px;
+    background: var(--war-bar-bg);
+    overflow: hidden;
+}
+
+.kl-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width .4s;
+}
+
+.kl-bar-fill.ok   { background: linear-gradient(90deg, var(--war-success), var(--war-success-dark)); }
+.kl-bar-fill.warn { background: linear-gradient(90deg, var(--war-warning), var(--war-warning-dark)); }
+.kl-bar-fill.full { background: linear-gradient(90deg, var(--war-danger), var(--war-danger-dark)); }
+
+.kl-pct-label {
+    font-size: 10px;
+    color: var(--war-text-muted);
+    margin-top: 3px;
+    text-align: center;
+}
+
+.kl-count {
+    font-size: 11px;
+    color: var(--war-text-muted);
+    text-align: center;
+    margin-top: 3px;
+    white-space: nowrap;
+}
+
+/* ── JOIN BUTTON ───────────────────────────────────────── */
+.btn-join {
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 7px 18px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.kl-full-badge {
+    display: inline-block;
+    background: var(--war-full-bg);
+    color: var(--war-danger-dark);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    flex-shrink: 0;
+}
+
+.kl-full-badge.fak-penuh {
+    background: var(--war-near-bg);
+    color: var(--war-warning-dark);
+}
+
+/* ── DISABLED GROUP ────────────────────────────────────── */
+.kelompok-list-item.is-disabled,
+.kl-row.is-full {
+    opacity: .55;
+    pointer-events: none;
+}
+
+.kelompok-list-item.is-disabled .kl-number,
+.kl-row.is-full .kl-num {
+    background: var(--war-bar-bg);
+    color: #999;
+}
+
+.kelompok-list-item.is-disabled .kl-name,
+.kl-row.is-full .kl-name {
+    color: #999;
+}
+
+/* ── SECTION DIVIDERS ──────────────────────────────────── */
+.kl-section-divider {
+    padding: 8px 18px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--war-text-muted);
+    background: var(--war-bg-subtle);
+    border-bottom: 1px solid var(--war-border);
+}
+
+.kl-kabupaten-divider {
+    font-weight: 800;
+    font-size: 13px;
+    padding: 12px 18px;
+    color: var(--war-text);
+    border-bottom: 1px solid var(--war-border);
+}
+
+/* ── MONITOR — SECTION CARDS ──────────────────────────── */
+.sec-card {
+    border: none;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(0,0,0,.05);
+    background: var(--bs-body-bg, #fff);
+    margin-bottom: 24px;
+}
+
+.sec-card .card-header {
+    background: transparent;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    padding: 16px 22px;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* ── MONITOR — KELOMPOK TABLE ──────────────────────────── */
+.kl-table { width: 100%; }
+
+.kl-row {
+    display: flex;
+    align-items: center;
+    padding: 13px 22px;
+    border-bottom: 1px solid rgba(0,0,0,.05);
+    gap: 16px;
+    transition: background .15s;
+}
+
+.kl-row:last-child { border-bottom: none; }
+.kl-row:hover { background: var(--war-bg-hover); }
+
+/* ── MONITOR — BADGES ──────────────────────────────────── */
+.kl-badge {
+    flex-shrink: 0;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    min-width: 70px;
+    text-align: center;
+}
+
+.kl-badge.available { background: var(--war-available-bg); color: var(--war-success-dark); }
+.kl-badge.full      { background: var(--war-full-bg); color: var(--war-danger-dark); }
+.kl-badge.near      { background: var(--war-near-bg); color: var(--war-warning-dark); }
+
+/* ── MONITOR — FAKULTAS BAR ────────────────────────────── */
+.fak-row { margin-bottom: 16px; }
+.fak-row:last-child { margin-bottom: 0; }
+
+.fak-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.fak-name { font-size: 13px; font-weight: 700; }
+.fak-count { font-size: 12px; color: var(--war-text-muted); }
+
+.fak-bar {
+    height: 8px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(0,0,0,.06);
+    margin-bottom: 4px;
+}
+
+.fak-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width .4s;
+    background: linear-gradient(90deg, var(--war-primary), var(--war-primary-dark));
+}
+
+.fak-pct { font-size: 11px; color: var(--war-text-muted); text-align: right; }
+.fak-empty { padding: 24px; text-align: center; font-size: 13px; color: var(--war-text-muted); }
+
+/* ── MONITOR — LOG FEED ────────────────────────────────── */
+.log-feed { max-height: 400px; overflow-y: auto; }
+
+.log-item {
+    padding: 10px 14px;
+    margin: 0 3px 8px;
+    border-radius: 10px;
+    background: rgba(0,0,0,.02);
+    border-left: 3px solid transparent;
+    transition: background .15s;
+}
+
+.log-item.join_success { border-left-color: var(--war-success); }
+.log-item.join_failed  { border-left-color: var(--war-danger); }
+.log-name  { font-size: 13px; font-weight: 600; }
+.log-dest  { font-size: 12px; margin-top: 1px; }
+.log-time  { font-size: 11px; color: var(--war-text-muted); margin-top: 3px; }
+.log-empty { padding: 32px; text-align: center; font-size: 13px; color: var(--war-text-muted); }
+
+/* ── MONITOR — LIVE STATUS ─────────────────────────────── */
+.mh-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    background: rgba(255,255,255,.12);
+    padding: 4px 14px;
+    border-radius: 50px;
+}
+
+.mh-live-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--war-success);
+    animation: war-pulse-dot 1.3s infinite;
+}
+
+@keyframes war-pulse-dot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(71,195,99,.6); }
+    50%      { opacity: .4; box-shadow: 0 0 0 8px rgba(71,195,99,0); }
+}
+
+.mh-status {
+    display: inline-block;
+    padding: 5px 16px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+
+.mh-status.active    { background: var(--war-success); color: #fff; }
+.mh-status.scheduled { background: rgba(255,255,255,.2); }
+.mh-status.closed    { background: var(--war-danger); color: #fff; }
+.mh-status.stopped   { background: var(--war-text-muted); color: #fff; }
+
+/* ── JOINED — HERO ─────────────────────────────────────── */
+.joined-hero {
+    background: linear-gradient(135deg, #1e3a2f 0%, #1a4a35 60%, #0d3d27 100%);
+    border-radius: 20px;
+    padding: 40px 32px;
+    color: #fff;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.joined-hero .check-icon {
+    width: 80px; height: 80px;
+    background: rgba(71,195,99,.2);
+    border: 3px solid rgba(71,195,99,.5);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px;
+    margin: 0 auto 20px;
+    animation: war-popIn .5s cubic-bezier(.175,.885,.32,1.275);
+}
+
+@keyframes war-popIn {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+/* ── JOINED — INFO CARD ────────────────────────────────── */
+.info-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.06);
+    overflow: hidden;
+}
+
+.info-card .card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--war-border);
+    padding: 18px 24px;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.info-card .card-body { padding: 24px; }
+
+.detail-row { padding: 10px 0; border-bottom: 1px solid #f5f5f5; }
+.detail-row:last-child { border-bottom: none; }
+.detail-label { font-size: 12px; color: var(--war-text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+.detail-value { font-size: 15px; font-weight: 600; color: var(--war-text); }
+
+/* ── JOINED — ANGGOTA ──────────────────────────────────── */
+.anggota-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.anggota-item:last-child { border-bottom: none; }
+
+.anggota-avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+
+.anggota-avatar.L { background: #e8ecff; color: var(--war-primary-dark); }
+.anggota-avatar.P { background: #fce4ec; color: #c2185b; }
+
+.anggota-info .name  { font-size: 14px; font-weight: 600; }
+.anggota-info .prodi { font-size: 12px; color: var(--war-text-muted); }
+
+.badge-faculty {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #e8ecff;
+    color: var(--war-primary-dark);
+}
+
+/* ── SCHEDULE TABLE ────────────────────────────────────── */
+.schedule-row td { vertical-align: middle !important; }
+
+/* ── UTILITY ───────────────────────────────────────────── */
+.war-section-header {
+    padding: 8px 18px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--war-text-muted);
+    background: var(--war-bg-subtle);
+    border-bottom: 1px solid var(--war-border);
+}

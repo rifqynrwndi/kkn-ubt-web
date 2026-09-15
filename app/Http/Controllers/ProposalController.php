@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\KelompokProposal;
 use App\Models\PesertaKkn;
+use App\Services\StatusService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -92,6 +93,10 @@ class ProposalController extends Controller
 
         $msg = $action === 'submit' ? 'Proposal berhasil diajukan.' : 'Draft proposal disimpan.';
 
+        if ($action === 'submit') {
+            app(StatusService::class)->onProposalSubmitted($kelompok);
+        }
+
         return redirect()->route('kelompok.index', ['tab' => 'proposal'])->with('success', $msg);
     }
 
@@ -111,6 +116,10 @@ class ProposalController extends Controller
             'reviewed_by' => auth()->id(),
             'reviewed_at' => now(),
         ]);
+
+        if ($request->action === 'setujui') {
+            app(StatusService::class)->onProposalApproved($proposal->kelompokKkn);
+        }
 
         return redirect()->route('kelompok.index', ['tab' => 'proposal'])->with('success', 'Proposal berhasil di-review.');
     }

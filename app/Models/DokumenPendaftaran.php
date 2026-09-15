@@ -40,7 +40,6 @@ class DokumenPendaftaran extends Model
     public static function getDocumentLabels(): array
     {
         return [
-            'dhs' => 'Daftar Hasil Studi (DHS)',
             'surat_pernyataan' => 'Surat Pernyataan KKN',
             'surat_ortu' => 'Surat Keterangan Orang Tua',
             'surat_vaksin' => 'Surat Keterangan Vaksin',

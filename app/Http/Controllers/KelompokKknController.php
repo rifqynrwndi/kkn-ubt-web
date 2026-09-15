@@ -15,6 +15,8 @@ use App\Models\PenilaianKomponen;
 use App\Models\PesertaKkn;
 use App\Models\TugasKelompok;
 use App\Models\WarParticipant;
+use App\Services\ExportService;
+use App\Services\KelompokService;
 use App\Services\StatusService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -169,23 +171,7 @@ class KelompokKknController extends Controller
 
         $kelompok = KelompokKkn::create($validated);
 
-        $templates = [
-            ['kategori' => 'tugas_kelompok', 'nama_tugas' => 'Program Kerja'],
-            ['kategori' => 'luaran_wajib', 'nama_tugas' => 'Video Profil Desa', 'is_wajib' => true],
-            ['kategori' => 'luaran_wajib', 'nama_tugas' => 'Draft Artikel', 'is_wajib' => true],
-            ['kategori' => 'luaran_lain', 'nama_tugas' => 'Poster'],
-            ['kategori' => 'luaran_lain', 'nama_tugas' => 'Video Dokumentasi Pelaksanaan KKN'],
-            ['kategori' => 'luaran_lain', 'nama_tugas' => 'Materi Presentasi Akhir'],
-            ['kategori' => 'laporan', 'nama_tugas' => 'Laporan Program KKN'],
-        ];
-        foreach ($templates as $t) {
-            TugasKelompok::create([
-                'kelompok_kkn_id' => $kelompok->id,
-                'kategori' => $t['kategori'],
-                'nama_tugas' => $t['nama_tugas'],
-                'is_wajib' => $t['is_wajib'] ?? false,
-            ]);
-        }
+        app(KelompokService::class)->seedTugasTemplates($kelompok);
 
         return redirect()
             ->route('kelompok-kkn.index')
@@ -239,19 +225,6 @@ class KelompokKknController extends Controller
             'kelompok-kkn.show',
             compact('kelompok_kkn', 'proposal', 'statusStages', 'statusCurrent', 'statusHistory', 'tugasList', 'logbookData', 'komponenList', 'penilaianData', 'penilaianIndividu', 'desaScore', 'dplScore', 'lppmScore', 'finalScore', 'laporans')
         );
-    }
-
-    private function calcScore($komponenList, $penilaianData): ?float
-    {
-        $totalBobot = $komponenList->sum('bobot');
-        if ($totalBobot === 0) {
-            return null;
-        }
-        $totalNilai = $komponenList->sum(function ($k) use ($penilaianData) {
-            return ($penilaianData[$k->id]->nilai ?? 0) * $k->bobot;
-        });
-
-        return $totalNilai > 0 ? round($totalNilai / $totalBobot, 2) : null;
     }
 
     public function edit(
@@ -329,6 +302,10 @@ class KelompokKknController extends Controller
         }
 
         $kelompok_kkn->update($validated);
+
+        if (! empty($validated['dosen_pembimbing_lapangan_id']) && $kelompok_kkn->status_tahap === 2) {
+            app(StatusService::class)->onDplAssigned($kelompok_kkn);
+        }
 
         return redirect()
             ->route('kelompok-kkn.index')
@@ -463,66 +440,13 @@ class KelompokKknController extends Controller
 
     public function hapusAnggota(KelompokKkn $kelompok_kkn, PesertaKkn $peserta): RedirectResponse
     {
-
-        /*
-        |--------------------------------------------------------------------------
-        | Ensure Member Belongs To Group
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            $peserta->kelompok_kkn_id
-            !=
-            $kelompok_kkn->id
-        ) {
-
-            return back()->with(
-                'error',
-                'Anggota tidak ditemukan pada kelompok ini.'
-            );
-
+        if ($peserta->kelompok_kkn_id !== $kelompok_kkn->id) {
+            return back()->with('error', 'Anggota tidak ditemukan pada kelompok ini.');
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Remove From Group
-        |--------------------------------------------------------------------------
-        */
+        app(KelompokService::class)->removeAnggota($kelompok_kkn, $peserta);
 
-        DB::transaction(function () use ($kelompok_kkn, $peserta) {
-
-            $peserta->update([
-                'kelompok_kkn_id' => null,
-            ]);
-
-            if ($kelompok_kkn->ketua_peserta_id === $peserta->id) {
-                $kelompok_kkn->updateQuietly(['ketua_peserta_id' => null]);
-            }
-
-            WarParticipant::where('peserta_kkn_id', $peserta->id)->delete();
-
-        });
-
-        /*
-        |--------------------------------------------------------------------------
-        | Reopen Group If Needed
-        |--------------------------------------------------------------------------
-        */
-
-        $kelompok_kkn->refresh();
-
-        if ($kelompok_kkn->status === 'penuh' && $kelompok_kkn->terisi < $kelompok_kkn->kuota) {
-
-            $kelompok_kkn->updateQuietly([
-                'status' => 'dibuka',
-            ]);
-
-        }
-
-        return back()->with(
-            'success',
-            'Anggota berhasil dihapus.'
-        );
+        return back()->with('success', 'Anggota berhasil dihapus.');
     }
 
     public function setKetua(KelompokKkn $kelompok_kkn, PesertaKkn $peserta): RedirectResponse
@@ -545,96 +469,7 @@ class KelompokKknController extends Controller
 
     public function exportXlsx()
     {
-        $kelompoks = KelompokKkn::with([
-            'pesertaKkn.mahasiswa.user',
-            'pesertaKkn.mahasiswa.prodi.fakultas',
-            'dosenPembimbingLapangan.user',
-            'desaGelombang.desa.kecamatan',
-        ])->orderBy('nama_kelompok')->get();
-
-        $grouped = $kelompoks->groupBy(fn ($k) => $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? 'Tanpa Kabupaten');
-
-        $spreadsheet = new Spreadsheet;
-        $first = true;
-
-        $headerStyle = [
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2D3A8A']],
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'FFFFFF']]],
-        ];
-
-        $rowStripeStyle = [
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F0F2FA']],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'D0D5E8']]],
-        ];
-
-        $rowStyle = [
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'D0D5E8']]],
-        ];
-
-        $altRowStyle = [
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'D0D5E8']]],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F8F9FC']],
-        ];
-
-        foreach ($grouped as $kabupaten => $kels) {
-            $sheet = $first ? $spreadsheet->getActiveSheet() : $spreadsheet->createSheet();
-            $first = false;
-
-            $safeName = mb_substr(str_replace(['\\', '/', '*', '?', '[', ']', ':'], '', $kabupaten), 0, 31);
-            $sheet->setTitle($safeName);
-
-            $headers = ['No', 'Kelompok', 'DPL', 'Lokasi', 'Anggota'];
-            $lastCol = 'E';
-
-            $sheet->fromArray([$headers], null, 'A1');
-            $sheet->getStyle("A1:{$lastCol}1")->applyFromArray($headerStyle);
-            $sheet->getRowDimension(1)->setRowHeight(28);
-
-            $row = 2;
-            $no = 1;
-            foreach ($kels as $k) {
-                $dpl = $k->dosenPembimbingLapangan?->user?->name ?? '-';
-                $desa = $k->desaGelombang?->desa?->nama_desa ?? '-';
-                $kec = $k->desaGelombang?->desa?->kecamatan?->nama_kecamatan ?? '-';
-
-                $anggotaList = $k->pesertaKkn->map(function ($p, $i) {
-                    $m = $p->mahasiswa;
-                    $nama = $m?->user?->name ?? '-';
-                    $npm = $m?->npm ?? '';
-                    $prodi = $m?->prodi?->nama_prodi ?? '';
-                    $fakultas = $m?->prodi?->fakultas?->nama_fakultas ?? '';
-
-                    return ($i + 1).". {$nama} | {$npm} | {$prodi} | {$fakultas}";
-                })->implode("\n");
-
-                $rowData = [$no++, $k->nama_kelompok."\n(".$k->kode_kelompok.')', $dpl, "{$desa}\n{$kec}", $anggotaList];
-
-                $sheet->fromArray([$rowData], null, "A{$row}");
-                $style = ($no % 2 === 1) ? $rowStripeStyle : $altRowStyle;
-                $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray($style);
-                $sheet->getRowDimension($row)->setRowHeight(max(36, $k->pesertaKkn->count() * 18));
-                $sheet->getStyle("A{$row}:{$lastCol}{$row}")->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_TOP);
-                $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $row++;
-            }
-
-            $sheet->getColumnDimension('A')->setWidth(6);
-            $sheet->getColumnDimension('B')->setWidth(24);
-            $sheet->getColumnDimension('C')->setWidth(22);
-            $sheet->getColumnDimension('D')->setWidth(20);
-            $sheet->getColumnDimension('E')->setWidth(50);
-        }
-
-        $writer = new Xlsx($spreadsheet);
-        $filename = 'data-kelompok-kkn-'.now()->format('Ymd-His').'.xlsx';
-
-        return response()->streamDownload(function () use ($writer) {
-            $writer->save('php://output');
-        }, $filename, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ]);
+        app(ExportService::class)->exportKelompokXlsx();
     }
 
     public function laporanStore(Request $request, KelompokKkn $kelompok_kkn): RedirectResponse

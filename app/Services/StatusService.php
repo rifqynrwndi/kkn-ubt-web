@@ -4,17 +4,22 @@ namespace App\Services;
 
 use App\Models\KelompokKkn;
 use App\Models\KelompokStatusHistory;
+use App\Models\LogBook;
+use App\Models\PenilaianKelompok;
+use App\Models\TugasKelompok;
+use App\Models\TugasSubmission;
 
 class StatusService
 {
     public const STAGES = [
-        0 => ['nama' => 'Pembekelan', 'color' => 'info', 'desc' => 'Tahap persiapan dan pembekalan sebelum mahasiswa turun ke lapangan. DPL dapat mulai melakukan monitoring dan mahasiswa mulai mengisi Log Book.'],
-        1 => ['nama' => 'Berjalan', 'color' => 'success', 'desc' => 'Mahasiswa melaksanakan KKN di desa tujuan. Pada tahap ini mahasiswa mengisi Log Book, mengumpulkan tugas, dan laporan. DPL melakukan monitoring dan evaluasi harian.'],
-        2 => ['nama' => 'Penyelesaian Tugas', 'color' => 'warning', 'desc' => 'Seluruh tugas dan laporan harus diselesaikan dan dikumpulkan. DPL melakukan review akhir terhadap semua pengumpulan tugas sebelum melanjutkan ke tahap penilaian.'],
-        3 => ['nama' => 'Selesai', 'color' => 'dark', 'desc' => 'Seluruh rangkaian KKN telah selesai dilaksanakan. Nilai akhir telah ditetapkan dan tidak dapat diubah lagi.'],
+        0 => ['nama' => 'Belum Mulai',       'color' => 'secondary', 'desc' => 'Kelompok telah terbentuk melalui WAR. Menunggu proposal diajukan oleh ketua kelompok.'],
+        1 => ['nama' => 'Proposal Diajukan', 'color' => 'warning',   'desc' => 'Proposal telah diajukan oleh ketua. Menunggu review dan persetujuan dari Dosen Pembimbing Lapangan.'],
+        2 => ['nama' => 'Disetujui DPL',     'color' => 'info',      'desc' => 'Proposal telah disetujui oleh DPL. Kelompok menunggu penugasan DPL untuk memulai aktivitas KKN.'],
+        3 => ['nama' => 'Aktif KKN',         'color' => 'success',   'desc' => 'DPL telah ditugaskan. Mahasiswa melakukan aktivitas KKN: mengisi log book, mengumpulkan tugas, dan menyelesaikan program kerja.'],
+        4 => ['nama' => 'Selesai',           'color' => 'dark',      'desc' => 'Seluruh rangkaian KKN telah selesai. Log book minimal 40 entri tervalidasi, semua tugas terkumpul, dan penilaian telah selesai.'],
     ];
 
-    public function changeStatus(KelompokKkn $kelompok, int $newStage, ?string $keterangan = null, string $role = 'superadmin'): void
+    public function changeStatus(KelompokKkn $kelompok, int $newStage, ?string $keterangan = null, string $role = 'system'): void
     {
         $oldStage = $kelompok->status_tahap;
 
@@ -45,5 +50,55 @@ class StatusService
             ->with('changedBy')
             ->latest()
             ->get();
+    }
+
+    public function onProposalSubmitted(KelompokKkn $kelompok): void
+    {
+        if ($kelompok->status_tahap === 0) {
+            $this->changeStatus($kelompok, 1, 'Otomatis: proposal diajukan oleh ketua');
+        }
+    }
+
+    public function onProposalApproved(KelompokKkn $kelompok): void
+    {
+        if ($kelompok->status_tahap === 1) {
+            $this->changeStatus($kelompok, 2, 'Otomatis: proposal disetujui oleh DPL');
+        }
+    }
+
+    public function onDplAssigned(KelompokKkn $kelompok): void
+    {
+        if ($kelompok->status_tahap === 2) {
+            $this->changeStatus($kelompok, 3, 'Otomatis: DPL ditugaskan ke kelompok');
+        }
+    }
+
+    public function checkAutoAdvance(KelompokKkn $kelompok): void
+    {
+        if ($kelompok->status_tahap !== 3) {
+            return;
+        }
+
+        $logbookCount = LogBook::where('kelompok_kkn_id', $kelompok->id)
+            ->where('is_validated', true)
+            ->count();
+
+        $tugasKelompokIds = TugasKelompok::where('kelompok_kkn_id', $kelompok->id)
+            ->pluck('id');
+
+        $totalTugas = $tugasKelompokIds->count();
+
+        $submittedTugas = TugasSubmission::whereIn('tugas_kelompok_id', $tugasKelompokIds)
+            ->where('status', '!=', 'menunggu')
+            ->distinct('tugas_kelompok_id')
+            ->count('tugas_kelompok_id');
+
+        $scoredComponents = PenilaianKelompok::where('kelompok_kkn_id', $kelompok->id)
+            ->whereNotNull('nilai')
+            ->count();
+
+        if ($logbookCount >= 40 && $totalTugas > 0 && $submittedTugas >= $totalTugas && $scoredComponents >= 4) {
+            $this->changeStatus($kelompok, 4, 'Otomatis: log book ≥ 40, semua tugas terkumpul, penilaian selesai');
+        }
     }
 }

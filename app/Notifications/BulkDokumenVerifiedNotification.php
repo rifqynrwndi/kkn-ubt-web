@@ -30,6 +30,7 @@ class BulkDokumenVerifiedNotification extends Notification
             'message' => 'Status verifikasi dokumen KKN Anda telah diperbarui oleh admin.',
             'peserta_kkn_id' => $this->peserta->id,
             'type' => 'bulk_verification',
+            'url' => '/pendaftaran-kkn',
         ];
     }
 

@@ -5,11 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Gelombang;
 use App\Models\KelompokKkn;
 use App\Models\PesertaKkn;
+use App\Services\War\WarRuleService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class PendaftaranKknController extends Controller
 {
+    public function __construct(
+        private readonly WarRuleService $ruleService,
+    ) {}
     public function index(): View
     {
         $user = auth()->user();
@@ -144,13 +149,7 @@ class PendaftaranKknController extends Controller
         | CEK DOKUMEN WAJIB UPLOAD
         |-----------------------------------------
         */
-        $requiredDocs = [
-            'dhs',
-            'surat_pernyataan',
-            'surat_ortu',
-            'surat_vaksin',
-            'surat_dokter',
-        ];
+        $requiredDocs = $pendaftaran->gelombang->getRequiredDocumentTypesAttribute();
 
         $uploadedDocs = $pendaftaran->dokumenPendaftaran
             ->pluck('jenis_dokumen')
@@ -196,7 +195,12 @@ class PendaftaranKknController extends Controller
                     $q->where('gelombang_id', $pendaftaran->gelombang_id);
                 })
                 ->where('status', '!=', 'penuh')
-                ->get();
+                ->get()
+                ->map(function ($k) use ($pendaftaran) {
+                    $k->can_join = $this->ruleService->checkCanJoin($k, $pendaftaran, checkProdi: true);
+
+                    return $k;
+                });
         }
 
         return view('pendaftaran-kkn.plotting', compact(
@@ -225,116 +229,45 @@ class PendaftaranKknController extends Controller
             ->latest()
             ->first();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Validasi Pendaftaran
-        |--------------------------------------------------------------------------
-        */
         if (! $pendaftaran) {
-
-            return back()->with(
-                'error',
-                'Anda belum terdaftar.'
-            );
+            return back()->with('error', 'Anda belum terdaftar.');
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Sudah Memiliki Kelompok
-        |--------------------------------------------------------------------------
-        */
         if ($pendaftaran->kelompok_kkn_id) {
-
-            return back()->with(
-                'error',
-                'Anda sudah memiliki kelompok.'
-            );
+            return back()->with('error', 'Anda sudah memiliki kelompok.');
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Kelompok Penuh
-        |--------------------------------------------------------------------------
-        */
-        if ($kelompok->is_full) {
-
-            return back()->with(
-                'error',
-                'Kelompok sudah penuh.'
-            );
+        if ($pendaftaran->status_pendaftaran !== 'approved') {
+            return back()->with('error', 'Pendaftaran belum disetujui.');
         }
 
-        $mahasiswa = $pendaftaran->mahasiswa;
-
-        $jenisKelamin = $mahasiswa->jenis_kelamin;
-        $fakultasId = $mahasiswa->prodi?->fakultas_id;
-
-        /*
-        |--------------------------------------------------------------------------
-        | Validasi Kuota Fakultas
-        |--------------------------------------------------------------------------
-        */
-        $kuota = $kelompok->kuotaFakultas()
-            ->where('fakultas_id', $fakultasId)
-            ->first();
-
-        if (! $kuota) {
-
-            return back()->with(
-                'error',
-                'Kuota fakultas tidak tersedia.'
-            );
+        if ($pendaftaran->gelombang_id !== $kelompok->desaGelombang->gelombang_id) {
+            return back()->with('error', 'Kelompok ini tidak termasuk gelombang Anda.');
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Validasi Kuota Gender
-        |--------------------------------------------------------------------------
-        */
-        if (
-            $jenisKelamin === 'L' &&
-            $kuota->sisa_laki <= 0
-        ) {
-
-            return back()->with(
-                'error',
-                'Kuota laki-laki sudah penuh.'
-            );
+        if ($pendaftaran->gelombang->status !== 'pendaftaran') {
+            return back()->with('error', 'Gelombang pendaftaran sudah ditutup.');
         }
 
-        if (
-            $jenisKelamin === 'P' &&
-            $kuota->sisa_perempuan <= 0
-        ) {
+        return DB::transaction(function () use ($kelompok, $pendaftaran) {
+            $kelompok->pesertaKkn()->lockForUpdate()->get();
 
-            return back()->with(
-                'error',
-                'Kuota perempuan sudah penuh.'
-            );
-        }
+            $canJoin = $this->ruleService->checkCanJoin($kelompok, $pendaftaran, checkProdi: true);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Simpan Kelompok
-        |--------------------------------------------------------------------------
-        */
-        $pendaftaran->update([
-            'kelompok_kkn_id' => $kelompok->id,
-        ]);
+            if (! $canJoin) {
+                return back()->with('error', 'Anda tidak dapat bergabung ke kelompok ini.');
+            }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Auto Set Ketua Jika Belum Ada (Random)
-        |--------------------------------------------------------------------------
-        */
-        $kelompok->generateKetua();
+            $pendaftaran->update([
+                'kelompok_kkn_id' => $kelompok->id,
+            ]);
 
-        return redirect()
-            ->route('pendaftaran-kkn.index')
-            ->with(
-                'success',
-                'Berhasil masuk kelompok KKN.'
-            );
+            $kelompok->generateKetua();
+
+            return redirect()
+                ->route('pendaftaran-kkn.index')
+                ->with('success', 'Berhasil masuk kelompok KKN.');
+        });
     }
 
     /*
