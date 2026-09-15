@@ -4,11 +4,10 @@ namespace Tests\Unit\Services\War;
 
 use App\Models\KelompokKkn;
 use App\Models\PesertaKkn;
-use App\Models\WarFaculty;
-use App\Models\WarLog;
 use App\Models\WarParticipant;
 use App\Models\WarSession;
 use App\Services\War\WarAllocationService;
+use App\Services\War\WarLockService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -20,10 +19,15 @@ class WarAllocationServiceTest extends TestCase
     private WarAllocationService $service;
 
     private int $userId;
+
     private int $fakultasId;
+
     private int $prodiId;
+
     private int $gelombangId;
+
     private int $kelompokId;
+
     private int $warSessionId;
 
     protected function setUp(): void
@@ -127,7 +131,7 @@ class WarAllocationServiceTest extends TestCase
             'kuota' => 12,
             'status' => 'dibuka',
             'status_tahap' => 0,
-            'kode_kelompok' => 'KLT-' . rand(100, 999),
+            'kode_kelompok' => 'KLT-'.rand(100, 999),
         ];
 
         $id = DB::table('kelompok_kkn')->insertGetId(array_merge($defaults, $overrides));
@@ -267,7 +271,7 @@ class WarAllocationServiceTest extends TestCase
         $kelompok = $this->createKelompok();
 
         // Simulate lock already held
-        $lockService = app(\App\Services\War\WarLockService::class);
+        $lockService = app(WarLockService::class);
         $lockService->acquireUserLock($session->id, $peserta->id);
 
         $this->expectException(\RuntimeException::class);

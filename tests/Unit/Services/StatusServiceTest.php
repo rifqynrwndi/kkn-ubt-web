@@ -4,8 +4,8 @@ namespace Tests\Unit\Services;
 
 use App\Models\KelompokKkn;
 use App\Models\KelompokStatusHistory;
-use App\Services\StatusService;
 use App\Models\User;
+use App\Services\StatusService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -15,6 +15,7 @@ class StatusServiceTest extends TestCase
     use RefreshDatabase;
 
     private StatusService $service;
+
     private int $userId;
 
     protected function setUp(): void

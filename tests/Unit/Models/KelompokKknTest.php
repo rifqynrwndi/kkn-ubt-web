@@ -13,8 +13,11 @@ class KelompokKknTest extends TestCase
     use RefreshDatabase;
 
     private int $kecamatanId;
+
     private int $desaId;
+
     private int $gelombangId;
+
     private int $desaGelombangId;
 
     protected function setUp(): void

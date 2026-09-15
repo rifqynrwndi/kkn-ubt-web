@@ -5,7 +5,6 @@ namespace Tests\Feature\Controllers;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class ProposalControllerTest extends TestCase
@@ -22,6 +21,7 @@ class ProposalControllerTest extends TestCase
     {
         $user = User::factory()->create();
         $user->assignRole('superadmin');
+
         return $user;
     }
 
@@ -29,6 +29,7 @@ class ProposalControllerTest extends TestCase
     {
         $user = User::factory()->create();
         $user->assignRole($role);
+
         return $user;
     }
 

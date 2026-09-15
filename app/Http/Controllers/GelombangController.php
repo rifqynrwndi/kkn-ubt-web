@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DokumenPendaftaran;
 use App\Models\Gelombang;
 use Illuminate\Http\Request;
 
@@ -61,7 +62,7 @@ class GelombangController extends Controller
             ($validated['kuota_perempuan'] ?? 0);
 
         $validated['skip_dokumen'] = $validated['skip_dokumen'] ?? false;
-        $validated['required_documents'] = $validated['required_documents'] ?? array_keys(\App\Models\DokumenPendaftaran::getDocumentLabels());
+        $validated['required_documents'] = $validated['required_documents'] ?? array_keys(DokumenPendaftaran::getDocumentLabels());
 
         Gelombang::create($validated);
 
@@ -98,7 +99,7 @@ class GelombangController extends Controller
             ($validated['kuota_perempuan'] ?? 0);
 
         $validated['skip_dokumen'] = $validated['skip_dokumen'] ?? false;
-        $validated['required_documents'] = $validated['required_documents'] ?? array_keys(\App\Models\DokumenPendaftaran::getDocumentLabels());
+        $validated['required_documents'] = $validated['required_documents'] ?? array_keys(DokumenPendaftaran::getDocumentLabels());
 
         $gelombang->update($validated);
 

@@ -15,6 +15,7 @@ class PendaftaranKknController extends Controller
     public function __construct(
         private readonly WarRuleService $ruleService,
     ) {}
+
     public function index(): View
     {
         $user = auth()->user();

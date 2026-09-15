@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Mahasiswa;
+use App\Models\User;
 use App\Notifications\DhsUploadedNotification;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
@@ -57,7 +56,7 @@ class DhsController extends Controller
             ->where('model_type', 'App\\Models\\User')
             ->pluck('model_id');
 
-        $admins = \App\Models\User::whereIn('id', $adminIds)->get();
+        $admins = User::whereIn('id', $adminIds)->get();
         Notification::send($admins, new DhsUploadedNotification($mahasiswa));
 
         return redirect()

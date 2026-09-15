@@ -149,7 +149,7 @@ class WarController extends Controller
         | DATA KELOMPOK
         |--------------------------------------------------------------------------
         */
-        $kelompoks = Cache::remember("war:kelompok:{$session->id}", 2, function () use ($session, $peserta) {
+        $kelompoks = Cache::remember("war:kelompok:{$session->id}", 2, function () use ($session) {
             return KelompokKkn::with([
                 'desaGelombang.desa.kecamatan',
                 'pesertaKkn.mahasiswa.prodi.fakultas',
