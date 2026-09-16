@@ -119,7 +119,6 @@
                                     </div>
                                     @php
                                         $docLabels = [
-                                            'dhs' => ['label' => 'Daftar Hasil Studi (DHS)', 'icon' => 'fa-file-alt'],
                                             'surat_pernyataan' => ['label' => 'Surat Pernyataan KKN', 'icon' => 'fa-file-signature'],
                                             'surat_ortu' => ['label' => 'Surat Keterangan Orang Tua', 'icon' => 'fa-users'],
                                             'surat_vaksin' => ['label' => 'Surat Keterangan Vaksin', 'icon' => 'fa-syringe'],

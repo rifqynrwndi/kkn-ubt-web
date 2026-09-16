@@ -28,6 +28,14 @@ class HakaksesController extends Controller
             });
         }
 
+        if ($request->filled('status')) {
+            if ($request->status === 'verified') {
+                $query->whereNotNull('email_verified_at');
+            } elseif ($request->status === 'unverified') {
+                $query->whereNull('email_verified_at');
+            }
+        }
+
         $hakakses = $query->orderBy('name')->paginate(15)->withQueryString();
         $roles = Role::orderBy('name')->pluck('name');
 

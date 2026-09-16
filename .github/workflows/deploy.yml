@@ -76,6 +76,7 @@ jobs:
             --exclude=storage \
             --exclude=.git \
             --exclude=node_modules \
+            --exclude=vendor \
             --exclude=.github \
             --exclude=tests \
             --exclude=*.spec.ts \
@@ -89,25 +90,23 @@ jobs:
           set -e
           cd ${{ secrets.DEPLOY_PATH }}
 
-          # Fix permissions with sudo
-          sudo mkdir -p bootstrap/cache
-          sudo mkdir -p storage/logs
-          sudo mkdir -p storage/framework/{cache,sessions,views}
-          sudo chown -R $(whoami):$(whoami) bootstrap/cache storage
-          chmod -R 775 bootstrap/cache storage
+          # PHP-FPM runs as www-data — everything must be writable by www-data
+          git config --global --add safe.directory ${{ secrets.DEPLOY_PATH }}
+          sudo chown -R www-data:www-data storage bootstrap/cache vendor
+          sudo chmod -R 775 storage bootstrap/cache
 
-          composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
+          sudo -u www-data composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
 
-          php artisan cache:clear
-          php artisan config:clear
-          php artisan route:clear
-          php artisan view:clear
-          php artisan migrate --force
-          php artisan config:cache
-          php artisan route:cache
-          php artisan view:cache
-          php artisan storage:link --force 2>/dev/null || true
-          php artisan optimize
+          sudo -u www-data php artisan cache:clear
+          sudo -u www-data php artisan config:clear
+          sudo -u www-data php artisan route:clear
+          sudo -u www-data php artisan view:clear
+          sudo -u www-data php artisan migrate --force
+          sudo -u www-data php artisan config:cache
+          sudo -u www-data php artisan route:cache
+          sudo -u www-data php artisan view:cache
+          sudo -u www-data php artisan storage:link --force 2>/dev/null || true
+          sudo -u www-data php artisan optimize
           sudo systemctl reload nginx 2>/dev/null || true
           echo "Deploy completed successfully"
           REMOTE
@@ -115,7 +114,7 @@ jobs:
       - name: Verify deployment health
         run: |
           sleep 10
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://kknubt.id/up" || echo "000")
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://kknubt.id/" || echo "000")
           if [ "$STATUS" != "200" ]; then
             echo "Health check failed with status: $STATUS"
             exit 1
