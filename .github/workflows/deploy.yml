@@ -89,12 +89,12 @@ jobs:
           set -e
           cd ${{ secrets.DEPLOY_PATH }}
 
-          # Fix permissions
-          mkdir -p bootstrap/cache
-          mkdir -p storage/logs
-          mkdir -p storage/framework/{cache,sessions,views}
-          chmod -R 775 bootstrap/cache
-          chmod -R 775 storage
+          # Fix permissions with sudo
+          sudo mkdir -p bootstrap/cache
+          sudo mkdir -p storage/logs
+          sudo mkdir -p storage/framework/{cache,sessions,views}
+          sudo chown -R $(whoami):$(whoami) bootstrap/cache storage
+          chmod -R 775 bootstrap/cache storage
 
           composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
 
