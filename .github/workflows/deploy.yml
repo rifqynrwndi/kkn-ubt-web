@@ -89,11 +89,12 @@ jobs:
           set -e
           cd ${{ secrets.DEPLOY_PATH }}
 
-          # PHP-FPM runs as www-data — storage and bootstrap/cache MUST be owned by www-data
-          sudo chown -R www-data:www-data storage bootstrap/cache
+          # PHP-FPM runs as www-data — everything must be writable by www-data
+          git config --global --add safe.directory ${{ secrets.DEPLOY_PATH }}
+          sudo chown -R www-data:www-data storage bootstrap/cache vendor
           sudo chmod -R 775 storage bootstrap/cache
 
-          composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
+          sudo -u www-data composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
 
           sudo -u www-data php artisan cache:clear
           sudo -u www-data php artisan config:clear
