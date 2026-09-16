@@ -53,15 +53,15 @@
             {{-- Search + Filters --}}
             <form method="GET" class="mb-3">
                 <div class="row align-items-end">
-                    <div class="col-md-4 mb-2">
+                    <div class="col-md-5 mb-2">
                         <div class="input-group">
                             <input type="text" name="search" class="form-control" placeholder="Cari nama / email..." value="{{ request('search') }}">
                             <div class="input-group-append">
-                                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
+                                <button class="btn btn-primary px-3" type="submit"><i class="fas fa-search"></i> Cari</button>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-2">
+                    <div class="col-md-4 mb-2">
                         <select name="role" class="form-control" onchange="this.form.submit()">
                             <option value="">Semua Role</option>
                             @foreach($roles as $role)
@@ -71,15 +71,8 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3 mb-2">
-                        <select name="status" class="form-control" onchange="this.form.submit()">
-                            <option value="">Semua Status</option>
-                            <option value="verified" {{ request('status') == 'verified' ? 'selected' : '' }}>Email Verified</option>
-                            <option value="unverified" {{ request('status') == 'unverified' ? 'selected' : '' }}>Email Unverified</option>
-                        </select>
-                    </div>
-                    @if(request()->hasAny(['search', 'role', 'status']))
-                        <div class="col-md-2 mb-2">
+                    @if(request()->hasAny(['search', 'role']))
+                        <div class="col-md-3 mb-2">
                             <a href="{{ route('hakakses.index') }}" class="btn btn-outline-secondary btn-block">
                                 <i class="fas fa-times"></i> Reset
                             </a>
@@ -96,7 +89,6 @@
                             <th>Nama</th>
                             <th>Email</th>
                             <th class="text-center">Role</th>
-                            <th class="text-center">Verifikasi</th>
                             <th class="text-center action-column">Aksi</th>
                         </tr>
                     </thead>
@@ -122,19 +114,12 @@
                                     <span class="badge badge-secondary">{{ ucfirst($roleName) }}</span>
                                 @endif
                             </td>
-                            <td class="text-center">
-                                @if($user->email_verified_at)
-                                    <span class="badge badge-success">Verified</span>
-                                @else
-                                    <span class="badge badge-danger">Unverified</span>
-                                @endif
-                            </td>
                             <td class="text-center action-column">
                                 <a href="{{ route('hakakses.edit', $user->id) }}"
                                    class="btn btn-warning btn-sm"
                                    data-toggle="tooltip"
                                    title="Edit Role">
-                                    <i class="fas fa-user-edit"></i>
+                                    <i class="fas fa-user-edit"></i> Edit
                                 </a>
 
                                 <form action="{{ route('hakakses.destroy', $user->id) }}"
@@ -146,14 +131,14 @@
                                             onclick="return confirm('Hapus pengguna ini?')"
                                             data-toggle="tooltip"
                                             title="Hapus">
-                                        <i class="fas fa-trash"></i>
+                                        <i class="fas fa-trash"></i> Hapus
                                     </button>
                                 </form>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-4">
+                            <td colspan="5" class="text-center text-muted py-4">
                                 <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
                                 Data tidak ditemukan
                             </td>
