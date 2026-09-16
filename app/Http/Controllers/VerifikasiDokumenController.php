@@ -9,6 +9,7 @@ use App\Models\PesertaKkn;
 use App\Notifications\BulkDokumenVerifiedNotification;
 use App\Notifications\DhsVerifiedNotification;
 use App\Notifications\DokumenVerifiedNotification;
+use App\Services\DocumentVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -73,92 +74,13 @@ class VerifikasiDokumenController extends Controller
             'verified_at' => now(),
         ]);
 
-        $this->syncPesertaStatus($dokumen->pesertaKkn);
+        app(DocumentVerificationService::class)->syncPesertaStatus($dokumen->pesertaKkn);
 
         $dokumen->pesertaKkn->mahasiswa->user
             ->notify(new DokumenVerifiedNotification($dokumen));
 
         return redirect()->route('verifikasi-dokumen.show', $dokumen->pesertaKkn->id)
             ->with('success', 'Status verifikasi dokumen berhasil diperbarui.');
-    }
-
-    private function syncPesertaStatus(PesertaKkn $peserta)
-    {
-        $peserta->loadMissing('gelombang');
-
-        $requiredDokumen = $peserta->gelombang->getRequiredDocumentTypesAttribute();
-
-        $dokumen = $peserta->dokumenPendaftaran;
-
-        $uploadedJenis = $dokumen
-            ->pluck('jenis_dokumen')
-            ->unique()
-            ->values()
-            ->toArray();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Belum Upload Semua Dokumen
-        |--------------------------------------------------------------------------
-        */
-        if (count(array_intersect($requiredDokumen, $uploadedJenis)) < count($requiredDokumen)) {
-            $peserta->update([
-                'status_pendaftaran' => 'pending_documents',
-            ]);
-
-            return;
-        }
-
-        // Filter to only required documents for status checks
-        $requiredDokumen = $dokumen->filter(fn ($d) => in_array($d->jenis_dokumen, $requiredDokumen));
-
-        /*
-        |--------------------------------------------------------------------------
-        | Ada Dokumen Ditolak
-        |--------------------------------------------------------------------------
-        */
-        if ($requiredDokumen->contains('status_verifikasi', 'rejected')) {
-            $peserta->update([
-                'status_pendaftaran' => 'rejected',
-            ]);
-
-            return;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Ada Dokumen Perlu Revisi
-        |--------------------------------------------------------------------------
-        */
-        if ($requiredDokumen->contains('status_verifikasi', 'revision_required')) {
-            $peserta->update([
-                'status_pendaftaran' => 'revision',
-            ]);
-
-            return;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Semua Verified
-        |--------------------------------------------------------------------------
-        */
-        if ($requiredDokumen->every(fn ($d) => $d->status_verifikasi === 'verified')) {
-            $peserta->update([
-                'status_pendaftaran' => 'approved',
-            ]);
-
-            return;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Default
-        |--------------------------------------------------------------------------
-        */
-        $peserta->update([
-            'status_pendaftaran' => 'pending_verification',
-        ]);
     }
 
     public function bulkApprove(Request $request)
@@ -194,7 +116,7 @@ class VerifikasiDokumenController extends Controller
 
                 }
 
-                $this->syncPesertaStatus($peserta);
+                app(DocumentVerificationService::class)->syncPesertaStatus($peserta);
 
                 $peserta->mahasiswa->user->notify(
                     new BulkDokumenVerifiedNotification($peserta)
@@ -253,7 +175,7 @@ class VerifikasiDokumenController extends Controller
 
             }
 
-            $this->syncPesertaStatus(
+            app(DocumentVerificationService::class)->syncPesertaStatus(
                 $peserta->fresh()
             );
 

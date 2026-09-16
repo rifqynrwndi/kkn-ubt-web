@@ -9,6 +9,7 @@ use App\Models\PenilaianKelompok;
 use App\Models\PenilaianKomponen;
 use App\Models\PesertaKkn;
 use App\Models\TugasKelompok;
+use App\Services\ScoreService;
 use App\Services\StatusService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -78,19 +79,11 @@ class KelompokController extends Controller
 
         $penilaianIndividu = PenilaianIndividu::where('kelompok_kkn_id', $kelompok->id)->get();
 
-        $dplKomponen = $komponenList->firstWhere('nama_komponen', 'Nilai DPL');
-        $dplScores = $penilaianIndividu->where('komponen_id', $dplKomponen?->id)->pluck('nilai');
-        $dplScore = $dplScores->isNotEmpty() ? round($dplScores->avg(), 2) : null;
-
-        $desaKomponen = $komponenList->firstWhere('nama_komponen', 'Nilai Desa');
-        $desaScores = $penilaianIndividu->where('komponen_id', $desaKomponen?->id)->pluck('nilai');
-        $desaScore = $desaScores->isNotEmpty() ? round($desaScores->avg(), 2) : null;
-
-        $lppmScore = $penilaianData->first(fn ($v) => $v->komponen->nama_komponen === 'Nilai LPPM')?->nilai;
-
-        $finalScore = (! is_null($dplScore) && ! is_null($desaScore) && ! is_null($lppmScore))
-            ? round(($dplScore * 0.40 + $desaScore * 0.30 + $lppmScore * 0.30), 2)
-            : null;
+        $scores = app(ScoreService::class)->getScoreBreakdown($penilaianIndividu, $penilaianData, $komponenList);
+        $dplScore = $scores['dpl'];
+        $desaScore = $scores['desa'];
+        $lppmScore = $scores['lppm'];
+        $finalScore = $scores['total'];
 
         return view('kelompok.index', compact(
             'kelompok', 'peserta', 'isKetua', 'isDpl', 'proposal',

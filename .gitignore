@@ -59,3 +59,4 @@ test-results/
 .claude/
 .opencode/
 skills-lock.json
+architecture-review-*.html
