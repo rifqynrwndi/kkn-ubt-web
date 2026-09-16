@@ -5,7 +5,6 @@ namespace Tests\Unit\Services;
 use App\Models\DokumenPendaftaran;
 use App\Models\File;
 use App\Models\Gelombang;
-use App\Models\Mahasiswa;
 use App\Models\PesertaKkn;
 use App\Models\User;
 use App\Services\DocumentVerificationService;
