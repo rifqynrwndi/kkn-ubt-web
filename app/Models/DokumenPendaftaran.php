@@ -54,7 +54,6 @@ class DokumenPendaftaran extends Model
     }
 
     public const REQUIRED_DOCUMENTS = [
-        'dhs',
         'surat_pernyataan',
         'surat_ortu',
         'surat_vaksin',
