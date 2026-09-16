@@ -15,20 +15,13 @@ use Illuminate\View\View;
 
 class DokumenPendaftaranController extends Controller
 {
-    private array $requiredDocuments = [
-        'dhs',
-        'surat_pernyataan',
-        'surat_ortu',
-        'surat_vaksin',
-        'surat_dokter',
-    ];
-
     public function index(): View
     {
         $peserta = PesertaKkn::where(
             'mahasiswa_id',
             auth()->id()
         )
+            ->with(['gelombang'])
             ->latest()
             ->first();
 
@@ -59,7 +52,9 @@ class DokumenPendaftaranController extends Controller
             ])
             ->get();
 
-        $requiredDocuments = DokumenPendaftaran::getDocumentLabels();
+        $requiredTypes = $peserta->gelombang->getRequiredDocumentTypesAttribute();
+        $allLabels = DokumenPendaftaran::getDocumentLabels();
+        $requiredDocuments = array_intersect_key($allLabels, array_flip($requiredTypes));
 
         $uploadedDocuments = $dokumen->keyBy(
             'jenis_dokumen'
@@ -119,6 +114,7 @@ class DokumenPendaftaranController extends Controller
             'mahasiswa_id',
             auth()->id()
         )
+            ->with(['gelombang'])
             ->latest()
             ->first();
 
@@ -141,11 +137,11 @@ class DokumenPendaftaranController extends Controller
             ->pluck('jenis_dokumen')
             ->toArray();
 
-        $documents = DokumenPendaftaran::getDocumentLabels();
+        $requiredTypes = $peserta->gelombang->getRequiredDocumentTypesAttribute();
+        $allLabels = DokumenPendaftaran::getDocumentLabels();
+        $documents = array_intersect_key($allLabels, array_flip($requiredTypes));
 
-        $missingDocuments = collect(
-            array_keys($documents)
-        )
+        $missingDocuments = collect($requiredTypes)
             ->diff($uploadedTypes)
             ->values();
 
@@ -216,9 +212,10 @@ class DokumenPendaftaranController extends Controller
         | Validation
         |--------------------------------------------------------------------------
         */
-        $request->validate([
-            'jenis_dokumen' => 'required|string|in:dhs,surat_pernyataan,surat_ortu,surat_vaksin,surat_dokter',
+        $requiredTypes = $peserta->gelombang->getRequiredDocumentTypesAttribute();
 
+        $request->validate([
+            'jenis_dokumen' => ['required', 'string', 'in:'.implode(',', $requiredTypes)],
             'file' => 'required|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
@@ -390,15 +387,14 @@ class DokumenPendaftaranController extends Controller
     private function updateStatusPeserta(
         PesertaKkn $peserta
     ): void {
+        $peserta->loadMissing('gelombang');
 
         $uploadedTypes = $peserta->dokumenPendaftaran()
             ->pluck('jenis_dokumen')
             ->toArray();
 
-        $missing = array_diff(
-            $this->requiredDocuments,
-            $uploadedTypes
-        );
+        $requiredTypes = $peserta->gelombang->getRequiredDocumentTypesAttribute();
+        $missing = array_diff($requiredTypes, $uploadedTypes);
 
         /*
         |--------------------------------------------------------------------------

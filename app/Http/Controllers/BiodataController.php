@@ -64,7 +64,7 @@ class BiodataController extends Controller
         ]);
 
         return redirect()
-            ->route('home')
-            ->with('success', 'Biodata berhasil dilengkapi.');
+            ->route('biodata.edit')
+            ->with('success', 'Biodata berhasil dilengkapi. Silakan upload DHS di bawah jika sudah lengkap.');
     }
 }

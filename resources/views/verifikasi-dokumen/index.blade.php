@@ -89,8 +89,12 @@
                                     <tr>
                                         <td>
                                             @php
+                                                $requiredTypes = $peserta->gelombang->getRequiredDocumentTypesAttribute();
+                                                $uploadedCount = $peserta->dokumenPendaftaran
+                                                    ->whereIn('jenis_dokumen', $requiredTypes)
+                                                    ->count();
                                                 $canBulkApprove =
-                                                    $peserta->dokumenPendaftaran->count() === count(\App\Models\DokumenPendaftaran::REQUIRED_DOCUMENTS)
+                                                    $uploadedCount === count($requiredTypes)
                                                     && $peserta->status_pendaftaran !== 'approved';
                                             @endphp
 
@@ -110,8 +114,11 @@
                                         <td>{{ $peserta->gelombang->nama_gelombang }}</td>
 
                                         <td>
+                                            @php
+                                                $reqCount = count($peserta->gelombang->getRequiredDocumentTypesAttribute());
+                                            @endphp
                                             <span class="badge badge-info">
-                                                {{ $peserta->dokumenPendaftaran->count() }}/5 Dokumen
+                                                {{ $uploadedCount }}/{{ $reqCount }} Dokumen
                                             </span>
                                         </td>
 

@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\DokumenPendaftaran;
 use App\Models\Gelombang;
+use App\Models\Mahasiswa;
 use App\Models\PesertaKkn;
 use App\Notifications\BulkDokumenVerifiedNotification;
+use App\Notifications\DhsVerifiedNotification;
 use App\Notifications\DokumenVerifiedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -82,7 +84,9 @@ class VerifikasiDokumenController extends Controller
 
     private function syncPesertaStatus(PesertaKkn $peserta)
     {
-        $requiredDokumen = DokumenPendaftaran::REQUIRED_DOCUMENTS;
+        $peserta->loadMissing('gelombang');
+
+        $requiredDokumen = $peserta->gelombang->getRequiredDocumentTypesAttribute();
 
         $dokumen = $peserta->dokumenPendaftaran;
 
@@ -97,7 +101,7 @@ class VerifikasiDokumenController extends Controller
         | Belum Upload Semua Dokumen
         |--------------------------------------------------------------------------
         */
-        if (count($uploadedJenis) < count($requiredDokumen)) {
+        if (count(array_intersect($requiredDokumen, $uploadedJenis)) < count($requiredDokumen)) {
             $peserta->update([
                 'status_pendaftaran' => 'pending_documents',
             ]);
@@ -105,12 +109,15 @@ class VerifikasiDokumenController extends Controller
             return;
         }
 
+        // Filter to only required documents for status checks
+        $requiredDokumen = $dokumen->filter(fn ($d) => in_array($d->jenis_dokumen, $requiredDokumen));
+
         /*
         |--------------------------------------------------------------------------
         | Ada Dokumen Ditolak
         |--------------------------------------------------------------------------
         */
-        if ($dokumen->contains('status_verifikasi', 'rejected')) {
+        if ($requiredDokumen->contains('status_verifikasi', 'rejected')) {
             $peserta->update([
                 'status_pendaftaran' => 'rejected',
             ]);
@@ -123,7 +130,7 @@ class VerifikasiDokumenController extends Controller
         | Ada Dokumen Perlu Revisi
         |--------------------------------------------------------------------------
         */
-        if ($dokumen->contains('status_verifikasi', 'revision_required')) {
+        if ($requiredDokumen->contains('status_verifikasi', 'revision_required')) {
             $peserta->update([
                 'status_pendaftaran' => 'revision',
             ]);
@@ -136,7 +143,7 @@ class VerifikasiDokumenController extends Controller
         | Semua Verified
         |--------------------------------------------------------------------------
         */
-        if ($dokumen->every(fn ($d) => $d->status_verifikasi === 'verified')) {
+        if ($requiredDokumen->every(fn ($d) => $d->status_verifikasi === 'verified')) {
             $peserta->update([
                 'status_pendaftaran' => 'approved',
             ]);
@@ -262,5 +269,67 @@ class VerifikasiDokumenController extends Controller
             'success',
             'Semua perubahan verifikasi berhasil disimpan.'
         );
+    }
+
+    public function dhsIndex(Request $request)
+    {
+        $statusFilter = $request->get('status');
+
+        $mahasiswaList = Mahasiswa::with(['user', 'dhsVerifier'])
+            ->where('dhs_path', '!=', null)
+            ->when($statusFilter, fn ($q) => $q->where('dhs_status', $statusFilter))
+            ->when(! $statusFilter, fn ($q) => $q->where('dhs_status', 'pending'))
+            ->latest('updated_at')
+            ->paginate(20)
+            ->appends(['status' => $statusFilter]);
+
+        return view('verifikasi-dokumen.dhs-index', compact('mahasiswaList', 'statusFilter'));
+    }
+
+    public function dhsShow($id)
+    {
+        $mahasiswa = Mahasiswa::with(['user', 'dhsVerifier'])->findOrFail($id);
+
+        return view('verifikasi-dokumen.dhs-show', compact('mahasiswa'));
+    }
+
+    public function dhsVerify(Request $request, $id)
+    {
+        $mahasiswa = Mahasiswa::findOrFail($id);
+
+        if ($mahasiswa->dhs_status === 'verified') {
+            return back()->with('success', 'DHS sudah terverifikasi.');
+        }
+
+        $mahasiswa->update([
+            'dhs_status' => 'verified',
+            'dhs_verified_by' => auth()->id(),
+            'dhs_verified_at' => now(),
+            'dhs_catatan' => null,
+        ]);
+
+        $mahasiswa->user->notify(new DhsVerifiedNotification($mahasiswa, 'verified'));
+
+        return back()->with('success', 'DHS berhasil diverifikasi.');
+    }
+
+    public function dhsReject(Request $request, $id)
+    {
+        $request->validate([
+            'catatan' => 'required|string',
+        ]);
+
+        $mahasiswa = Mahasiswa::findOrFail($id);
+
+        $mahasiswa->update([
+            'dhs_status' => 'rejected',
+            'dhs_verified_by' => auth()->id(),
+            'dhs_verified_at' => now(),
+            'dhs_catatan' => $request->catatan,
+        ]);
+
+        $mahasiswa->user->notify(new DhsVerifiedNotification($mahasiswa, 'rejected'));
+
+        return back()->with('success', 'DHS ditolak. Mahasiswa akan diminta upload ulang.');
     }
 }

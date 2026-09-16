@@ -2,14 +2,69 @@
 
 @section('title', 'Plotting Kelompok')
 
+@push('css')
+<link rel="stylesheet" href="{{ asset('css/war.css') }}">
+<style>
+    .war-admin-hero {
+        background: #fff;
+        border-radius: 3px;
+        padding: 20px;
+        color: #34395e;
+        margin-bottom: 28px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
+        border: none;
+    }
+    .war-admin-hero-content { position: relative; z-index: 1; }
+    .war-admin-hero h1 { font-size: 1.35rem; font-weight: 700; margin-bottom: 4px; color: #34395e; }
+    .war-admin-hero h1 i { margin-right: 12px; color: var(--war-primary); }
+    .war-admin-hero p { font-size: .9rem; color: #6c757d; margin-bottom: 0; }
+
+    [data-bs-theme="dark"] .war-admin-hero { background-color: #2a2d36; color: #d6d9df; border-color: #3a3f4b; }
+    [data-bs-theme="dark"] .war-admin-hero h1 { color: #f1f3f8; }
+    [data-bs-theme="dark"] .war-admin-hero p { color: #aab1c1; }
+
+    .war-summary-bar {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+    .war-summary-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--bs-body-bg, #fff);
+        border-radius: 12px;
+        padding: 14px 20px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.04);
+        flex: 1;
+        min-width: 180px;
+    }
+    .war-summary-icon {
+        width: 42px; height: 42px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+    .war-summary-icon.blue   { background: rgba(103,119,239,.12); color: var(--war-primary); }
+    .war-summary-icon.green  { background: rgba(71,195,99,.12); color: var(--war-success); }
+    .war-summary-icon.orange { background: rgba(255,164,38,.12); color: var(--war-warning); }
+    .war-summary-icon.red    { background: rgba(252,84,75,.12); color: var(--war-danger); }
+    .war-summary-text .ws-value { font-size: 1.3rem; font-weight: 800; line-height: 1; }
+    .war-summary-text .ws-label { font-size: 12px; color: var(--war-text-muted); margin-top: 2px; }
+</style>
+@endpush
+
 @section('content')
 
 <section class="section">
-    <div class="section-header">
-        <h1>Plotting Kelompok KKN</h1>
-        <div class="section-header-breadcrumb">
-            <div class="breadcrumb-item"><a href="{{ route('home') }}">Dashboard</a></div>
-            <div class="breadcrumb-item active">Plotting Kelompok</div>
+
+    {{-- ── HERO HEADER ────────────────────────────── --}}
+    <div class="war-admin-hero">
+        <div class="war-admin-hero-content">
+            <h1>Plotting Kelompok KKN</h1>
+            <p>Kelola sesi Plotting Kelompok KKN. Buat, pantau, dan kelola semua sesi dari satu tempat.</p>
         </div>
     </div>
 
@@ -24,22 +79,54 @@
             </div>
         @endif
 
-        <div class="row mb-3">
-            <div class="col-12 d-flex justify-content-between align-items-center">
-                <h6 class="text-muted mb-0">
-                    <i class="fas fa-list mr-1"></i>
-                    Menampilkan {{ $wars->count() }} sesi Plotting Kelompok
-                </h6>
-                <a href="{{ route('admin.war.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus mr-1"></i> Buat Sesi Plotting Baru
-                </a>
+        {{-- ── SUMMARY BAR ─────────────────────────── --}}
+        @php
+            $totalWars = $wars->count();
+            $activeWars = $wars->where('status', 'active')->count();
+            $completedWars = $wars->where('status', 'closed')->count();
+            $totalParticipants = $wars->sum('participants_count');
+        @endphp
+        <div class="war-summary-bar">
+            <div class="war-summary-item">
+                <div class="war-summary-icon blue"><i class="fas fa-layer-group"></i></div>
+                <div class="war-summary-text">
+                    <div class="ws-value">{{ $totalWars }}</div>
+                    <div class="ws-label">Total Sesi</div>
+                </div>
+            </div>
+            <div class="war-summary-item">
+                <div class="war-summary-icon green"><i class="fas fa-play-circle"></i></div>
+                <div class="war-summary-text">
+                    <div class="ws-value">{{ $activeWars }}</div>
+                    <div class="ws-label">Aktif</div>
+                </div>
+            </div>
+            <div class="war-summary-item">
+                <div class="war-summary-icon orange"><i class="fas fa-check-circle"></i></div>
+                <div class="war-summary-text">
+                    <div class="ws-value">{{ $completedWars }}</div>
+                    <div class="ws-label">Selesai</div>
+                </div>
+            </div>
+            <div class="war-summary-item">
+                <div class="war-summary-icon red"><i class="fas fa-users"></i></div>
+                <div class="war-summary-text">
+                    <div class="ws-value">{{ $totalParticipants }}</div>
+                    <div class="ws-label">Total Peserta</div>
+                </div>
             </div>
         </div>
 
+        {{-- ── ACTION ROW ──────────────────────────── --}}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0 font-weight-bold">Daftar Semua Sesi Plotting</h5>
+            <a href="{{ route('admin.war.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus mr-1"></i> Buat Sesi Plotting Baru
+            </a>
+        </div>
+
+        {{-- ── TABLE ───────────────────────────────── --}}
         <div class="card">
-            <div class="card-header">
-                <h4 class="mb-0"><i class="fas fa-layer-group mr-2 text-primary"></i> Daftar Semua Sesi Plotting</h4>
-            </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-striped table-hover mb-0">
@@ -76,7 +163,7 @@
                                                 <i class="fas fa-circle fa-xs mr-1"></i> Aktif
                                             </span>
                                         @elseif($war->status === 'closed')
-                                            <span class="badge badge-success" style="border-radius:20px;padding:5px 12px;">
+                                            <span class="badge badge-secondary" style="border-radius:20px;padding:5px 12px;">
                                                 <i class="fas fa-lock fa-xs mr-1"></i> Selesai
                                             </span>
                                         @else
@@ -119,17 +206,10 @@
     </div>
 </section>
 
-
-
 @endsection
 
 @push('scripts')
 <script>
     $('[data-toggle="tooltip"]').tooltip();
-    if(jQuery().select2) {
-        $(".select2").select2();
-    }
-
-
 </script>
 @endpush

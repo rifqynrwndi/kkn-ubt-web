@@ -1,7 +1,7 @@
 <li class="menu-header">DPL</li>
 <li class="{{ Request::is('home') ? 'active' : '' }}">
     <a class="nav-link" href="{{ url('home') }}">
-        <i class="fas fa-fire"></i>
+        <i class="fas fa-home"></i>
         <span>Dashboard</span>
     </a>
 </li>

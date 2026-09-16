@@ -69,11 +69,18 @@ jobs:
         run: |
           ssh server "mkdir -p ${{ secrets.DEPLOY_PATH }}"
           rsync -avzr --delete \
+            --no-perms \
+            --no-owner \
+            --no-group \
             --exclude=.env \
             --exclude=storage \
             --exclude=.git \
             --exclude=node_modules \
             --exclude=.github \
+            --exclude=tests \
+            --exclude=*.spec.ts \
+            --exclude=*.test.ts \
+            --exclude=bootstrap/cache \
             ./ server:${{ secrets.DEPLOY_PATH }}
 
       - name: Post-deploy commands
@@ -81,6 +88,20 @@ jobs:
           ssh -T server bash << 'REMOTE'
           set -e
           cd ${{ secrets.DEPLOY_PATH }}
+
+          # Fix permissions with sudo
+          sudo mkdir -p bootstrap/cache
+          sudo mkdir -p storage/logs
+          sudo mkdir -p storage/framework/{cache,sessions,views}
+          sudo chown -R $(whoami):$(whoami) bootstrap/cache storage
+          chmod -R 775 bootstrap/cache storage
+
+          composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
+
+          php artisan cache:clear
+          php artisan config:clear
+          php artisan route:clear
+          php artisan view:clear
           php artisan migrate --force
           php artisan config:cache
           php artisan route:cache

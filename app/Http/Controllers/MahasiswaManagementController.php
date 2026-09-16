@@ -7,11 +7,10 @@ use App\Models\PesertaKkn;
 use App\Models\ProgramStudi;
 use App\Models\User;
 use App\Models\WarParticipant;
+use App\Services\ExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class MahasiswaManagementController extends Controller
 {
@@ -56,48 +55,9 @@ class MahasiswaManagementController extends Controller
 
     public function export(Request $request)
     {
-        $query = User::with('mahasiswa.prodi.fakultas')
-            ->role('mahasiswa')
-            ->whereHas('mahasiswa');
+        $gelombangId = $request->filled('gelombang_id') ? $request->gelombang_id : null;
 
-        if ($request->filled('gelombang_id')) {
-            $query->whereHas('mahasiswa.pesertaKkn', fn ($q) => $q->where('gelombang_id', $request->gelombang_id));
-        }
-
-        $users = $query->orderBy('name')->get();
-
-        $spreadsheet = new Spreadsheet;
-        $sheet = $spreadsheet->getActiveSheet();
-
-        $headers = ['No', 'Nama Lengkap', 'NPM', 'Email', 'HP', 'Status', 'Jenis Kelamin', 'Fakultas', 'Prodi', 'Nama Ortu', 'HP Ortu', 'Alamat Ortu'];
-        $sheet->fromArray([$headers], null, 'A1');
-
-        $row = 2;
-        foreach ($users as $i => $u) {
-            $m = $u->mahasiswa;
-            $sheet->fromArray([
-                $i + 1, $u->name,
-                $m->npm ?? '-', $u->email, $m->no_hp ?? '-',
-                $u->email_verified_at ? 'Verified' : 'Unverified',
-                $m->jenis_kelamin === 'L' ? 'Laki-laki' : ($m->jenis_kelamin === 'P' ? 'Perempuan' : '-'),
-                $m->prodi->fakultas->nama_fakultas ?? '-',
-                $m->prodi->nama_prodi ?? '-',
-                $m->nama_ortu ?? '-', $m->no_hp_ortu ?? '-', $m->alamat_ortu ?? '-',
-            ], null, "A{$row}");
-            $row++;
-        }
-
-        foreach (range('A', 'L') as $col) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
-        }
-
-        $writer = new Xlsx($spreadsheet);
-        $filename = 'data-mahasiswa-'.date('YmdHis').'.xlsx';
-
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="'.$filename.'"');
-        $writer->save('php://output');
-        exit;
+        app(ExportService::class)->exportMahasiswaXlsx($gelombangId);
     }
 
     public function create()
@@ -213,6 +173,15 @@ class MahasiswaManagementController extends Controller
         return redirect()
             ->route('mahasiswa.index')
             ->with('success', 'Data mahasiswa berhasil diperbarui.');
+    }
+
+    public function verifyEmail($id)
+    {
+        $user = User::role('mahasiswa')->findOrFail($id);
+        $user->email_verified_at = now();
+        $user->save();
+
+        return back()->with('success', 'Email '.$user->email.' berhasil diverifikasi.');
     }
 
     public function destroy($id)

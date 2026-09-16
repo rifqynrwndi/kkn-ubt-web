@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DokumenPendaftaran;
 use App\Models\Gelombang;
 use Illuminate\Http\Request;
 
@@ -50,11 +51,18 @@ class GelombangController extends Controller
             'kuota_perempuan' => 'nullable|integer|min:0',
 
             'status' => 'required|in:persiapan,pendaftaran,berjalan,selesai',
+
+            'skip_dokumen' => 'nullable|boolean',
+            'required_documents' => 'nullable|array',
+            'required_documents.*' => 'string|in:dhs,surat_pernyataan,surat_ortu,surat_vaksin,surat_dokter',
         ]);
 
         $validated['kuota_total'] =
             ($validated['kuota_laki'] ?? 0) +
             ($validated['kuota_perempuan'] ?? 0);
+
+        $validated['skip_dokumen'] = $validated['skip_dokumen'] ?? false;
+        $validated['required_documents'] = $validated['required_documents'] ?? array_keys(DokumenPendaftaran::getDocumentLabels());
 
         Gelombang::create($validated);
 
@@ -80,11 +88,18 @@ class GelombangController extends Controller
             'kuota_perempuan' => 'nullable|integer|min:0',
 
             'status' => 'required|in:persiapan,pendaftaran,berjalan,selesai',
+
+            'skip_dokumen' => 'nullable|boolean',
+            'required_documents' => 'nullable|array',
+            'required_documents.*' => 'string|in:dhs,surat_pernyataan,surat_ortu,surat_vaksin,surat_dokter',
         ]);
 
         $validated['kuota_total'] =
             ($validated['kuota_laki'] ?? 0) +
             ($validated['kuota_perempuan'] ?? 0);
+
+        $validated['skip_dokumen'] = $validated['skip_dokumen'] ?? false;
+        $validated['required_documents'] = $validated['required_documents'] ?? array_keys(DokumenPendaftaran::getDocumentLabels());
 
         $gelombang->update($validated);
 

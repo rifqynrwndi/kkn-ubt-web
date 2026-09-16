@@ -1,19 +1,90 @@
 @extends('layouts.app')
 
-@section('title', 'Kelompok Binaan')
+@section('title', 'DPL Dashboard')
 
 @section('content')
 <section class="section">
     <div class="section-header">
-        <h1>Kelompok Binaan</h1>
+        <h1>DPL Dashboard</h1>
     </div>
 
     <div class="section-body">
+        @php
+            $totalKelompok = $kelompoks->count();
+            $proposalPending = $kelompoks->where('status_tahap', 1)->count();
+            $aktif = $kelompoks->where('status_tahap', 3)->count();
+            $selesai = $kelompoks->where('status_tahap', 4)->count();
+            $statusLabels = App\Services\StatusService::STAGES;
+        @endphp
+
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <div class="card card-statistic-1 shadow-sm">
+                    <div class="card-icon bg-primary">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="card-wrap">
+                        <div class="card-header">
+                            <h4>Total Kelompok</h4>
+                        </div>
+                        <div class="card-body">
+                            {{ $totalKelompok }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <div class="card card-statistic-1 shadow-sm">
+                    <div class="card-icon bg-warning">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="card-wrap">
+                        <div class="card-header">
+                            <h4>Proposal Pending</h4>
+                        </div>
+                        <div class="card-body">
+                            {{ $proposalPending }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <div class="card card-statistic-1 shadow-sm">
+                    <div class="card-icon bg-success">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                    <div class="card-wrap">
+                        <div class="card-header">
+                            <h4>Aktif KKN</h4>
+                        </div>
+                        <div class="card-body">
+                            {{ $aktif }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <div class="card card-statistic-1 shadow-sm">
+                    <div class="card-icon bg-info">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="card-wrap">
+                        <div class="card-header">
+                            <h4>Selesai</h4>
+                        </div>
+                        <div class="card-body">
+                            {{ $selesai }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4>Daftar Kelompok</h4>
+                <h4>Daftar Kelompok Binaan</h4>
                 <div style="min-width:250px;">
-                    <input type="text" id="dplSearchInput" class="form-control" placeholder="Cari kelompok, desa, kecamatan...">
+                    <input type="text" id="dplSearchInput" class="form-control" placeholder="Cari kelompok, desa...">
                 </div>
             </div>
             <div class="card-body p-0">
@@ -24,45 +95,34 @@
                                 <th class="text-center" width="40">No</th>
                                 <th>Kelompok</th>
                                 <th>Desa</th>
-                                <th>Kecamatan</th>
-                                <th>Kabupaten</th>
                                 <th class="text-center" width="90">Anggota</th>
-                                <th class="text-center" width="90">Tugas</th>
-                                <th class="text-center" width="90">Status</th>
+                                <th class="text-center" width="110">Status WAR</th>
+                                <th class="text-center" width="120">Status KKN</th>
                                 <th class="text-center" width="70">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($kelompoks as $index => $k)
                             @php
-                                $tugasTotal = $k->total_tugas ?? 0;
-                                $tugasDone = $k->submitted_tugas ?? 0;
-                                $tugasPercent = $tugasTotal > 0 ? round(($tugasDone / $tugasTotal) * 100) : 0;
+                                $statusInfo = $statusLabels[$k->status_tahap] ?? $statusLabels[0];
+                                $warStatusMap = [
+                                    'draft' => ['color' => 'secondary', 'label' => 'Draft'],
+                                    'dibuka' => ['color' => 'success', 'label' => 'Dibuka'],
+                                    'ditutup' => ['color' => 'warning', 'label' => 'Ditutup'],
+                                    'penuh' => ['color' => 'danger', 'label' => 'Penuh'],
+                                ];
+                                $warStatus = $warStatusMap[$k->status] ?? ['color' => 'info', 'label' => $k->status];
                             @endphp
                             <tr>
                                 <td class="text-center">{{ $index + 1 }}</td>
                                 <td><strong>{{ $k->nama_kelompok }}</strong></td>
                                 <td>{{ $k->desaGelombang->desa->nama_desa ?? '-' }}</td>
-                                <td>{{ $k->desaGelombang->desa->kecamatan->nama_kecamatan ?? '-' }}</td>
-                                <td>{{ $k->desaGelombang->desa->kecamatan->kabupaten ?? '-' }}</td>
                                 <td class="text-center">{{ $k->peserta_kkn_count }} / {{ $k->kuota }}</td>
                                 <td class="text-center">
-                                    @if($tugasTotal > 0)
-                                        <span class="badge badge-{{ $tugasPercent == 100 ? 'success' : ($tugasPercent > 0 ? 'warning' : 'danger') }}">
-                                            {{ $tugasDone }}/{{ $tugasTotal }}
-                                        </span>
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
+                                    <span class="badge badge-{{ $warStatus['color'] }}">{{ $warStatus['label'] }}</span>
                                 </td>
                                 <td class="text-center">
-                                    @if($k->status === 'penuh')
-                                        <span class="badge badge-danger">Penuh</span>
-                                    @elseif($k->status === 'dibuka')
-                                        <span class="badge badge-success">Dibuka</span>
-                                    @else
-                                        <span class="badge badge-info">{{ $k->status }}</span>
-                                    @endif
+                                    <span class="badge badge-{{ $statusInfo['color'] }}">{{ $statusInfo['nama'] }}</span>
                                 </td>
                                 <td class="text-center">
                                     <a href="{{ route('dpl.kelompok.show', $k->id) }}" class="btn btn-sm btn-info">
@@ -72,7 +132,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="9" class="text-center text-muted py-4">
+                                <td colspan="7" class="text-center text-muted py-4">
                                     Belum ada kelompok binaan.
                                 </td>
                             </tr>
@@ -82,6 +142,7 @@
                 </div>
             </div>
         </div>
+
         <script>
         document.getElementById('dplSearchInput')?.addEventListener('keyup', function() {
             var q = this.value.toLowerCase();
@@ -90,58 +151,6 @@
             });
         });
         </script>
-
-        @if(isset($semuaTasks) && $semuaTasks->unique('nama_tugas')->count() > 0)
-        <div class="card mt-3 border-0 shadow-sm">
-            <div class="card-header bg-transparent">
-                <h4 class="mb-0">Rekap Tugas <small class="text-muted">({{ $kelompoks->count() }} kelompok)</small></h4>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive" style="max-height:500px;overflow-y:auto;">
-                    <table class="table table-striped table-hover mb-0">
-                        <thead style="background:#2D3A8A;position:sticky;top:0;z-index:1;">
-                            <tr>
-                                <th class="text-white" width="220">Kelompok</th>
-                                @foreach($semuaTasks->unique('nama_tugas') as $wt)
-                                <th class="text-white text-center" width="80" style="font-size:10px;">{{ $wt->nama_tugas }}</th>
-                                @endforeach
-                                <th class="text-white text-center" width="60">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($kelompoks as $k)
-                            <tr>
-                                <td><small>{{ $k->nama_kelompok }}</small></td>
-                                @php $done = 0; $totalW = $semuaTasks->unique('nama_tugas')->count(); @endphp
-                                @foreach($semuaTasks->unique('nama_tugas') as $wt)
-                                @php
-                                    $t = $k->tugasKelompok->firstWhere('nama_tugas', $wt->nama_tugas);
-                                    $submitted = $t && $t->submissions->isNotEmpty();
-                                    if($submitted) $done++;
-                                @endphp
-                                <td class="text-center">
-                                    @if($submitted)
-                                        @php $firstSub = $t->submissions->first(); @endphp
-                                        @if($firstSub && $firstSub->file_path)
-                                        <a href="{{ storage_url($firstSub->file_path) }}" target="_blank" class="font-weight-bold text-success">Lihat</a>
-                                        @else
-                                        <span class="text-success font-weight-bold">Sudah</span>
-                                        @endif
-                                    @else
-                                    <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-                                @endforeach
-                                <td class="text-center font-weight-bold"><span class="badge badge-{{ $done == $totalW ? 'success' : 'danger' }}">{{ $done }}/{{ $totalW }}</span></td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        @endif
-
     </div>
 </section>
 @endsection

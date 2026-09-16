@@ -35,9 +35,6 @@
 [data-bs-theme="dark"] .section .section-header,
 [data-bs-theme="dark"] .modal-content,
 [data-bs-theme="dark"] .dropdown-menu,
-[data-bs-theme="dark"] .main-sidebar,
-[data-bs-theme="dark"] .navbar,
-[data-bs-theme="dark"] .navbar-bg,
 [data-bs-theme="dark"] .list-group-item,
 [data-bs-theme="dark"] .table,
 [data-bs-theme="dark"] .alert {
@@ -62,7 +59,6 @@
     color: #aab1c1 !important;
 }
 
-[data-bs-theme="dark"] .card,
 [data-bs-theme="dark"] .card p,
 [data-bs-theme="dark"] .card span,
 [data-bs-theme="dark"] .card td,
@@ -93,16 +89,6 @@
 [data-bs-theme="dark"] .stats .statistic-details .statistic-details-item .detail-name,
 [data-bs-theme="dark"] .stats .statistic-details .statistic-details-item .detail-value {
     color: #d6d9df !important;
-}
-
-[data-bs-theme="dark"] .main-sidebar .sidebar-menu li a {
-    color: #b5bccd;
-}
-
-[data-bs-theme="dark"] .main-sidebar .sidebar-menu li.active a,
-[data-bs-theme="dark"] .main-sidebar .sidebar-menu li a:hover {
-    background-color: #323746;
-    color: #ffffff;
 }
 
 [data-bs-theme="dark"] .form-control,
@@ -158,27 +144,12 @@
     color: #d6d9df;
 }
 
-/* Sidebar mini dark mode */
-[data-bs-theme="dark"] body.sidebar-mini .main-sidebar,
-[data-bs-theme="dark"] body.sidebar-mini .main-sidebar::after,
-[data-bs-theme="dark"] body.sidebar-mini #sidebar-wrapper {
-    background-color: #252934 !important;
+[data-bs-theme="dark"] .badge-secondary {
+    background-color: #3a3f4b;
+    color: #d6d9df;
 }
 
-/* Item hover/active saat mini */
-[data-bs-theme="dark"] body.sidebar-mini .sidebar-menu li a {
-    color: #cdd3d8 !important;
-}
-
-[data-bs-theme="dark"] body.sidebar-mini .sidebar-menu li.active a,
-[data-bs-theme="dark"] body.sidebar-mini .sidebar-menu li a:hover {
-    background-color: #2b3035 !important;
-    color: #fff !important;
-}
-
-/* =========================
-   PAGINATION DARK MODE
-   ========================= */
+/* Sidebar dark mode — handled in custom.css */
 
 [data-bs-theme="dark"] .pagination .page-link {
     background-color: #1f2937;
@@ -188,14 +159,14 @@
 
 [data-bs-theme="dark"] .pagination .page-link:hover {
     background-color: #6777ef;
-    color: #b12525;
+    color: #ffffff;
     border-color: #6777ef;
 }
 
 [data-bs-theme="dark"] .pagination .page-item.active .page-link {
     background-color: #6777ef;
     border-color: #6777ef;
-    color: #6777ef;
+    color: #ffffff;
 }
 
 [data-bs-theme="dark"] .pagination .page-item.disabled .page-link {
