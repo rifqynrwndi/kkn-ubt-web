@@ -6,17 +6,10 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Spatie\Permission\Models\Role;
 
-/**
- * Role access management (superadmin only).
- *
- * Allows the superadmin to view, edit, and delete user roles.
- */
 class HakaksesController extends Controller
 {
-    /**
-     * Display a listing of users with their roles.
-     */
     public function index(Request $request): View
     {
         $query = User::with('roles');
@@ -29,14 +22,26 @@ class HakaksesController extends Controller
             });
         }
 
-        $hakakses = $query->orderBy('name')->get();
+        if ($request->filled('role')) {
+            $query->whereHas('roles', function ($q) use ($request) {
+                $q->where('name', $request->role);
+            });
+        }
 
-        return view('layouts.hakakses.index', compact('hakakses'));
+        if ($request->filled('status')) {
+            if ($request->status === 'verified') {
+                $query->whereNotNull('email_verified_at');
+            } elseif ($request->status === 'unverified') {
+                $query->whereNull('email_verified_at');
+            }
+        }
+
+        $hakakses = $query->orderBy('name')->paginate(15)->withQueryString();
+        $roles = Role::orderBy('name')->pluck('name');
+
+        return view('layouts.hakakses.index', compact('hakakses', 'roles'));
     }
 
-    /**
-     * Show the form for editing the specified user's role.
-     */
     public function edit(int $id): View
     {
         $hakakses = User::findOrFail($id);
@@ -44,38 +49,31 @@ class HakaksesController extends Controller
         return view('layouts.hakakses.edit', compact('hakakses'));
     }
 
-    /**
-     * Update the specified user's role.
-     */
     public function update(Request $request, int $id): RedirectResponse
     {
         $request->validate([
-            'role' => ['required', 'string', 'in:mahasiswa,pembimbing,superadmin'],
+            'role' => ['required', 'string', 'in:mahasiswa,pembimbing,superadmin,admin_lppm,admin_prodi'],
         ]);
 
         $user = User::findOrFail($id);
         $user->syncRoles([$request->role]);
 
         return redirect()->route('hakakses.index')
-            ->with('success', 'User role updated successfully.');
+            ->with('success', 'Role pengguna berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified user from storage.
-     */
     public function destroy(int $id): RedirectResponse
     {
         $user = User::findOrFail($id);
 
-        // Prevent deleting yourself
         if ($user->id === auth()->id()) {
             return redirect()->route('hakakses.index')
-                ->with('error', 'You cannot delete your own account.');
+                ->with('error', 'Anda tidak dapat menghapus akun sendiri.');
         }
 
         $user->delete();
 
         return redirect()->route('hakakses.index')
-            ->with('success', 'User deleted successfully.');
+            ->with('success', 'Pengguna berhasil dihapus.');
     }
 }

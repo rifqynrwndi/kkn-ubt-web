@@ -69,7 +69,7 @@
             ];
         @endphp
         <li class="dropdown">
-            <a href="#" data-toggle="dropdown" class="nav-link nav-link-lg position-relative">
+            <a href="#" class="nav-link nav-link-lg position-relative" id="notifDropdownToggle">
                 <i class="fas fa-bell"></i>
                 @if($unreadCount > 0)
                     <span class="notification-badge-dot"></span>
@@ -161,6 +161,30 @@
 </nav>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.getElementById('notifDropdownToggle');
+    const menu = toggle?.nextElementSibling;
+    if (!toggle || !menu) return;
+
+    const bsDropdown = bootstrap.Dropdown.getOrCreateInstance(menu.previousElementSibling.parentElement.querySelector('.dropdown'));
+
+    toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (menu.classList.contains('show')) {
+            bsDropdown.hide();
+        } else {
+            bsDropdown.show();
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!menu.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)) {
+            bsDropdown.hide();
+        }
+    });
+});
+
 function markNotifRead(e, el) {
     e.preventDefault();
     const id = el.dataset.id;

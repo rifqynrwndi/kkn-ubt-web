@@ -1,27 +1,36 @@
 @extends('layouts.app')
 
-@section('title', 'Role Access')
+@section('title', 'Hak Akses')
 
-@push('style')
-    <!-- CSS Libraries -->
-@endpush
+<style>
+    .table td, .table th {
+        vertical-align: middle !important;
+    }
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .name-column {
+        white-space: normal !important;
+        min-width: 150px;
+        max-width: 200px;
+        word-break: break-word;
+        line-height: 1.4;
+    }
+    .action-column {
+        white-space: nowrap !important;
+        min-width: 110px;
+    }
+</style>
 
-@section('main')
-<div class="main-content">
-    <section class="section">
-        <div class="section-header">
-            <h1>Role Access</h1>
-            <div class="section-header-breadcrumb">
-                <div class="breadcrumb-item active"><a href="{{ route('home') }}">Dashboard</a></div>
-                <div class="breadcrumb-item">Role Access</div>
-            </div>
-        </div>
+@section('content')
+<section class="section">
+    <div class="section-header">
+        <h1>Hak Akses</h1>
+    </div>
 
-        <div class="section-body">
-            <h2 class="section-title">Manage User Roles</h2>
-            <p class="section-lead">
-                Assign roles and manage access rights for users.
-            </p>
+    <div class="card">
+        <div class="card-body">
 
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -41,76 +50,133 @@
                 </div>
             @endif
 
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4>Users</h4>
-                            <div class="card-header-action">
-                                <form method="GET" action="{{ route('hakakses.index') }}">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" placeholder="Search by name or email..." name="search" value="{{ request('search') }}">
-                                        <div class="input-group-btn">
-                                            <button class="btn btn-primary"><i class="fas fa-search"></i></button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th class="text-center">#</th>
-                                            <th>Name</th>
-                                            <th>Email</th>
-                                            <th>Role</th>
-                                            <th class="text-center">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($hakakses as $index => $user)
-                                            <tr>
-                                                <td class="text-center">{{ $index + 1 }}</td>
-                                                <td>{{ $user->name }}</td>
-                                                <td>{{ $user->email }}</td>
-                                                <td>
-                                                    @php($roleName = $user->getRoleNames()->first() ?? 'user')
-                                                    <span class="badge badge-{{ $user->hasRole('superadmin') ? 'danger' : 'primary' }}">
-                                                        {{ ucfirst($roleName) }}
-                                                    </span>
-                                                </td>
-                                                <td class="text-center">
-                                                    <a href="{{ route('hakakses.edit', $user->id) }}" class="btn btn-sm btn-info">
-                                                        <i class="fas fa-edit"></i> Edit
-                                                    </a>
-                                                    <form action="{{ route('hakakses.destroy', $user->id) }}" method="POST" class="d-inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this user?')">
-                                                            <i class="fas fa-trash"></i> Delete
-                                                        </button>
-                                                    </form>
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="5" class="text-center py-4">No users found.</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
+            {{-- Search + Filters --}}
+            <form method="GET" class="mb-3">
+                <div class="row align-items-end">
+                    <div class="col-md-4 mb-2">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" placeholder="Cari nama / email..." value="{{ request('search') }}">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
                             </div>
                         </div>
                     </div>
+                    <div class="col-md-3 mb-2">
+                        <select name="role" class="form-control" onchange="this.form.submit()">
+                            <option value="">Semua Role</option>
+                            @foreach($roles as $role)
+                                <option value="{{ $role }}" {{ request('role') == $role ? 'selected' : '' }}>
+                                    {{ ucfirst(str_replace('_', ' ', $role)) }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <select name="status" class="form-control" onchange="this.form.submit()">
+                            <option value="">Semua Status</option>
+                            <option value="verified" {{ request('status') == 'verified' ? 'selected' : '' }}>Email Verified</option>
+                            <option value="unverified" {{ request('status') == 'unverified' ? 'selected' : '' }}>Email Unverified</option>
+                        </select>
+                    </div>
+                    @if(request()->hasAny(['search', 'role', 'status']))
+                        <div class="col-md-2 mb-2">
+                            <a href="{{ route('hakakses.index') }}" class="btn btn-outline-secondary btn-block">
+                                <i class="fas fa-times"></i> Reset
+                            </a>
+                        </div>
+                    @endif
                 </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-md">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;" class="text-center">No</th>
+                            <th>Nama</th>
+                            <th>Email</th>
+                            <th class="text-center">Role</th>
+                            <th class="text-center">Verifikasi</th>
+                            <th class="text-center action-column">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($hakakses as $index => $user)
+                        <tr>
+                            <td class="text-center">
+                                {{ $hakakses->firstItem() + $index }}
+                            </td>
+                            <td class="name-column">{{ $user->name }}</td>
+                            <td>{{ $user->email }}</td>
+                            <td class="text-center">
+                                @php($roleName = $user->getRoleNames()->first() ?? '-')
+                                @if($roleName === 'superadmin')
+                                    <span class="badge badge-danger">{{ ucfirst($roleName) }}</span>
+                                @elseif($roleName === 'admin_lppm')
+                                    <span class="badge badge-warning">{{ ucfirst(str_replace('_', ' ', $roleName)) }}</span>
+                                @elseif($roleName === 'admin_prodi')
+                                    <span class="badge badge-info">{{ ucfirst(str_replace('_', ' ', $roleName)) }}</span>
+                                @elseif($roleName === 'pembimbing')
+                                    <span class="badge badge-primary">{{ ucfirst($roleName) }}</span>
+                                @else
+                                    <span class="badge badge-secondary">{{ ucfirst($roleName) }}</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                @if($user->email_verified_at)
+                                    <span class="badge badge-success">Verified</span>
+                                @else
+                                    <span class="badge badge-danger">Unverified</span>
+                                @endif
+                            </td>
+                            <td class="text-center action-column">
+                                <a href="{{ route('hakakses.edit', $user->id) }}"
+                                   class="btn btn-warning btn-sm"
+                                   data-toggle="tooltip"
+                                   title="Edit Role">
+                                    <i class="fas fa-user-edit"></i>
+                                </a>
+
+                                <form action="{{ route('hakakses.destroy', $user->id) }}"
+                                      method="POST"
+                                      class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Hapus pengguna ini?')"
+                                            data-toggle="tooltip"
+                                            title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                Data tidak ditemukan
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
+
+            {{-- Pagination --}}
+            <div class="mt-4" style="display: flex; justify-content: center;">
+                {{ $hakakses->links() }}
+            </div>
+
         </div>
-    </section>
-</div>
+    </div>
+</section>
 @endsection
 
 @push('scripts')
-    <!-- JS Libraries -->
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+</script>
 @endpush
