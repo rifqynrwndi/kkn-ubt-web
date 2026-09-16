@@ -355,7 +355,7 @@
 .kl-bar-fill {
     height: 100%;
     border-radius: 4px;
-    transition: width .4s;
+    transition: width .4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .kl-bar-fill.ok   { background: linear-gradient(90deg, var(--war-success), var(--war-success-dark)); }
@@ -518,7 +518,7 @@
 .fak-fill {
     height: 100%;
     border-radius: 999px;
-    transition: width .4s;
+    transition: width .4s cubic-bezier(0.22, 1, 0.36, 1);
     background: linear-gradient(90deg, var(--war-primary), var(--war-primary-dark));
 }
 
@@ -604,7 +604,7 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 34px;
     margin: 0 auto 20px;
-    animation: war-popIn .5s cubic-bezier(.175,.885,.32,1.275);
+    animation: war-popIn .5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes war-popIn {

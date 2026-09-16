@@ -30,8 +30,7 @@
     .waiting { color: #ffa426; }
 
     .info-box {
-        border-left: 4px solid #6777ef;
-        background: #f8f9ff;
+        background: #f0f1fa;
         padding: 15px;
         border-radius: 8px;
     }

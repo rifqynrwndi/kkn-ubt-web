@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-16 02:35:49 UTC",
+  "run_id": "kkn-ubt-web_65e3",
+  "run_name": "kkn-ubt-web_65e3",
+  "scope": {
+    "targets": [
+      {
+        "type": "local_code",
+        "details": {
+          "target_path": "/mnt/d/Tugas/KKN UBT/kkn-ubt-web",
+          "workspace_subdir": "kkn-ubt-web"
+        },
+        "original": "/mnt/d/Tugas/KKN UBT/kkn-ubt-web"
+      }
+    ],
+    "scan_mode": "quick",
+    "scope_mode": "auto",
+    "diff_scope": {
+      "active": false,
+      "mode": "auto"
+    },
+    "instruction": "Laravel PHP app. Focus on app/, routes/, resources/views, config/. Ignore vendor/, node_modules/."
+  },
+  "summary": {
+    "surfaces_reviewed": 0,
+    "outcomes": {},
+    "findings_filed": 0,
+    "gaps": 5
+  },
+  "machine_observed": {
+    "agents": [
+      {
+        "agent_id": "d084773c",
+        "agent_name": "Auth & Access Control Specialist",
+        "status": "running",
+        "skills": [
+          "idor",
+          "broken_function_level_authorization",
+          "business_logic"
+        ],
+        "task": "Audit authentication, authorization, and access control in /workspace/kkn-ubt-web:\n1. Call get_threat_model(\"/workspace/kkn-ubt-web\").\n2. Review routes/web.php, app/Http/Middleware/, and controllers (BiodataController, MahasiswaManagementController, HakaksesController, PenilaianController, PenilaianDplController, LogBookController, ProposalController, DokumenPendaftaranController, FakultasProdiController, DesaController).\n3. Check for missing auth middleware, IDOR vulnerabilities where user-supplied IDs (student ID, proposal ID, logbook ID, score ID, document ID) are processed without verifying ownership or user permissions.\n4. Check for privilege escalation or Broken Function Level Authorization (BFLA) in administrative routes.\n5. For each confirmed vulnerability, write a detailed vulnerability report with create_vulnerability_report including verbatim code_locations (fix_before, fix_after, start_line, end_line) and fix_verification.\n6. Record coverage for evaluated controllers and routes using record_coverage.\n7. Finish with agent_finish.",
+        "is_root": false
+      },
+      {
+        "agent_id": "a4fb8342",
+        "agent_name": "Root Agent",
+        "status": "failed",
+        "skills": [],
+        "task": "\n\nLocal Codebases: - /mnt/d/Tugas/KKN UBT/kkn-ubt-web (available at: /workspace/kkn-ubt-web; this is the user's real directory, mounted live and writable — .git/.agents/.codex are read-only)\n\nSpecial instructions: Laravel PHP app. Focus on app/, routes/, resources/views, config/. Ignore vendor/, node_modules/.",
+        "is_root": true
+      },
+      {
+        "agent_id": "0bab8f83",
+        "agent_name": "SAST & Secrets Scanner",
+        "status": "running",
+        "skills": [
+          "source_aware_sast",
+          "dependency_cve_scanning"
+        ],
+        "task": "Perform complete static analysis on target /workspace/kkn-ubt-web:\n1. Call get_threat_model(\"/workspace/kkn-ubt-web\").\n2. Create directory /workspace/.source-aware.\n3. Run semgrep pass: semgrep scan --config p/default --config p/secrets --metrics=off --json --output /workspace/.source-aware/semgrep.json .\n4. Build ast targets from semgrep output and run ast-grep (sg).\n5. Run gitleaks and trufflehog for secret detection.\n6. Run trivy fs for dependency and configuration vulnerabilities.\n7. Triage findings carefully. For any verified dependency CVE, report using create_dependency_report.\n8. Record coverage using record_coverage for SAST and secret scanning risk areas.\n9. Finish with agent_finish summarizing findings.",
+        "is_root": false
+      }
+    ],
+    "skills_exercised": [
+      "broken_function_level_authorization",
+      "business_logic",
+      "dependency_cve_scanning",
+      "idor",
+      "source_aware_sast"
+    ],
+    "findings_filed": 0,
+    "source": "runtime"
+  },
+  "completeness": {
+    "complete": false,
+    "scan_status": "failed",
+    "exit_reason": "error",
+    "caveats": [
+      "The scan ended with status 'failed' rather than completing, so coverage reflects only the work finished before it stopped.",
+      "2 agent(s) did not finish cleanly (Auth & Access Control Specialist, SAST & Secrets Scanner); any surface they held is under-covered.",
+      "The run terminated via 'error' rather than the root agent finishing, so remaining scope was not reached."
+    ]
+  },
+  "entries": [],
+  "gaps": [
+    {
+      "kind": "unrecorded_risk_class",
+      "risk_area": "broken function level authorization",
+      "detail": "Agent(s) Auth & Access Control Specialist were assigned the 'broken_function_level_authorization' skill, but no coverage entry records this class being assessed. Treat it as unexamined, not as clean."
+    },
+    {
+      "kind": "unrecorded_risk_class",
+      "risk_area": "business logic",
+      "detail": "Agent(s) Auth & Access Control Specialist were assigned the 'business_logic' skill, but no coverage entry records this class being assessed. Treat it as unexamined, not as clean."
+    },
+    {
+      "kind": "unrecorded_risk_class",
+      "risk_area": "idor",
+      "detail": "Agent(s) Auth & Access Control Specialist were assigned the 'idor' skill, but no coverage entry records this class being assessed. Treat it as unexamined, not as clean."
+    },
+    {
+      "kind": "agent_recorded_no_coverage",
+      "agent_name": "Auth & Access Control Specialist",
+      "detail": "Auth & Access Control Specialist ran (status: running) without recording any coverage. Whatever it examined is absent from this record."
+    },
+    {
+      "kind": "agent_recorded_no_coverage",
+      "agent_name": "SAST & Secrets Scanner",
+      "detail": "SAST & Secrets Scanner ran (status: running) without recording any coverage. Whatever it examined is absent from this record."
+    }
+  ]
+}
