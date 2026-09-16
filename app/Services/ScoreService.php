@@ -17,7 +17,7 @@ class ScoreService
      *
      * @param  Collection  $penilaianIndividu  PenilaianIndividu models (loaded with kelompok_kkn_id filter)
      * @param  Collection  $penilaianKelompok  PenilaianKelompok models (loaded with kelompok_kkn_id filter, with 'komponen' relation)
-     * @param  Collection  $komponenList       PenilaianKomponen models (all components, ordered)
+     * @param  Collection  $komponenList  PenilaianKomponen models (all components, ordered)
      * @return array{dpl: float|null, desa: float|null, lppm: float|null, total: float|null}
      */
     public function getScoreBreakdown(

@@ -66,9 +66,12 @@ class ScoreServiceTest extends TestCase
         ]);
 
         $penilaianKelompok = new Collection([
-            new class {
+            new class
+            {
                 public $nilai = 90;
+
                 public $komponen;
+
                 public function __construct()
                 {
                     $this->komponen = (object) ['nama_komponen' => 'Nilai LPPM'];
@@ -97,7 +100,7 @@ class ScoreServiceTest extends TestCase
             (object) ['komponen_id' => 1, 'nilai' => 80],
         ]);
 
-        $penilaianKelompok = new Collection();
+        $penilaianKelompok = new Collection;
 
         $result = $this->service->getScoreBreakdown($penilaianIndividu, $penilaianKelompok, $komponenList);
 
