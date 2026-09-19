@@ -83,7 +83,7 @@ class File extends Model
      */
     public function getUrlAttribute(): string
     {
-        return Storage::url($this->path);
+        return storage_url($this->path);
     }
 
     /**
