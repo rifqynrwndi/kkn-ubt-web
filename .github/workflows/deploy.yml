@@ -67,7 +67,8 @@ jobs:
 
       - name: Rsync to server
         run: |
-          ssh server "mkdir -p ${{ secrets.DEPLOY_PATH }}"
+          # Ensure deployment directory exists and is writable by deploy user
+          ssh server "sudo mkdir -p ${{ secrets.DEPLOY_PATH }} && sudo chown -R ${{ secrets.SSH_USERNAME }}:${{ secrets.SSH_USERNAME }} ${{ secrets.DEPLOY_PATH }}"
           rsync -avzr --delete \
             --no-perms \
             --no-owner \
