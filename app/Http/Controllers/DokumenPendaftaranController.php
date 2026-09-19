@@ -99,7 +99,7 @@ class DokumenPendaftaranController extends Controller
         }
 
         try {
-            return Storage::disk('local')->response(
+            return Storage::disk()->response(
                 $dokumen->file->path,
                 $dokumen->file->original_name
             );
@@ -253,7 +253,7 @@ class DokumenPendaftaranController extends Controller
 
         if ($existing && $existing->file) {
 
-            Storage::disk('local')->delete(
+            Storage::disk()->delete(
                 $existing->file->path
             );
 
@@ -356,7 +356,7 @@ class DokumenPendaftaranController extends Controller
         */
         if ($dokumen->file) {
 
-            Storage::disk('local')->delete(
+            Storage::disk()->delete(
                 $dokumen->file->path
             );
 
