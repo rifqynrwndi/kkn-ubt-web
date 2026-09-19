@@ -186,9 +186,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function markNotifRead(e, el) {
+    e.preventDefault();
     e.stopPropagation();
     const id = el.dataset.id;
     const url = el.dataset.url || '/home';
+
+    // Close dropdown manually (avoid Bootstrap hash issue)
+    el.closest('.notification-dropdown-menu')?.classList.remove('show');
 
     fetch('/notifications/' + id + '/mark-as-read', {
         method: 'POST',
