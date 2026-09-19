@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 class MigrateStorageToS3 extends Command
 {
     protected $signature = 'storage:migrate-to-s3';
+
     protected $description = 'Migrate all local storage files to S3';
 
     public function handle(): int
@@ -27,6 +28,7 @@ class MigrateStorageToS3 extends Command
             foreach ($files as $file) {
                 if ($s3Disk->exists($file)) {
                     $skipped++;
+
                     continue;
                 }
 
@@ -43,6 +45,7 @@ class MigrateStorageToS3 extends Command
         }
 
         $this->info("Done. Total: {$totalFiles}, Migrated: {$migrated}, Skipped: {$skipped}, Failed: {$failed}");
+
         return 0;
     }
 }
