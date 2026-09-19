@@ -92,11 +92,11 @@
                             $notifMessage = $notification->data['message'] ?? '';
                             $redirectUrl = $notification->data['url'] ?? $notification->data['action_url'] ?? $map['url'];
                         @endphp
-                        <a href="#"
-                           class="notification-dropdown-item {{ $notification->read_at ? '' : 'unread' }}"
-                           data-url="{{ $redirectUrl }}"
-                           data-id="{{ $notification->id }}"
-                           onclick="markNotifRead(event, this)">
+                        <div class="notification-dropdown-item {{ $notification->read_at ? '' : 'unread' }}"
+                             style="cursor:pointer"
+                             data-url="{{ $redirectUrl }}"
+                             data-id="{{ $notification->id }}"
+                             onclick="markNotifRead(event, this)">
                             <div class="notification-dropdown-icon">
                                 <i class="{{ $map['icon'] }}"></i>
                             </div>
@@ -108,7 +108,7 @@
                             @if(!$notification->read_at)
                                 <span class="notification-unread-dot"></span>
                             @endif
-                        </a>
+                        </div>
                     @empty
                         <div class="notification-dropdown-empty">
                             <i class="fas fa-bell-slash"></i>
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function markNotifRead(e, el) {
-    e.preventDefault();
+    e.stopPropagation();
     const id = el.dataset.id;
     const url = el.dataset.url || '/home';
 
