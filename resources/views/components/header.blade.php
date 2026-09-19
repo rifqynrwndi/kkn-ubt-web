@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function markNotifRead(e, el) {
     e.preventDefault();
     const id = el.dataset.id;
-    const url = el.dataset.url;
+    const url = el.dataset.url || '/home';
 
     fetch('/notifications/' + id + '/mark-as-read', {
         method: 'POST',
