@@ -23,7 +23,7 @@ class MigrateStorageToS3 extends Command
         $dirsToScan = ['public'];
         foreach ($dirsToScan as $dir) {
             $this->info("Scanning: {$dir}");
-            $files = $localDisk->files($dir);
+            $files = $localDisk->allFiles($dir);
             $totalFiles += count($files);
 
             foreach ($files as $file) {
