@@ -166,21 +166,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const menu = toggle?.nextElementSibling;
     if (!toggle || !menu) return;
 
-    const bsDropdown = bootstrap.Dropdown.getOrCreateInstance(menu.previousElementSibling.parentElement.querySelector('.dropdown'));
-
     toggle.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        if (menu.classList.contains('show')) {
-            bsDropdown.hide();
-        } else {
-            bsDropdown.show();
-        }
+        menu.classList.toggle('show');
     });
 
     document.addEventListener('click', function(e) {
         if (!menu.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)) {
-            bsDropdown.hide();
+            menu.classList.remove('show');
         }
     });
 });
@@ -191,7 +185,6 @@ function markNotifRead(e, el) {
     const id = el.dataset.id;
     const url = el.dataset.url || '/home';
 
-    // Close dropdown manually (avoid Bootstrap hash issue)
     el.closest('.notification-dropdown-menu')?.classList.remove('show');
 
     fetch('/notifications/' + id + '/mark-as-read', {
