@@ -83,12 +83,12 @@
                 <div class="card shadow-sm mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Preview DHS</h5>
-                        <a href="{{ Storage::url($mahasiswa->dhs_path) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                        <a href="{{ storage_url($mahasiswa->dhs_path) }}" target="_blank" class="btn btn-outline-primary btn-sm">
                             <i class="fas fa-external-link-alt mr-1"></i> Buka di Tab Baru
                         </a>
                     </div>
                     <div class="card-body p-0">
-                        <iframe src="{{ Storage::url($mahasiswa->dhs_path) }}"
+                        <iframe src="{{ storage_url($mahasiswa->dhs_path) }}"
                                 style="width:100%;height:600px;border:none;"
                                 title="Preview DHS"></iframe>
                     </div>
