@@ -29,7 +29,7 @@ class FileProxyController extends Controller
             abort(404);
         }
 
-        if (! $this->authorize($request->user(), $path)) {
+        if (! $this->canAccess($request->user(), $path)) {
             abort(403, 'Anda tidak memiliki akses ke file ini.');
         }
 
@@ -49,7 +49,7 @@ class FileProxyController extends Controller
         ]);
     }
 
-    private function authorize($user, string $path): bool
+    private function canAccess($user, string $path): bool
     {
         $firstDir = explode('/', $path)[0] ?? '';
 
@@ -219,7 +219,21 @@ class FileProxyController extends Controller
             return false;
         }
 
-        return $dpl->user_id === $user->id;
+        if ($dpl->user_id === $user->id) {
+            return true;
+        }
+
+        if ($user->hasRole('mahasiswa')) {
+            $peserta = PesertaKkn::where('mahasiswa_id', $user->id)->first();
+            if ($peserta && $peserta->kelompok_kkn_id) {
+                $kelompok = KelompokKkn::find($peserta->kelompok_kkn_id);
+                if ($kelompok && $kelompok->dosen_pembimbing_lapangan_id === $dpl->user_id) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private function hasAnyRole($user, array $roles): bool
