@@ -15,13 +15,14 @@ class MigrateStorageToS3 extends Command
     {
         $localDisk = Storage::disk('local');
         $s3Disk = Storage::disk('s3');
-        $directories = $localDisk->directories();
         $totalFiles = 0;
         $migrated = 0;
         $skipped = 0;
         $failed = 0;
 
-        foreach ($directories as $dir) {
+        $dirsToScan = ['public'];
+        foreach ($dirsToScan as $dir) {
+            $this->info("Scanning: {$dir}");
             $files = $localDisk->files($dir);
             $totalFiles += count($files);
 
