@@ -226,7 +226,7 @@ class DokumenPendaftaranController extends Controller
         */
         $path = $request->file('file')->store(
             'dokumen-pendaftaran',
-            'local'
+            'public'
         );
 
         $file = File::create([
