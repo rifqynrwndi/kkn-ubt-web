@@ -48,6 +48,8 @@ class BiodataController extends Controller
             $fotoPath = $mahasiswa->foto;
         }
 
+        $hasFoto = $fotoPath && $fotoPath !== 'avatar/avatar-1.png' && $fotoPath !== 'img/avatar/avatar-1.png';
+
         $mahasiswa->update([
             'npm' => $request->npm,
             'jenis_kelamin' => $request->jenis_kelamin,
@@ -60,7 +62,7 @@ class BiodataController extends Controller
 
             'foto' => $fotoPath,
 
-            'is_biodata_complete' => true,
+            'is_biodata_complete' => $hasFoto,
         ]);
 
         return redirect()
