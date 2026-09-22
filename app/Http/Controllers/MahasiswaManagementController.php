@@ -38,7 +38,7 @@ class MahasiswaManagementController extends Controller
             } elseif ($request->status == 'biodata_incomplete') {
                 $query->whereHas('mahasiswa', fn ($q) => $q->where('is_biodata_complete', false));
             } elseif ($request->status == 'dhs_pending') {
-                $query->whereHas('mahasiswa', fn ($q) => $q->where('is_biodata_complete', true)->where('dhs_status', 'pending'));
+                $query->whereHas('mahasiswa', fn ($q) => $q->where('is_biodata_complete', true)->where('dhs_status', 'pending')->whereNotNull('dhs_path'));
             } elseif ($request->status == 'dhs_rejected') {
                 $query->whereHas('mahasiswa', fn ($q) => $q->where('dhs_status', 'rejected'));
             }
