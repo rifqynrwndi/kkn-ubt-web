@@ -23,13 +23,14 @@ class FillRegisteredMahasiswaBirthData extends Command
 
         if (empty($registeredUserIds)) {
             $this->info('No mahasiswa found registered in any gelombang.');
+
             return self::SUCCESS;
         }
 
         // Update registered mahasiswa: fill birth data + mark complete
         $updated = DB::table('mahasiswa')
             ->whereIn('user_id', $registeredUserIds)
-            ->where(function ($query) use ($defaultBirthPlace, $defaultBirthDate) {
+            ->where(function ($query) {
                 $query->whereNull('birth_place')
                     ->orWhereNull('birth_date')
                     ->orWhere('is_biodata_complete', false);
