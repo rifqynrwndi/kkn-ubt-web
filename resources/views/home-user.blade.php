@@ -77,6 +77,26 @@
             </div>
         @endif
 
+        {{-- TELEGRAM GROUP BANNER --}}
+        @if($telegramGroupUrl)
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-info d-flex align-items-center justify-content-between flex-wrap gap-3" style="border-left: 4px solid #0088cc;">
+                        <div class="d-flex align-items-center">
+                            <i class="fab fa-telegram-plane fa-2x mr-3" style="color: #0088cc;"></i>
+                            <div>
+                                <strong style="font-size: 15px;">Gabung Grup Telegram KKN</strong>
+                                <div class="text-muted small">Bergabunglah dengan grup Telegram untuk informasi dan koordinasi selama KKN.</div>
+                            </div>
+                        </div>
+                        <a href="{{ $telegramGroupUrl }}" target="_blank" rel="noopener noreferrer" class="btn btn-info text-white" style="background-color: #0088cc; border-color: #0088cc;">
+                            <i class="fas fa-external-link-alt mr-1"></i> Join Sekarang
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <div class="row">
 
             {{-- DETAIL PENDAFTARAN --}}

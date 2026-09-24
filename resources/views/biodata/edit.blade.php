@@ -147,6 +147,74 @@
                             @enderror
                         </div>
 
+                        {{-- TEMPAT LAHIR --}}
+                        <div class="form-group col-md-6">
+                            <label>Tempat Lahir</label>
+                            <input type="text"
+                                   name="birth_place"
+                                   class="form-control @error('birth_place') is-invalid @enderror"
+                                   value="{{ old('birth_place', $mahasiswa->birth_place) }}"
+                                   placeholder="Contoh: Tarakan"
+                                   list="birth-place-list"
+                                   required>
+                            <datalist id="birth-place-list">
+                                <option value="Tarakan">
+                                <option value="Bulungan">
+                                <option value="Tana Tidung">
+                                <option value="Malinau">
+                                <option value="Nunukan">
+                                <option value="Tanjung Selor">
+                                <option value="Balikpapan">
+                                <option value="Samarinda">
+                                <option value="Banjarmasin">
+                                <option value="Banjarbaru">
+                                <option value="Pontianak">
+                                <option value="Palangkaraya">
+                                <option value="Manado">
+                                <option value="Makassar">
+                                <option value="Jakarta">
+                                <option value="Surabaya">
+                                <option value="Bandung">
+                                <option value="Medan">
+                                <option value="Semarang">
+                                <option value="Yogyakarta">
+                                <option value="Malang">
+                                <option value="Solo">
+                                <option value="Denpasar">
+                                <option value="Batam">
+                                <option value="Padang">
+                                <option value="Palembang">
+                                <option value="Pekanbaru">
+                                <option value="Lampung">
+                                <option value="Ambon">
+                                <option value="Jayapura">
+                                <option value="Sorong">
+                                <option value="Bintan">
+                                <option value="Berau">
+                                <option value="Kutai Kartanegara">
+                                <option value="Kutai Timur">
+                                <option value="Paser">
+                                <option value="Penajam Paser Utara">
+                            </datalist>
+                            @error('birth_place')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- TANGGAL LAHIR --}}
+                        <div class="form-group col-md-6">
+                            <label>Tanggal Lahir</label>
+                            <input type="date"
+                                   name="birth_date"
+                                   class="form-control @error('birth_date') is-invalid @enderror"
+                                   value="{{ old('birth_date', $mahasiswa->birth_date ? $mahasiswa->birth_date->format('Y-m-d') : '') }}"
+                                   max="{{ date('Y-m-d', strtotime('-15 years')) }}"
+                                   required>
+                            @error('birth_date')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         {{-- NAMA ORTU --}}
                         <div class="form-group col-md-6">
                             <label>Nama Orang Tua / Wali</label>

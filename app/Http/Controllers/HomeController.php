@@ -127,6 +127,7 @@ class HomeController extends Controller
             'biodataComplete' => $user->hasCompletedBiodata(),
             'registrationStatus' => $pendaftaran ? 'Sudah Daftar' : 'Belum Daftar',
             'activeGelombang' => $activeGelombang?->nama_gelombang,
+            'telegramGroupUrl' => $activeGelombang?->telegram_group_url,
             'pendaftaran' => $pendaftaran,
             'recentNotifications' => $recentNotifications,
             'reminders' => $reminders,

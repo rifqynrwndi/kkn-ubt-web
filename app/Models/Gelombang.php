@@ -19,6 +19,7 @@ class Gelombang extends Model
         'status',
         'skip_dokumen',
         'required_documents',
+        'telegram_group_url',
     ];
 
     protected $casts = [

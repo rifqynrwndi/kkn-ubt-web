@@ -17,6 +17,8 @@ class Mahasiswa extends Model
         'npm',
         'jenis_kelamin',
         'no_hp',
+        'birth_place',
+        'birth_date',
         'foto',
         'prodi_id',
         'nama_ortu',
@@ -32,6 +34,7 @@ class Mahasiswa extends Model
 
     protected $casts = [
         'is_biodata_complete' => 'boolean',
+        'birth_date' => 'date',
         'dhs_verified_at' => 'datetime',
     ];
 
