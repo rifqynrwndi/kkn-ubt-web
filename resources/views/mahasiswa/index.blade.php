@@ -53,9 +53,10 @@
                         <select name="status" class="form-control" onchange="this.form.submit()">
                             <option value="">Semua Status</option>
                             <option value="verified" {{ request('status')=='verified'?'selected':'' }}>Email Verified</option>
-                            <option value="unverified" {{ request('status')=='unverified'?'selected':'' }}>Email Unverified</option>
+                            <option value="unverified" {{ request('status')=='unverified'?'selected':'' }}>Email Belum Verified</option>
                             <option value="biodata_incomplete" {{ request('status')=='biodata_incomplete'?'selected':'' }}>Biodata Belum Lengkap</option>
-                            <option value="no_photo" {{ request('status')=='no_photo'?'selected':'' }}>Belum Upload Foto</option>
+                            <option value="dhs_pending" {{ request('status')=='dhs_pending'?'selected':'' }}>DHS Belum Diverifikasi</option>
+                            <option value="dhs_rejected" {{ request('status')=='dhs_rejected'?'selected':'' }}>DHS Ditolak</option>
                         </select>
                     </div>
                     <div class="col-md-3 mb-2">

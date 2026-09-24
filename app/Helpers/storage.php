@@ -7,7 +7,7 @@ if (! function_exists('storage_url')) {
             return '';
         }
 
-        $disk = env('FILESYSTEM_DISK', 'local');
+        $disk = config('filesystems.default', 'local');
 
         if ($disk === 's3') {
             return url('/s3/'.$path);

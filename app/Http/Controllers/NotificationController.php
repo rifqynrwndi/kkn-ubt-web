@@ -98,7 +98,7 @@ class NotificationController extends Controller
 
         $notification->markAsRead();
 
-        $url = $notification->data['action_url'] ?? null;
+        $url = $notification->data['url'] ?? $notification->data['action_url'] ?? null;
 
         return ($url && ! parse_url($url, PHP_URL_HOST))
             ? redirect($url)

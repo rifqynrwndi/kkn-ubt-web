@@ -37,12 +37,12 @@ class DhsController extends Controller
         ]);
 
         // Delete old file if exists
-        if ($mahasiswa->dhs_path && Storage::exists($mahasiswa->dhs_path)) {
-            Storage::delete($mahasiswa->dhs_path);
+        if ($mahasiswa->dhs_path && Storage::disk('public')->exists($mahasiswa->dhs_path)) {
+            Storage::disk('public')->delete($mahasiswa->dhs_path);
         }
 
-        // Store new file (ikut default disk dari .env: local/public/s3)
-        $path = $request->file('dhs_file')->store('dokumen-dhs');
+        // Store new file on public disk (S3 with 'public/' root prefix)
+        $path = $request->file('dhs_file')->store('dokumen-dhs', 'public');
 
         $mahasiswa->update([
             'dhs_path' => $path,

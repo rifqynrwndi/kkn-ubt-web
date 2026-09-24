@@ -25,7 +25,7 @@
     <link rel="icon" type="image/png" href="{{ asset('images/logo-ubt.png') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
 
     <script>
@@ -47,7 +47,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/izitoast/dist/css/iziToast.min.css">
 
     <style>
-        * { font-family: 'Inter', sans-serif; }
+        * { font-family: 'Nunito', sans-serif; }
 
         /* ── AUTH WRAPPER ──────────────────────── */
         .auth-wrapper {

@@ -173,12 +173,12 @@
                             </div>
                         </div>
                         <div class="mt-2">
-                            <a href="{{ Storage::url($mahasiswa->mahasiswa->dhs_path) }}"
+                            <a href="{{ storage_url($mahasiswa->mahasiswa->dhs_path) }}"
                                target="_blank"
                                class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-eye mr-1"></i> Lihat DHS
                             </a>
-                            <a href="{{ Storage::url($mahasiswa->mahasiswa->dhs_path) }}"
+                            <a href="{{ storage_url($mahasiswa->mahasiswa->dhs_path) }}"
                                download
                                class="btn btn-outline-secondary btn-sm">
                                 <i class="fas fa-download mr-1"></i> Unduh
