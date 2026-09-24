@@ -131,6 +131,8 @@ class MahasiswaManagementController extends Controller
             'prodi_id' => 'required|exists:program_studi,id',
 
             'no_hp' => 'nullable|string|max:20',
+            'birth_place' => 'required|string|max:255',
+            'birth_date' => 'required|date|before:today',
             'nama_ortu' => 'nullable|string|max:255',
             'no_hp_ortu' => 'nullable|string|max:20',
             'alamat_ortu' => 'nullable|string',
@@ -166,6 +168,8 @@ class MahasiswaManagementController extends Controller
             'jenis_kelamin' => $request->jenis_kelamin,
             'prodi_id' => $request->prodi_id,
             'no_hp' => $request->no_hp,
+            'birth_place' => $request->birth_place,
+            'birth_date' => $request->birth_date,
             'nama_ortu' => $request->nama_ortu,
             'no_hp_ortu' => $request->no_hp_ortu,
             'alamat_ortu' => $request->alamat_ortu,

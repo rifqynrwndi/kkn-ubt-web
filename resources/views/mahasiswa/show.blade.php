@@ -78,6 +78,16 @@
                             </tr>
 
                             <tr>
+                                <th>Tempat Lahir</th>
+                                <td>{{ $mahasiswa->mahasiswa?->birth_place ?? '-' }}</td>
+                            </tr>
+
+                            <tr>
+                                <th>Tanggal Lahir</th>
+                                <td>{{ $mahasiswa->mahasiswa?->birth_date ? $mahasiswa->mahasiswa->birth_date->translatedFormat('d M Y') : '-' }}</td>
+                            </tr>
+
+                            <tr>
                                 <th>Program Studi</th>
                                 <td>{{ $mahasiswa->mahasiswa?->prodi?->nama_prodi ?? '-' }}</td>
                             </tr>

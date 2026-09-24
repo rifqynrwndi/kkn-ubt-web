@@ -81,6 +81,18 @@
                             </select>
                         </div>
 
+                        <div class="form-group col-md-12">
+                            <label>Link Grup Telegram (opsional)</label>
+                            <input type="url" name="telegram_group_url"
+                                   class="form-control @error('telegram_group_url') is-invalid @enderror"
+                                   value="{{ old('telegram_group_url') }}"
+                                   placeholder="https://t.me/...">
+                            <small class="text-muted">Masukkan link grup Telegram untuk gelombang ini. Mahasiswa akan melihat banner di dashboard mereka.</small>
+                            @error('telegram_group_url')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                     </div>
 
                     <hr>

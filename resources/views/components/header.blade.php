@@ -90,7 +90,7 @@
                             $map = $notificationMap[$notification->type] ?? ['title' => 'Notifikasi', 'icon' => 'fas fa-bell text-secondary', 'url' => '/home'];
                             $notifTitle = $notification->data['title'] ?? $map['title'];
                             $notifMessage = $notification->data['message'] ?? '';
-                            $redirectUrl = $notification->data['url'] ?? $notification->data['action_url'] ?? $map['url'];
+                            $redirectUrl = $notification->data['url'] ?? $notification->data['action_url'] ?? $map['url'] ?? '/home';
                         @endphp
                         <div class="notification-dropdown-item {{ $notification->read_at ? '' : 'unread' }}"
                              style="cursor:pointer"

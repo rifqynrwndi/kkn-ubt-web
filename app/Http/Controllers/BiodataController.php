@@ -26,6 +26,8 @@ class BiodataController extends Controller
             'npm' => 'required|string|max:20|unique:mahasiswa,npm,'.$mahasiswa->user_id.',user_id',
             'jenis_kelamin' => 'required|in:L,P',
             'no_hp' => 'required|string|max:20',
+            'birth_place' => 'required|string|max:255',
+            'birth_date' => 'required|date|before:today',
 
             'prodi_id' => 'required|exists:program_studi,id',
 
@@ -49,11 +51,14 @@ class BiodataController extends Controller
         }
 
         $hasFoto = $fotoPath && $fotoPath !== 'avatar/avatar-1.png' && $fotoPath !== 'img/avatar/avatar-1.png';
+        $hasBirthData = $request->filled('birth_place') && $request->filled('birth_date');
 
         $mahasiswa->update([
             'npm' => $request->npm,
             'jenis_kelamin' => $request->jenis_kelamin,
             'no_hp' => $request->no_hp,
+            'birth_place' => $request->birth_place,
+            'birth_date' => $request->birth_date,
             'prodi_id' => $request->prodi_id,
 
             'nama_ortu' => $request->nama_ortu,
@@ -62,7 +67,7 @@ class BiodataController extends Controller
 
             'foto' => $fotoPath,
 
-            'is_biodata_complete' => $hasFoto,
+            'is_biodata_complete' => $hasFoto && $hasBirthData,
         ]);
 
         return redirect()

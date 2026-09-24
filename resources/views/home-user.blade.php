@@ -68,11 +68,57 @@
             <div class="row">
                 <div class="col-12">
                     @foreach($reminders as $reminder)
-                        <div class="alert alert-warning">
+                        <div class="alert alert-warning" style="color: #856404;">
                             <i class="fas fa-exclamation-circle mr-2"></i>
                             {{ $reminder }}
                         </div>
                     @endforeach
+                </div>
+            </div>
+        @endif
+
+        {{-- DHS WARNING BANNER --}}
+        @if($dhsStatus !== 'verified')
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-warning d-flex align-items-center justify-content-between flex-wrap gap-3 banner-warning" style="border-left: 4px solid #e67e22;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-file-upload fa-2x banner-icon-warning" style="margin-right: 16px;"></i>
+                            <div>
+                                <strong class="banner-title-warning" style="font-size: 15px;">Unggah DHS Anda</strong>
+                                <div class="small banner-text-warning">
+                                    @if(!$hasDhsPath)
+                                        Anda belum mengunggah Daftar Hasil Studi (DHS). Silakan unggah DHS untuk dapat mendaftar KKN.
+                                    @else
+                                        DHS Anda belum terverifikasi. Anda dapat mengunggah ulang atau menunggu verifikasi admin.
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        <a href="{{ route('biodata.edit') }}" class="btn btn-warning text-white">
+                            <i class="fas fa-upload mr-1"></i> Unggah DHS
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        {{-- TELEGRAM GROUP BANNER --}}
+        @if($telegramGroupUrl)
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-info d-flex align-items-center justify-content-between flex-wrap gap-3 banner-info" style="border-left: 4px solid #0088cc;">
+                        <div class="d-flex align-items-center">
+                            <i class="fab fa-telegram-plane fa-2x banner-icon-info" style="margin-right: 16px;"></i>
+                            <div>
+                                <strong class="banner-title-info" style="font-size: 15px;">Gabung Grup Telegram KKN</strong>
+                                <div class="small banner-text-info">Bergabunglah dengan grup Telegram untuk informasi dan koordinasi selama KKN.</div>
+                            </div>
+                        </div>
+                        <a href="{{ $telegramGroupUrl }}" target="_blank" rel="noopener noreferrer" class="btn btn-info text-white" style="background-color: #0088cc; border-color: #0088cc;">
+                            <i class="fas fa-external-link-alt mr-1"></i> Join Sekarang
+                        </a>
+                    </div>
                 </div>
             </div>
         @endif
