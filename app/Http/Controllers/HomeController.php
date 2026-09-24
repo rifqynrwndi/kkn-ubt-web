@@ -131,6 +131,8 @@ class HomeController extends Controller
             'pendaftaran' => $pendaftaran,
             'recentNotifications' => $recentNotifications,
             'reminders' => $reminders,
+            'dhsStatus' => $user->mahasiswa?->dhs_status,
+            'hasDhsPath' => ! empty($user->mahasiswa?->dhs_path),
         ]);
     }
 }

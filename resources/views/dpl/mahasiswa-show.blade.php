@@ -39,6 +39,8 @@
                             <tr><th>NPM</th><td>{{ $m->npm ?? '-' }}</td></tr>
                             <tr><th>Email</th><td>{{ $m->user->email ?? '-' }}</td></tr>
                             <tr><th>Jenis Kelamin</th><td>{{ $m->jenis_kelamin === 'L' ? 'Laki-laki' : ($m->jenis_kelamin === 'P' ? 'Perempuan' : '-') }}</td></tr>
+                            <tr><th>Tempat Lahir</th><td>{{ $m->birth_place ?? '-' }}</td></tr>
+                            <tr><th>Tanggal Lahir</th><td>{{ $m->birth_date ? $m->birth_date->translatedFormat('d M Y') : '-' }}</td></tr>
                             <tr><th>No HP</th><td>{{ $m->no_hp ?? '-' }}</td></tr>
                             <tr><th>Program Studi</th><td>{{ $m->prodi->nama_prodi ?? '-' }}</td></tr>
                             <tr><th>Fakultas</th><td>{{ $m->prodi->fakultas->nama_fakultas ?? '-' }}</td></tr>

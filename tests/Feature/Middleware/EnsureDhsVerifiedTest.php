@@ -40,6 +40,7 @@ class EnsureDhsVerifiedTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('pendaftaran-kkn.index'));
         $response->assertRedirect(route('biodata.edit'));
+        $response->assertSessionHas('warning', 'Anda belum mengunggah DHS. Silakan unggah Daftar Hasil Studi terlebih dahulu.');
     }
 
     public function test_verified_mahasiswa_can_access_pendaftaran(): void
@@ -56,10 +57,24 @@ class EnsureDhsVerifiedTest extends TestCase
     {
         $user = $this->createMahasiswa([
             'dhs_status' => 'rejected',
+            'dhs_path' => 'dokumen-dhs/rejected.pdf',
         ]);
 
         $response = $this->actingAs($user)->get(route('pendaftaran-kkn.index'));
         $response->assertRedirect(route('biodata.edit'));
+        $response->assertSessionHas('warning', 'DHS Anda ditolak oleh admin. Silakan periksa catatan dan unggah ulang DHS.');
+    }
+
+    public function test_pending_upload_redirected_with_waiting_message(): void
+    {
+        $user = $this->createMahasiswa([
+            'dhs_status' => 'pending',
+            'dhs_path' => 'dokumen-dhs/pending.pdf',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('pendaftaran-kkn.index'));
+        $response->assertRedirect(route('biodata.edit'));
+        $response->assertSessionHas('warning', 'DHS sudah diunggah. Silakan tunggu verifikasi oleh admin sebelum mendaftar KKN.');
     }
 
     public function test_superadmin_not_affected_by_dhs_middleware(): void

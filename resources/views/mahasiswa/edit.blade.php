@@ -97,6 +97,40 @@
                         </div>
 
                         <div class="form-group col-md-6">
+                            <label>Tempat Lahir</label>
+                            <input type="text"
+                                   name="birth_place"
+                                   list="birth-place-list"
+                                   class="form-control @error('birth_place') is-invalid @enderror"
+                                   value="{{ old('birth_place', $mahasiswa->mahasiswa->birth_place) }}"
+                                   placeholder="Ketik nama kota/kabupaten"
+                                   autocomplete="off"
+                                   required>
+                            <datalist id="birth-place-list">
+                                @php $cities = \App\Helpers\IndonesianCities::all(); @endphp
+                                @foreach($cities as $city)
+                                    <option value="{{ $city }}">
+                                @endforeach
+                            </datalist>
+                            @error('birth_place')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label>Tanggal Lahir</label>
+                            <input type="date"
+                                   name="birth_date"
+                                   class="form-control @error('birth_date') is-invalid @enderror"
+                                   value="{{ old('birth_date', $mahasiswa->mahasiswa->birth_date ? $mahasiswa->mahasiswa->birth_date->format('Y-m-d') : '') }}"
+                                   max="{{ date('Y-m-d', strtotime('-15 years')) }}"
+                                   required>
+                            @error('birth_date')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group col-md-6">
                             <label>Nama Orang Tua / Wali</label>
                             <input type="text"
                                 name="nama_ortu"

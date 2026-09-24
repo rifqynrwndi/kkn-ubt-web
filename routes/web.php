@@ -103,6 +103,11 @@ Route::middleware(['auth', 'throttle:global'])->group(function () {
         Route::post('/dhs', [DhsController::class, 'store'])->name('dhs.store');
     });
 
+    // Dashboard — no email verification required (biodata.complete is enough)
+    Route::middleware('biodata.complete')->group(function () {
+        Route::get('/home', [HomeController::class, 'index'])->name('home');
+    });
+
     Route::prefix('pendaftaran-kkn')->name('pendaftaran-kkn.')->middleware('dhs.verified')->group(function () {
         Route::get('/', [PendaftaranKknController::class, 'index'])->name('index');
         Route::get('/gelombang', [PendaftaranKknController::class, 'gelombang'])->name('gelombang');
@@ -164,14 +169,6 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
         Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
         Route::delete('/', [NotificationController::class, 'destroyAll'])->name('destroy-all');
     });
-
-    /*
-    |--------------------------------------------------------------------------
-    | General Pages
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get('/home', [HomeController::class, 'index'])->name('home');
 
     Route::prefix('dpl')->name('dpl.')->middleware('role:pembimbing')->group(function () {
         Route::get('/kelompok', [DplController::class, 'kelompokIndex'])->name('kelompok.index');

@@ -90,13 +90,13 @@
                             $map = $notificationMap[$notification->type] ?? ['title' => 'Notifikasi', 'icon' => 'fas fa-bell text-secondary', 'url' => '/home'];
                             $notifTitle = $notification->data['title'] ?? $map['title'];
                             $notifMessage = $notification->data['message'] ?? '';
-                            $redirectUrl = $notification->data['url'] ?? $notification->data['action_url'] ?? $map['url'];
+                            $redirectUrl = $notification->data['url'] ?? $notification->data['action_url'] ?? $map['url'] ?? '/home';
                         @endphp
-                        <a href="#"
-                           class="notification-dropdown-item {{ $notification->read_at ? '' : 'unread' }}"
-                           data-url="{{ $redirectUrl }}"
-                           data-id="{{ $notification->id }}"
-                           onclick="markNotifRead(event, this)">
+                        <div class="notification-dropdown-item {{ $notification->read_at ? '' : 'unread' }}"
+                             style="cursor:pointer"
+                             data-url="{{ $redirectUrl }}"
+                             data-id="{{ $notification->id }}"
+                             onclick="markNotifRead(event, this)">
                             <div class="notification-dropdown-icon">
                                 <i class="{{ $map['icon'] }}"></i>
                             </div>
@@ -108,7 +108,7 @@
                             @if(!$notification->read_at)
                                 <span class="notification-unread-dot"></span>
                             @endif
-                        </a>
+                        </div>
                     @empty
                         <div class="notification-dropdown-empty">
                             <i class="fas fa-bell-slash"></i>
@@ -166,29 +166,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const menu = toggle?.nextElementSibling;
     if (!toggle || !menu) return;
 
-    const bsDropdown = bootstrap.Dropdown.getOrCreateInstance(menu.previousElementSibling.parentElement.querySelector('.dropdown'));
-
     toggle.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        if (menu.classList.contains('show')) {
-            bsDropdown.hide();
-        } else {
-            bsDropdown.show();
-        }
+        menu.classList.toggle('show');
     });
 
     document.addEventListener('click', function(e) {
         if (!menu.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)) {
-            bsDropdown.hide();
+            menu.classList.remove('show');
         }
     });
 });
 
 function markNotifRead(e, el) {
     e.preventDefault();
+    e.stopPropagation();
     const id = el.dataset.id;
-    const url = el.dataset.url;
+    const url = el.dataset.url || '/home';
+
+    el.closest('.notification-dropdown-menu')?.classList.remove('show');
 
     fetch('/notifications/' + id + '/mark-as-read', {
         method: 'POST',

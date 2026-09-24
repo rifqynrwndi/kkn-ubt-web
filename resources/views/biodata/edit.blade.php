@@ -65,7 +65,8 @@
                             <label>Foto Profile</label>
 
                             <div class="mb-3">
-                                <img src="{{ $mahasiswa?->foto ? storage_url($mahasiswa->foto) : asset('img/avatar/avatar-1.png') }}"
+                                <img id="current-photo"
+                                     src="{{ $mahasiswa?->foto ? storage_url($mahasiswa->foto) : asset('img/avatar/avatar-1.png') }}"
                                      class="rounded-circle shadow"
                                      width="120"
                                      height="120"
@@ -73,11 +74,18 @@
                             </div>
 
                             <input type="file"
+                                   id="photo-file-input"
                                    name="foto"
-                                   class="form-control @error('foto') is-invalid @enderror"
+                                   class="d-none"
                                    accept="image/*">
 
-                            <small class="text-muted">
+                            <button type="button"
+                                    id="change-photo-btn"
+                                    class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-camera mr-1"></i> Ganti Foto
+                            </button>
+
+                            <small class="text-muted d-block mt-1">
                                 JPG / PNG / JPEG maksimal 2MB
                             </small>
 
@@ -152,49 +160,17 @@
                             <label>Tempat Lahir</label>
                             <input type="text"
                                    name="birth_place"
+                                   list="birth-place-list"
                                    class="form-control @error('birth_place') is-invalid @enderror"
                                    value="{{ old('birth_place', $mahasiswa->birth_place) }}"
-                                   placeholder="Contoh: Tarakan"
-                                   list="birth-place-list"
+                                   placeholder="Ketik nama kota/kabupaten"
+                                   autocomplete="off"
                                    required>
                             <datalist id="birth-place-list">
-                                <option value="Tarakan">
-                                <option value="Bulungan">
-                                <option value="Tana Tidung">
-                                <option value="Malinau">
-                                <option value="Nunukan">
-                                <option value="Tanjung Selor">
-                                <option value="Balikpapan">
-                                <option value="Samarinda">
-                                <option value="Banjarmasin">
-                                <option value="Banjarbaru">
-                                <option value="Pontianak">
-                                <option value="Palangkaraya">
-                                <option value="Manado">
-                                <option value="Makassar">
-                                <option value="Jakarta">
-                                <option value="Surabaya">
-                                <option value="Bandung">
-                                <option value="Medan">
-                                <option value="Semarang">
-                                <option value="Yogyakarta">
-                                <option value="Malang">
-                                <option value="Solo">
-                                <option value="Denpasar">
-                                <option value="Batam">
-                                <option value="Padang">
-                                <option value="Palembang">
-                                <option value="Pekanbaru">
-                                <option value="Lampung">
-                                <option value="Ambon">
-                                <option value="Jayapura">
-                                <option value="Sorong">
-                                <option value="Bintan">
-                                <option value="Berau">
-                                <option value="Kutai Kartanegara">
-                                <option value="Kutai Timur">
-                                <option value="Paser">
-                                <option value="Penajam Paser Utara">
+                                @php $cities = \App\Helpers\IndonesianCities::all(); @endphp
+                                @foreach($cities as $city)
+                                    <option value="{{ $city }}">
+                                @endforeach
                             </datalist>
                             @error('birth_place')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -355,13 +331,99 @@
 
     </div>
 </section>
+
+{{-- CROP PHOTO MODAL --}}
+<div id="cropPhotoModal" class="crop-modal-overlay">
+    <div class="crop-modal-content">
+        <h5 class="crop-modal-title"><i class="fas fa-crop-alt mr-2" style="margin-right:10px;"></i>Sesuaikan Foto</h5>
+        <div class="crop-modal-image-wrapper">
+            <img id="crop-image" src="" style="max-width:100%; display:block;">
+        </div>
+        <div class="text-center mb-3">
+            <label class="text-muted small">Preview:</label><br>
+            <img id="crop-preview" src="" class="rounded-circle shadow" width="100" height="100" style="object-fit:cover;">
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" id="crop-cancel-btn" class="btn btn-outline-secondary">
+                <i class="fas fa-times mr-1"></i> Batal
+            </button>
+            <button type="button" id="crop-save-btn" class="btn btn-primary">
+                <i class="fas fa-check mr-1"></i> Simpan
+            </button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
 <script>
+    $(function () {
+        // Auto-scroll to first error on page load
+        const firstError = document.querySelector('.is-invalid, .invalid-feedback');
+        if (firstError) {
+            setTimeout(() => {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        }
+
+        // Client-side validation on submit
+        $('#biodata-form').on('submit', function (e) {
+            const requiredFields = [
+                { name: 'npm', label: 'NPM' },
+                { name: 'prodi_id', label: 'Program Studi' },
+                { name: 'jenis_kelamin', label: 'Jenis Kelamin' },
+                { name: 'no_hp', label: 'No HP' },
+                { name: 'birth_place', label: 'Tempat Lahir' },
+                { name: 'birth_date', label: 'Tanggal Lahir' },
+                { name: 'nama_ortu', label: 'Nama Orang Tua' },
+                { name: 'no_hp_ortu', label: 'No HP Orang Tua' },
+                { name: 'alamat_ortu', label: 'Alamat Orang Tua' }
+            ];
+
+            let firstInvalid = null;
+
+            requiredFields.forEach(function (field) {
+                const el = $('[name="' + field.name + '"]');
+                const val = el.val();
+                const errorEl = el.closest('.form-group, .form-group col-md-6, [class*="col-"]').find('.field-error-msg');
+
+                if (!val || val.trim() === '') {
+                    el.addClass('is-invalid');
+                    if (errorEl.length) {
+                        errorEl.text(field.label + ' wajib diisi.').addClass('visible');
+                    }
+                    if (!firstInvalid) firstInvalid = el;
+                } else {
+                    el.removeClass('is-invalid');
+                    if (errorEl.length) {
+                        errorEl.removeClass('visible');
+                    }
+                }
+            });
+
+            if (firstInvalid) {
+                e.preventDefault();
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                iziToast.error({
+                    title: 'Form Tidak Lengkap',
+                    message: 'Mohon lengkapi semua field yang ditandai.',
+                    position: 'topRight',
+                    timeout: 5000
+                });
+                return false;
+            }
+        });
+
+        // Clear error on input
+        $('#biodata-form input, #biodata-form select, #biodata-form textarea').on('input change', function () {
+            $(this).removeClass('is-invalid');
+            const errorEl = $(this).closest('[class*="col-"]').find('.field-error-msg');
+            if (errorEl.length) errorEl.removeClass('visible');
+        });
+    });
+
     function resendVerification() {
         const btn = document.getElementById('resend-verification');
-        const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
 
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Mengirim...';
@@ -390,4 +452,5 @@
         });
     }
 </script>
+<script src="{{ asset('js/profile-photo-crop.js') }}"></script>
 @endpush
