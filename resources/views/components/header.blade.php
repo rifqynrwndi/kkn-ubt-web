@@ -88,6 +88,11 @@
                     @forelse($notifications as $notification)
                         @php
                             $map = $notificationMap[$notification->type] ?? ['title' => 'Notifikasi', 'icon' => 'fas fa-bell text-secondary', 'url' => '/home'];
+                            // DhsVerifiedNotification covers both verified & rejected — reflect the real status
+                            if ($notification->type === 'App\\Notifications\\DhsVerifiedNotification' && ($notification->data['status'] ?? '') === 'rejected') {
+                                $map['title'] = 'DHS Ditolak';
+                                $map['icon'] = 'fas fa-times-circle text-danger';
+                            }
                             $notifTitle = $notification->data['title'] ?? $map['title'];
                             $notifMessage = $notification->data['message'] ?? '';
                             $redirectUrl = $notification->data['url'] ?? $notification->data['action_url'] ?? $map['url'] ?? '/home';
@@ -102,7 +107,7 @@
                             </div>
                             <div class="notification-dropdown-content">
                                 <div class="notification-dropdown-title">{{ $notifTitle }}</div>
-                                <div class="notification-dropdown-desc">{{ Str::limit($notifMessage, 60) }}</div>
+                                <div class="notification-dropdown-desc">{{ Str::limit($notifMessage, 120) }}</div>
                                 <div class="notification-dropdown-time">{{ $notification->created_at->diffForHumans() }}</div>
                             </div>
                             @if(!$notification->read_at)

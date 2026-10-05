@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Mahasiswa;
 use App\Models\User;
+use App\Notifications\DhsVerifiedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
@@ -101,5 +102,31 @@ class DashboardDhsBannerTest extends TestCase
 
         $response->assertSuccessful();
         $response->assertSee('Dashboard Mahasiswa');
+    }
+
+    public function test_dashboard_renders_notification_without_title_key(): void
+    {
+        $user = $this->createMahasiswa(['is_biodata_complete' => true]);
+        $user->notify(new DhsVerifiedNotification($user->mahasiswa, 'rejected'));
+        $this->actingAs($user);
+
+        $response = $this->get(route('home'));
+
+        $response->assertSuccessful();
+        $response->assertSee('DHS Anda telah ditolak.');
+    }
+
+    public function test_notification_dropdown_shows_rejected_title_for_rejected_dhs(): void
+    {
+        $user = $this->createMahasiswa(['is_biodata_complete' => true]);
+        $user->notify(new DhsVerifiedNotification($user->mahasiswa, 'rejected'));
+        $this->actingAs($user);
+
+        $response = $this->get(route('home'));
+
+        $response->assertSuccessful();
+        $response->assertSee('DHS Ditolak');
+        $response->assertSee('fa-times-circle text-danger');
+        $response->assertDontSee('DHS Diverifikasi');
     }
 }
