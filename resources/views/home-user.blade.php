@@ -162,7 +162,7 @@
                         <ul class="list-group list-group-flush">
                             @forelse($recentNotifications as $notif)
                                 <li class="list-group-item">
-                                    <strong>{{ $notif->data['title'] }}</strong>
+                                    <strong>{{ $notif->data['title'] ?? $notif->data['message'] ?? 'Notifikasi' }}</strong>
                                     <br>
                                     <small class="text-muted">
                                         {{ $notif->created_at->diffForHumans() }}

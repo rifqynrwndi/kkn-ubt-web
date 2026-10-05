@@ -533,6 +533,25 @@ body.sidebar-mini .sidebar-menu li.active > a {
 }
 /*# sourceMappingURL=custom.css.map */
 
+/* ── BADGE WARNING FIX ─────────────────────────────── */
+/* Stisla style.css sets .badge-warning text to white but no background
+   (Bootstrap 4 CSS is not loaded, BS5 has no .badge-warning),
+   leaving white text on transparent background in light mode. */
+[data-bs-theme="dark"] .alert.alert-danger {
+    background-color: rgba(252, 84, 75, 0.15);
+    border-color: #fc544b;
+    color: #f5a5a0;
+}
+.badge.badge-warning {
+    background-color: #ffa426;
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .badge.badge-warning {
+    background-color: #ffa426;
+    color: #fff;
+}
+
 /* ── BADGE OUTLINE CLASSES ───────────────────────────── */
 .badge-outline-primary {
     border: 1px solid #6777ef;

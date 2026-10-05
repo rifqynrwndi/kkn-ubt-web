@@ -199,32 +199,6 @@
                                 <i class="fas fa-times mr-1"></i> Tolak
                             </button>
                         </div>
-
-                        {{-- Reject Modal --}}
-                        <div class="modal fade" id="rejectModal" tabindex="-1" role="dialog">
-                            <div class="modal-dialog" role="document">
-                                <form action="{{ route('verifikasi-dokumen.dhs.reject', $mahasiswa->mahasiswa->user_id) }}" method="POST">
-                                    @csrf @method('PUT')
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Tolak DHS</h5>
-                                            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="form-group">
-                                                <label>Catatan Penolakan <span class="text-danger">*</span></label>
-                                                <textarea name="dhs_catatan" class="form-control" rows="3" required
-                                                          placeholder="Masukkan alasan penolakan..."></textarea>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                                            <button type="submit" class="btn btn-danger">Tolak DHS</button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
                     @endif
 
                     @if($mahasiswa->mahasiswa?->dhs_verified_at)
@@ -244,4 +218,35 @@
 
     </div>
 </section>
+
+{{-- Reject Modal: top-level (outside <section class="section">) so the
+     Bootstrap backdrop (body-level, z-index 1040) never paints above it.
+     Stisla's .section { position:relative; z-index:1 } traps nested
+     fixed-position modals below the backdrop. --}}
+@if($mahasiswa->mahasiswa?->dhs_path && $mahasiswa->mahasiswa?->dhs_status !== 'verified')
+    <div class="modal fade" id="rejectModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <form action="{{ route('verifikasi-dokumen.dhs.reject', $mahasiswa->mahasiswa->user_id) }}" method="POST">
+                @csrf @method('PUT')
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Tolak DHS</h5>
+                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                                                <label>Catatan Penolakan <span class="text-danger">*</span></label>
+                                                <textarea name="catatan" class="form-control" rows="3" required
+                                                          placeholder="Masukkan alasan penolakan..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-danger">Tolak DHS</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+@endif
 @endsection
