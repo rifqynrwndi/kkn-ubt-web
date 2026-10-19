@@ -39,7 +39,7 @@ class GelombangRequiredDocumentsTest extends TestCase
         $this->assertEquals(['surat_pernyataan'], $gelombang->getRequiredDocumentTypesAttribute());
     }
 
-    public function test_required_documents_defaults_to_four_when_null(): void
+    public function test_required_documents_defaults_to_three_when_null(): void
     {
         DB::table('gelombang')->where('id', $this->gelombangId)->update(['required_documents' => null]);
 
@@ -49,9 +49,8 @@ class GelombangRequiredDocumentsTest extends TestCase
 
         $this->assertContains('surat_pernyataan', $required);
         $this->assertContains('surat_ortu', $required);
-        $this->assertContains('surat_vaksin', $required);
         $this->assertContains('surat_dokter', $required);
-        $this->assertCount(4, $required);
+        $this->assertCount(3, $required);
     }
 
     public function test_is_document_required_returns_true_for_configured_type(): void
@@ -68,11 +67,11 @@ class GelombangRequiredDocumentsTest extends TestCase
         $this->assertFalse($gelombang->isDocumentRequired('surat_ortu'));
     }
 
-    public function test_all_four_documents_required_when_configured(): void
+    public function test_all_three_documents_required_when_configured(): void
     {
         DB::table('gelombang')->where('id', $this->gelombangId)->update([
             'required_documents' => json_encode([
-                'surat_pernyataan', 'surat_ortu', 'surat_vaksin', 'surat_dokter',
+                'surat_pernyataan', 'surat_ortu', 'surat_dokter',
             ]),
         ]);
 
@@ -80,7 +79,6 @@ class GelombangRequiredDocumentsTest extends TestCase
 
         $this->assertTrue($gelombang->isDocumentRequired('surat_pernyataan'));
         $this->assertTrue($gelombang->isDocumentRequired('surat_ortu'));
-        $this->assertTrue($gelombang->isDocumentRequired('surat_vaksin'));
         $this->assertTrue($gelombang->isDocumentRequired('surat_dokter'));
     }
 
@@ -89,5 +87,15 @@ class GelombangRequiredDocumentsTest extends TestCase
         $gelombang = Gelombang::find($this->gelombangId);
 
         $this->assertFalse($gelombang->isDocumentRequired('dhs'));
+    }
+
+    public function test_surat_vaksin_is_no_longer_valid_document_type(): void
+    {
+        DB::table('gelombang')->where('id', $this->gelombangId)->update(['required_documents' => null]);
+
+        $gelombang = Gelombang::find($this->gelombangId);
+
+        $this->assertFalse($gelombang->isDocumentRequired('surat_vaksin'));
+        $this->assertNotContains('surat_vaksin', $gelombang->getRequiredDocumentTypesAttribute());
     }
 }

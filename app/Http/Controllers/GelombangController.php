@@ -54,7 +54,7 @@ class GelombangController extends Controller
 
             'skip_dokumen' => 'nullable|boolean',
             'required_documents' => 'nullable|array',
-            'required_documents.*' => 'string|in:dhs,surat_pernyataan,surat_ortu,surat_vaksin,surat_dokter',
+            'required_documents.*' => 'string|in:dhs,surat_pernyataan,surat_ortu,surat_dokter',
 
             'telegram_group_url' => 'nullable|url|max:500',
         ]);
@@ -93,7 +93,7 @@ class GelombangController extends Controller
 
             'skip_dokumen' => 'nullable|boolean',
             'required_documents' => 'nullable|array',
-            'required_documents.*' => 'string|in:dhs,surat_pernyataan,surat_ortu,surat_vaksin,surat_dokter',
+            'required_documents.*' => 'string|in:dhs,surat_pernyataan,surat_ortu,surat_dokter',
 
             'telegram_group_url' => 'nullable|url|max:500',
         ]);

@@ -142,7 +142,6 @@
                                         $docLabels = [
                                             'surat_pernyataan' => ['label' => 'Surat Pernyataan KKN', 'icon' => 'fa-file-signature'],
                                             'surat_ortu' => ['label' => 'Surat Keterangan Orang Tua', 'icon' => 'fa-users'],
-                                            'surat_vaksin' => ['label' => 'Surat Keterangan Vaksin', 'icon' => 'fa-syringe'],
                                             'surat_dokter' => ['label' => 'Surat Keterangan Dokter', 'icon' => 'fa-user-md'],
                                         ];
                                         $oldDocs = old('required_documents', array_keys($docLabels));
