@@ -21,10 +21,12 @@
         "spatie/laravel-permission": "^6.24"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^4.4",
         "fakerphp/faker": "^1.24",
         "kitloong/laravel-migrations-generator": "^7.4",
         "laravel/pint": "*",
         "laravel/sail": "^1.42",
+        "laravel/telescope": "^5.26",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "phpunit/phpunit": "^11.5",

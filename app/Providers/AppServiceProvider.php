@@ -15,7 +15,13 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        // Telescope hanya ter-install sebagai require-dev. Daftarkan hanya
+        // jika paketnya ada agar production (--no-dev) tetap bisa boot.
+        // (Pakai file_exists, bukan class_exists: class_exists memicu
+        // autoload yang melempar ErrorException saat file-nya tidak ada.)
+        if (file_exists($this->app->basePath('vendor/laravel/telescope/composer.json'))) {
+            $this->app->register(TelescopeServiceProvider::class);
+        }
     }
 
     public function boot(): void
