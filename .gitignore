@@ -60,3 +60,8 @@ test-results/
 .opencode/
 skills-lock.json
 architecture-review-*.html
+
+# Local tooling artifacts
+strix_runs/
+strix-results/
+storage/debugbar/

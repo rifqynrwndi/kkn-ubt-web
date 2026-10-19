@@ -42,7 +42,6 @@ class DokumenPendaftaran extends Model
         return [
             'surat_pernyataan' => 'Surat Pernyataan KKN',
             'surat_ortu' => 'Surat Keterangan Orang Tua',
-            'surat_vaksin' => 'Surat Keterangan Vaksin',
             'surat_dokter' => 'Surat Keterangan Dokter',
         ];
     }
@@ -56,7 +55,6 @@ class DokumenPendaftaran extends Model
     public const REQUIRED_DOCUMENTS = [
         'surat_pernyataan',
         'surat_ortu',
-        'surat_vaksin',
         'surat_dokter',
     ];
 }
