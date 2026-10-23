@@ -290,4 +290,47 @@ class VerifikasiDokumenTest extends TestCase
             ->get(route('dokumen-pendaftaran.show', $dokumen->id))
             ->assertNotFound();
     }
+
+    public function test_export_requires_gelombang_id(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->actingAs($admin)
+            ->get(route('verifikasi-dokumen.export'))
+            ->assertStatus(400);
+    }
+
+    public function test_export_downloads_xlsx_of_approved_peserta(): void
+    {
+        $admin = $this->createAdmin();
+        $gelombang = $this->createGelombang();
+
+        $approved = $this->createPeserta($gelombang, 'Aminah Lengkap', '1111111111', 'approved');
+        $this->attachDocument($approved, 'surat_pernyataan', 'verified');
+        $this->attachDocument($approved, 'surat_ortu', 'verified');
+        $this->attachDocument($approved, 'surat_dokter', 'verified');
+
+        $this->createPeserta($gelombang, 'Budi Pending', '2222222222', 'pending_verification');
+
+        $response = $this->actingAs($admin)
+            ->get(route('verifikasi-dokumen.export', ['gelombang_id' => $gelombang->id]));
+
+        $response->assertOk()
+            ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+        $this->assertStringContainsString(
+            'attachment; filename=mahasiswa-berkas-lengkap-',
+            (string) $response->headers->get('content-disposition')
+        );
+    }
+
+    public function test_non_superadmin_cannot_export(): void
+    {
+        $gelombang = $this->createGelombang();
+        $peserta = $this->createPeserta($gelombang);
+
+        $this->actingAs($peserta->mahasiswa->user)
+            ->get(route('verifikasi-dokumen.export', ['gelombang_id' => $gelombang->id]))
+            ->assertForbidden();
+    }
 }

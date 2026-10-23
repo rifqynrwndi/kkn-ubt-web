@@ -481,6 +481,8 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
                 Route::put('/{id}/reject', [VerifikasiDokumenController::class, 'dhsReject'])->name('reject');
             });
 
+            Route::get('/export', [VerifikasiDokumenController::class, 'export'])->name('export');
+
             Route::get('/dokumen/{id}/file', [VerifikasiDokumenController::class, 'viewFile'])->name('dokumen.file');
             Route::delete('/dokumen/{id}', [VerifikasiDokumenController::class, 'destroyDocument'])->name('dokumen.destroy');
 

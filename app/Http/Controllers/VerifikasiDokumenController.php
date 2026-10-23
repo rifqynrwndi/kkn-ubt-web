@@ -10,6 +10,7 @@ use App\Notifications\BulkDokumenVerifiedNotification;
 use App\Notifications\DhsVerifiedNotification;
 use App\Notifications\DokumenVerifiedNotification;
 use App\Services\DocumentVerificationService;
+use App\Services\ExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -113,6 +114,14 @@ class VerifikasiDokumenController extends Controller
         }
 
         return back()->with('success', 'Dokumen berhasil dihapus.');
+    }
+
+    public function export(Request $request)
+    {
+        $gelombangId = $request->input('gelombang_id');
+        abort_unless($gelombangId, 400, 'Pilih gelombang terlebih dahulu.');
+
+        return app(ExportService::class)->exportMahasiswaBerkasLengkapXlsx((int) $gelombangId);
     }
 
     public function update(Request $request, $id)
