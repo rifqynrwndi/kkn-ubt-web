@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -300,17 +301,26 @@ class VerifikasiDokumenTest extends TestCase
             ->assertStatus(400);
     }
 
-    public function test_export_downloads_xlsx_of_approved_peserta(): void
+    public function test_export_includes_only_pending_verification_and_approved(): void
     {
         $admin = $this->createAdmin();
         $gelombang = $this->createGelombang();
 
-        $approved = $this->createPeserta($gelombang, 'Aminah Lengkap', '1111111111', 'approved');
-        $this->attachDocument($approved, 'surat_pernyataan', 'verified');
-        $this->attachDocument($approved, 'surat_ortu', 'verified');
-        $this->attachDocument($approved, 'surat_dokter', 'verified');
+        $cases = [
+            'Aminah Approved' => ['npm' => '1111111111', 'status' => 'approved', 'included' => true],
+            'Budi Pending' => ['npm' => '2222222222', 'status' => 'pending_verification', 'included' => true],
+            'Citra Draft' => ['npm' => '3333333333', 'status' => 'draft', 'included' => false],
+            'Dewi Documents' => ['npm' => '4444444444', 'status' => 'pending_documents', 'included' => false],
+            'Erik Rejected' => ['npm' => '5555555555', 'status' => 'rejected', 'included' => false],
+        ];
 
-        $this->createPeserta($gelombang, 'Budi Pending', '2222222222', 'pending_verification');
+        foreach ($cases as $name => $case) {
+            $peserta = $this->createPeserta($gelombang, $name, $case['npm'], $case['status']);
+
+            foreach (['surat_pernyataan', 'surat_ortu', 'surat_dokter'] as $jenis) {
+                $this->attachDocument($peserta, $jenis, 'verified');
+            }
+        }
 
         $response = $this->actingAs($admin)
             ->get(route('verifikasi-dokumen.export', ['gelombang_id' => $gelombang->id]));
@@ -318,10 +328,23 @@ class VerifikasiDokumenTest extends TestCase
         $response->assertOk()
             ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
-        $this->assertStringContainsString(
-            'attachment; filename=mahasiswa-berkas-lengkap-',
-            (string) $response->headers->get('content-disposition')
-        );
+        $tmp = storage_path('app/export-test.xlsx');
+        file_put_contents($tmp, $response->streamedContent());
+
+        $spreadsheet = IOFactory::load($tmp);
+        $all = $spreadsheet->getActiveSheet()->toArray();
+
+        $names = implode(' ', array_map(fn ($row) => is_array($row) ? implode(' ', $row) : (string) $row, $all));
+
+        foreach ($cases as $name => $case) {
+            if ($case['included']) {
+                $this->assertStringContainsString($name, $names, "{$name} harus ada di export");
+            } else {
+                $this->assertStringNotContainsString($name, $names, "{$name} tidak boleh ada di export");
+            }
+        }
+
+        @unlink($tmp);
     }
 
     public function test_non_superadmin_cannot_export(): void

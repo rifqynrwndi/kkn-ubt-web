@@ -214,7 +214,7 @@ class ExportService
             'dokumenPendaftaran.file',
         ])
             ->where('gelombang_id', $gelombangId)
-            ->where('status_pendaftaran', 'approved')
+            ->whereIn('status_pendaftaran', ['pending_verification', 'approved'])
             ->get()
             ->sortBy(fn ($p) => $p->mahasiswa?->user?->name)
             ->values();
