@@ -12,12 +12,14 @@ use App\Notifications\DokumenVerifiedNotification;
 use App\Services\DocumentVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class VerifikasiDokumenController extends Controller
 {
     public function index(Request $request)
     {
         $gelombangId = $request->get('gelombang_id');
+        $search = $request->get('q');
 
         $gelombangs = Gelombang::orderBy('tahun', 'desc')
             ->orderBy('nama_gelombang')
@@ -34,6 +36,14 @@ class VerifikasiDokumenController extends Controller
                 'dokumenPendaftaran',
             ])
                 ->where('gelombang_id', $gelombangId)
+                ->when($search, function ($query) use ($search) {
+                    $query->whereHas('mahasiswa', function ($mahasiswa) use ($search) {
+                        $mahasiswa->where(function ($q) use ($search) {
+                            $q->where('npm', 'like', "%{$search}%")
+                                ->orWhereHas('user', fn ($user) => $user->where('name', 'like', "%{$search}%"));
+                        });
+                    });
+                })
                 ->when($statusFilter, fn ($q) => $q->where('status_pendaftaran', $statusFilter))
                 ->when(! $statusFilter, fn ($q) => $q->whereIn('status_pendaftaran', [
                     'draft', 'pending_documents', 'pending_verification',
@@ -41,10 +51,14 @@ class VerifikasiDokumenController extends Controller
                 ]))
                 ->latest()
                 ->paginate(20)
-                ->appends(['gelombang_id' => $gelombangId, 'status' => $statusFilter]);
+                ->appends([
+                    'gelombang_id' => $gelombangId,
+                    'status' => $statusFilter,
+                    'q' => $search,
+                ]);
         }
 
-        return view('verifikasi-dokumen.index', compact('pesertaList', 'gelombangs', 'gelombangId'));
+        return view('verifikasi-dokumen.index', compact('pesertaList', 'gelombangs', 'gelombangId', 'search'));
     }
 
     public function show($id)
@@ -56,6 +70,49 @@ class VerifikasiDokumenController extends Controller
         ])->findOrFail($id);
 
         return view('verifikasi-dokumen.show', compact('peserta'));
+    }
+
+    public function viewFile($id)
+    {
+        $dokumen = DokumenPendaftaran::with('file')->findOrFail($id);
+
+        if (! $dokumen->file) {
+            abort(404, 'File dokumen tidak tersedia.');
+        }
+
+        try {
+            return Storage::disk('public')->response(
+                $dokumen->file->path,
+                $dokumen->file->original_name
+            );
+        } catch (\Throwable) {
+            abort(404, 'File dokumen tidak tersedia.');
+        }
+    }
+
+    public function destroyDocument($id)
+    {
+        $dokumen = DokumenPendaftaran::with(['file', 'pesertaKkn'])->findOrFail($id);
+        $peserta = $dokumen->pesertaKkn;
+
+        if ($dokumen->file) {
+            try {
+                Storage::disk('public')->delete($dokumen->file->path);
+            } catch (\Throwable) {
+                // File sudah tidak ada di storage, lanjutkan hapus data.
+            }
+
+            $dokumen->file->delete();
+        }
+
+        $dokumen->delete();
+
+        if ($peserta) {
+            $peserta->load('dokumenPendaftaran');
+            app(DocumentVerificationService::class)->syncPesertaStatus($peserta);
+        }
+
+        return back()->with('success', 'Dokumen berhasil dihapus.');
     }
 
     public function update(Request $request, $id)

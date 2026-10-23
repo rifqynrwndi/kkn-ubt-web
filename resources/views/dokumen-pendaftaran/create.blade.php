@@ -37,11 +37,15 @@
                                 <option value="">Pilih Dokumen</option>
 
                                 @foreach($documents as $key => $label)
+                                    @php
+                                        $isUploaded = in_array($key, $uploadedTypes);
+                                        $isSelectable = ! $isUploaded || $defaultDocument === $key;
+                                    @endphp
                                     <option value="{{ $key }}"
-                                        {{ in_array($key, $uploadedTypes) ? 'disabled' : '' }}
+                                        {{ $isSelectable ? '' : 'disabled' }}
                                         {{ $defaultDocument === $key ? 'selected' : '' }}>
                                         {{ $label }}
-                                        {{ in_array($key, $uploadedTypes) ? '(Sudah Upload)' : '' }}
+                                        {{ $isUploaded && $defaultDocument !== $key ? '(Sudah Upload)' : '' }}
                                     </option>
                                 @endforeach
                             </select>
@@ -52,7 +56,19 @@
                             <input type="file"
                                    name="file"
                                    class="form-control"
+                                   accept=".pdf,.jpg,.jpeg,.png"
                                    required>
+
+                            <small class="text-muted">
+                                Format PDF, JPG, JPEG, atau PNG. Maksimal 2 MB.
+                            </small>
+
+                            @error('file')
+                                <div class="text-danger mt-2">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    {{ $message }}
+                                </div>
+                            @enderror
                         </div>
 
                         <button class="btn btn-primary">

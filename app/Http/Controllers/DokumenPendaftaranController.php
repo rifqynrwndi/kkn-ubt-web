@@ -99,7 +99,7 @@ class DokumenPendaftaranController extends Controller
         }
 
         try {
-            return Storage::disk()->response(
+            return Storage::disk('public')->response(
                 $dokumen->file->path,
                 $dokumen->file->original_name
             );
@@ -108,7 +108,7 @@ class DokumenPendaftaranController extends Controller
         }
     }
 
-    public function create(): View|RedirectResponse
+    public function create(Request $request): View|RedirectResponse
     {
         $peserta = PesertaKkn::where(
             'mahasiswa_id',
@@ -147,10 +147,21 @@ class DokumenPendaftaranController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | Ganti Dokumen (upload ulang jenis yang sudah ada)
+        |--------------------------------------------------------------------------
+        */
+        $replaceType = $request->query('jenis_dokumen');
+
+        $isReplace = is_string($replaceType)
+            && in_array($replaceType, $requiredTypes, true)
+            && in_array($replaceType, $uploadedTypes, true);
+
+        /*
+        |--------------------------------------------------------------------------
         | Semua Dokumen Sudah Upload
         |--------------------------------------------------------------------------
         */
-        if ($missingDocuments->isEmpty()) {
+        if (! $isReplace && $missingDocuments->isEmpty()) {
 
             return redirect()
                 ->route('dokumen-pendaftaran.index')
@@ -160,7 +171,9 @@ class DokumenPendaftaranController extends Controller
                 );
         }
 
-        $defaultDocument = $missingDocuments->first();
+        $defaultDocument = $isReplace
+            ? $replaceType
+            : $missingDocuments->first();
 
         return view('dokumen-pendaftaran.create', compact(
             'peserta',
@@ -217,6 +230,11 @@ class DokumenPendaftaranController extends Controller
         $request->validate([
             'jenis_dokumen' => ['required', 'string', 'in:'.implode(',', $requiredTypes)],
             'file' => 'required|mimes:pdf,jpg,jpeg,png|max:2048',
+        ], [
+            'file.required' => 'Pilih file dokumen terlebih dahulu.',
+            'file.mimes' => 'Format file tidak didukung. Gunakan file PDF, JPG, JPEG, atau PNG.',
+            'file.max' => 'Ukuran file terlalu besar. Maksimal 2 MB.',
+            'file.uploaded' => 'File gagal diunggah ke server. Coba file yang lebih kecil atau coba lagi.',
         ]);
 
         /*
@@ -246,24 +264,21 @@ class DokumenPendaftaranController extends Controller
         | Existing File
         |--------------------------------------------------------------------------
         */
-        $existing = DokumenPendaftaran::where([
+        $existing = DokumenPendaftaran::with('file')->where([
             'peserta_kkn_id' => $peserta->id,
             'jenis_dokumen' => $request->jenis_dokumen,
         ])->first();
 
-        if ($existing && $existing->file) {
-
-            Storage::disk()->delete(
-                $existing->file->path
-            );
-
-            $existing->file->delete();
-        }
+        $oldFile = $existing?->file;
 
         /*
         |--------------------------------------------------------------------------
         | Save Dokumen
         |--------------------------------------------------------------------------
+        |
+        | file_id harus di-update SEBELUM file lama dihapus. Relasi
+        | dokumen_pendaftaran.file_id memakai cascadeOnDelete, sehingga
+        | menghapus File lebih dulu akan ikut menghapus baris dokumen.
         */
         DokumenPendaftaran::updateOrCreate(
             [
@@ -278,6 +293,15 @@ class DokumenPendaftaranController extends Controller
                 'catatan_revisi' => null,
             ]
         );
+
+        if ($oldFile && $oldFile->id !== $file->id) {
+
+            Storage::disk('public')->delete(
+                $oldFile->path
+            );
+
+            $oldFile->delete();
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -356,7 +380,7 @@ class DokumenPendaftaranController extends Controller
         */
         if ($dokumen->file) {
 
-            Storage::disk()->delete(
+            Storage::disk('public')->delete(
                 $dokumen->file->path
             );
 

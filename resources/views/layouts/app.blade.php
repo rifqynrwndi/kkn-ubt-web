@@ -153,6 +153,11 @@
         iziToast.warning({ title: 'Perhatian', message: @json(session('warning')), position: 'topRight', timeout: 6000 });
     </script>
     @endif
+    @if ($errors->any())
+    <script>
+        iziToast.error({ title: 'Gagal', message: @json($errors->first()), position: 'topRight', timeout: 8000 });
+    </script>
+    @endif
 
     <!-- Select2 -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

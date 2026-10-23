@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Review Dokumen Peserta')
+@section('title', 'Verifikasi Dokumen Peserta')
 
 @section('content')
 <section class="section">
     <div class="section-header d-flex justify-content-between align-items-center">
-        <h1>Review Dokumen Peserta</h1>
+        <h1>Verifikasi Dokumen Peserta</h1>
 
         <a href="{{ route('verifikasi-dokumen.index') }}"
            class="btn btn-outline-secondary">
@@ -54,16 +54,16 @@
 
         <div class="row mb-4">
             <div class="col-md-3">
-                <div class="alert alert-success mb-0">Verified: {{ $verifiedCount }}</div>
+                <div class="alert alert-success mb-0">Terverifikasi: {{ $verifiedCount }}</div>
             </div>
             <div class="col-md-3">
-                <div class="alert alert-warning mb-0">Revision: {{ $revisionCount }}</div>
+                <div class="alert alert-warning mb-0">Perlu Revisi: {{ $revisionCount }}</div>
             </div>
             <div class="col-md-3">
-                <div class="alert alert-danger mb-0">Rejected: {{ $rejectedCount }}</div>
+                <div class="alert alert-danger mb-0">Ditolak: {{ $rejectedCount }}</div>
             </div>
             <div class="col-md-3">
-                <div class="alert alert-secondary mb-0">Pending: {{ $pendingCount }}</div>
+                <div class="alert alert-secondary mb-0">Menunggu: {{ $pendingCount }}</div>
             </div>
         </div>
 
@@ -81,7 +81,7 @@
                         <button type="button"
                                 class="btn btn-success btn-sm mr-2 bulk-set-status"
                                 data-status="verified">
-                            Approve Semua
+                            Setujui Semua
                         </button>
 
                         <button type="button"
@@ -93,7 +93,7 @@
                         <button type="button"
                                 class="btn btn-danger btn-sm bulk-set-status"
                                 data-status="rejected">
-                            Reject Semua
+                            Tolak Semua
                         </button>
                     </div>
                 </div>
@@ -108,17 +108,25 @@
                                     <th>File</th>
                                     <th width="220">Ubah Status</th>
                                     <th>Catatan Revisi</th>
+                                    <th width="70">Hapus</th>
                                 </tr>
                             </thead>
 
                             <tbody>
-                                @foreach($peserta->dokumenPendaftaran as $dokumen)
+                                @forelse($peserta->dokumenPendaftaran as $dokumen)
                                     @php
                                         $rowClass = match($dokumen->status_verifikasi) {
                                             'verified' => 'table',
                                             'revision_required' => 'table',
                                             'rejected' => 'table',
                                             default => '',
+                                        };
+
+                                        $statusLabel = match($dokumen->status_verifikasi) {
+                                            'verified' => 'Terverifikasi',
+                                            'revision_required' => 'Perlu Revisi',
+                                            'rejected' => 'Ditolak',
+                                            default => 'Menunggu',
                                         };
                                     @endphp
 
@@ -134,16 +142,23 @@
                                                 @elseif($dokumen->status_verifikasi === 'rejected') badge-danger
                                                 @else badge-info
                                                 @endif">
-                                                {{ ucfirst(str_replace('_', ' ', $dokumen->status_verifikasi)) }}
+                                                {{ $statusLabel }}
                                             </span>
                                         </td>
 
                                         <td>
-                                            <a href="{{ route('dokumen-pendaftaran.show', $dokumen->id) }}"
-                                               target="_blank"
-                                               class="btn btn-sm btn-outline-primary">
-                                                Lihat
-                                            </a>
+                                            @if($dokumen->file)
+                                                <a href="{{ route('verifikasi-dokumen.dokumen.file', $dokumen->id) }}"
+                                                   target="_blank"
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                    Lihat
+                                                </a>
+                                            @else
+                                                <span class="badge badge-secondary">
+                                                    File tidak tersedia
+                                                </span>
+                                            @endif
                                         </td>
 
                                         <td>
@@ -151,17 +166,17 @@
                                                     class="form-control status-select">
                                                 <option value="verified"
                                                     {{ $dokumen->status_verifikasi === 'verified' ? 'selected' : '' }}>
-                                                    Verified
+                                                    Terverifikasi
                                                 </option>
 
                                                 <option value="revision_required"
                                                     {{ $dokumen->status_verifikasi === 'revision_required' ? 'selected' : '' }}>
-                                                    Revision Required
+                                                    Perlu Revisi
                                                 </option>
 
                                                 <option value="rejected"
                                                     {{ $dokumen->status_verifikasi === 'rejected' ? 'selected' : '' }}>
-                                                    Rejected
+                                                    Ditolak
                                                 </option>
                                             </select>
                                         </td>
@@ -173,8 +188,24 @@
                                                    value="{{ $dokumen->catatan_revisi }}"
                                                    placeholder="Catatan revisi / alasan">
                                         </td>
+
+                                        <td>
+                                            <button type="submit"
+                                                    form="delete-doc-{{ $dokumen->id }}"
+                                                    class="btn btn-sm btn-danger"
+                                                    title="Hapus dokumen"
+                                                    onclick="return confirm('Hapus dokumen ini? File akan dihapus permanen dan mahasiswa harus mengunggah ulang.')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
                                     </tr>
-                                @endforeach
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">
+                                            Belum ada dokumen yang diunggah.
+                                        </td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -188,6 +219,16 @@
                 </div>
             </div>
         </form>
+
+        @foreach($peserta->dokumenPendaftaran as $dokumen)
+            <form id="delete-doc-{{ $dokumen->id }}"
+                  action="{{ route('verifikasi-dokumen.dokumen.destroy', $dokumen->id) }}"
+                  method="POST"
+                  class="d-none">
+                @csrf
+                @method('DELETE')
+            </form>
+        @endforeach
     </div>
 </section>
 @endsection
