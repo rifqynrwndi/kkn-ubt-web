@@ -481,6 +481,9 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
                 Route::put('/{id}/reject', [VerifikasiDokumenController::class, 'dhsReject'])->name('reject');
             });
 
+            Route::get('/dokumen/{id}/file', [VerifikasiDokumenController::class, 'viewFile'])->name('dokumen.file');
+            Route::delete('/dokumen/{id}', [VerifikasiDokumenController::class, 'destroyDocument'])->name('dokumen.destroy');
+
             Route::get('/{id}', [VerifikasiDokumenController::class, 'show'])->name('show');
             Route::put('/dokumen/{id}', [VerifikasiDokumenController::class, 'update'])->name('update');
             Route::put('/{peserta}/bulk-update', [VerifikasiDokumenController::class, 'bulkUpdate'])->name('bulk-update');

@@ -19,21 +19,6 @@
 
     <div class="section-body">
 
-        {{-- SUCCESS --}}
-        @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        {{-- ERROR --}}
-        @if(session('error'))
-            <div class="alert alert-danger">
-                {{ session('error') }}
-            </div>
-        @endif
-
-
         {{-- BELUM DAFTAR --}}
         @if(!$peserta)
 
@@ -278,12 +263,42 @@
 
                                         <a href="{{ route('dokumen-pendaftaran.show', $item->id) }}"
                                            class="btn btn-sm btn-outline-primary"
-                                           target="_blank">
+                                           target="_blank"
+                                           title="Lihat">
 
                                             <i class="fas fa-eye"></i>
-                                            Lihat
 
                                         </a>
+
+                                        @if($peserta->status_pendaftaran !== 'approved')
+
+                                            <a href="{{ route('dokumen-pendaftaran.create', ['jenis_dokumen' => $item->jenis_dokumen]) }}"
+                                               class="btn btn-sm btn-outline-warning"
+                                               title="Edit">
+
+                                                <i class="fas fa-pencil-alt"></i>
+
+                                            </a>
+
+                                            <form action="{{ route('dokumen-pendaftaran.destroy', $item->id) }}"
+                                                  method="POST"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Hapus dokumen ini? Anda harus mengunggah ulang dokumen tersebut.')">
+
+                                                @csrf
+                                                @method('DELETE')
+
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        title="Hapus">
+
+                                                    <i class="fas fa-trash"></i>
+
+                                                </button>
+
+                                            </form>
+
+                                        @endif
 
                                     </td>
 

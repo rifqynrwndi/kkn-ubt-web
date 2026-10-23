@@ -137,24 +137,24 @@
                     style="object-fit: cover;"
                 >
                 <div class="d-sm-none d-lg-inline-block">
-                    Hi, {{ auth()->user()->name }}
+                    Hai, {{ auth()->user()->name }}
                 </div>
             </a>
 
             <div class="dropdown-menu dropdown-menu-right">
                 <div class="dropdown-title fw-bold">
-                    Welcome, {{ auth()->user()->name }}
+                    Selamat datang, {{ auth()->user()->name }}
                 </div>
 
                 <a class="dropdown-item has-icon edit-profile" href="{{ route('profile.edit') }}">
-                    <i class="fa fa-user"></i> Edit Profile
+                    <i class="fa fa-user"></i> Edit Profil
                 </a>
 
                 <div class="dropdown-divider"></div>
 
                 <a href="{{ route('logout') }}" class="dropdown-item has-icon text-danger"
                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i class="fas fa-sign-out-alt"></i> Logout
+                    <i class="fas fa-sign-out-alt"></i> Keluar
                 </a>
 
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">

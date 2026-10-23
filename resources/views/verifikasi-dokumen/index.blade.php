@@ -14,7 +14,7 @@
         <div class="card shadow-sm mb-3">
             <div class="card-body">
                 <form method="GET" action="{{ route('verifikasi-dokumen.index') }}" class="row align-items-end">
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <label class="form-label font-weight-bold">Pilih Gelombang</label>
                         <select name="gelombang_id" class="form-control" onchange="this.form.submit()">
                             <option value="">-- Pilih Gelombang --</option>
@@ -25,15 +25,24 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-3">
                         <label class="form-label font-weight-bold">Status</label>
                         <select name="status" class="form-control" onchange="this.form.submit()">
                             <option value="">Semua Status</option>
-                            <option value="pending_verification" {{ request('status') == 'pending_verification' ? 'selected' : '' }}>Pending Verification</option>
-                            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
-                            <option value="revision" {{ request('status') == 'revision' ? 'selected' : '' }}>Revision</option>
-                            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                            <option value="pending_verification" {{ request('status') == 'pending_verification' ? 'selected' : '' }}>Menunggu Verifikasi</option>
+                            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
+                            <option value="revision" {{ request('status') == 'revision' ? 'selected' : '' }}>Perlu Revisi</option>
+                            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
                         </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label font-weight-bold">Cari Mahasiswa</label>
+                        <input type="text"
+                               name="q"
+                               id="searchMahasiswa"
+                               class="form-control"
+                               value="{{ $search }}"
+                               placeholder="Nama atau NPM">
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary btn-block">
@@ -63,7 +72,7 @@
 
                     <button type="submit" class="btn btn-success btn-sm">
                         <i class="fas fa-check mr-1"></i>
-                        Approve Selected
+                        Setujui Terpilih
                     </button>
                 </div>
 
@@ -125,31 +134,31 @@
                                         <td>
                                             @switch($peserta->status_pendaftaran)
                                                 @case('draft')
-                                                    <span class="badge">Draft</span>
+                                                    <span class="badge">Draf</span>
                                                     @break
 
                                                 @case('pending_documents')
-                                                    <span class="badge badge-info">Pending Documents</span>
+                                                    <span class="badge badge-info">Dokumen Belum Lengkap</span>
                                                     @break
 
                                                 @case('pending_verification')
-                                                    <span class="badge badge-warning">Pending Verification</span>
+                                                    <span class="badge badge-warning">Menunggu Verifikasi</span>
                                                     @break
 
                                                 @case('revision')
-                                                    <span class="badge badge-danger">Revision Required</span>
+                                                    <span class="badge badge-danger">Perlu Revisi</span>
                                                     @break
 
                                                 @case('approved')
-                                                    <span class="badge badge-success">Approved</span>
+                                                    <span class="badge badge-success">Disetujui</span>
                                                     @break
 
                                                 @case('rejected')
-                                                    <span class="badge badge-danger">Rejected</span>
+                                                    <span class="badge badge-danger">Ditolak</span>
                                                     @break
 
                                                 @case('expired')
-                                                    <span class="badge badge-danger">Expired</span>
+                                                    <span class="badge badge-danger">Kedaluwarsa</span>
                                                     @break
                                             @endswitch
                                         </td>
@@ -157,7 +166,7 @@
                                         <td>
                                             <a href="{{ route('verifikasi-dokumen.show', $peserta->id) }}"
                                                class="btn btn-primary btn-sm btn-block">
-                                                Review
+                                                Tinjau
                                             </a>
                                         </td>
                                     </tr>
@@ -196,5 +205,17 @@ document.getElementById('checkAll')?.addEventListener('change', function () {
         cb.checked = this.checked;
     });
 });
+
+const searchInput = document.getElementById('searchMahasiswa');
+if (searchInput) {
+    let searchTimer;
+
+    searchInput.addEventListener('input', function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            searchInput.form.submit();
+        }, 400);
+    });
+}
 </script>
 @endpush
