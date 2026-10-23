@@ -69,10 +69,19 @@
                 <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <h4 class="mb-0">Daftar Peserta</h4>
 
-                    <button type="submit" class="btn btn-success btn-sm">
-                        <i class="fas fa-check mr-1"></i>
-                        Setujui Terpilih
-                    </button>
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('verifikasi-dokumen.export', ['gelombang_id' => $gelombangId]) }}"
+                           class="btn btn-success btn-sm"
+                           title="Export mahasiswa berkas lengkap (xlsx)">
+                            <i class="fas fa-file-excel mr-1"></i>
+                            Export Berkas Lengkap
+                        </a>
+
+                        <button type="submit" class="btn btn-success btn-sm">
+                            <i class="fas fa-check mr-1"></i>
+                            Setujui Terpilih
+                        </button>
+                    </div>
                 </div>
 
                 <div class="card-body p-0">

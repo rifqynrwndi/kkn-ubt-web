@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
+use App\Models\DokumenPendaftaran;
 use App\Models\Gelombang;
 use App\Models\KelompokKkn;
+use App\Models\PesertaKkn;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -199,6 +202,93 @@ class ExportService
         $this->streamDownload($spreadsheet, 'rekap-tugas-kelompok-'.$namaGelombang.'-'.now()->format('Ymd-His').'.xlsx');
     }
 
+    public function exportMahasiswaBerkasLengkapXlsx(int $gelombangId)
+    {
+        $gelombang = Gelombang::findOrFail($gelombangId);
+        $requiredTypes = $gelombang->getRequiredDocumentTypesAttribute();
+        $labels = DokumenPendaftaran::getDocumentLabels();
+
+        $pesertas = PesertaKkn::with([
+            'mahasiswa.user',
+            'mahasiswa.prodi.fakultas',
+            'dokumenPendaftaran.file',
+        ])
+            ->where('gelombang_id', $gelombangId)
+            ->where('status_pendaftaran', 'approved')
+            ->get()
+            ->sortBy(fn ($p) => $p->mahasiswa?->user?->name)
+            ->values();
+
+        $spreadsheet = new Spreadsheet;
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle($this->safeSheetName('Berkas Lengkap '.$gelombang->nama_gelombang));
+
+        $headers = ['No', 'Nama', 'NPM', 'Fakultas', 'Prodi'];
+        foreach ($requiredTypes as $type) {
+            $headers[] = $labels[$type] ?? $type;
+        }
+
+        $lastCol = Coordinate::stringFromColumnIndex(count($headers));
+
+        $sheet->fromArray([$headers], null, 'A1');
+        $sheet->getStyle("A1:{$lastCol}1")->applyFromArray($this->headerStyle());
+        $sheet->getRowDimension(1)->setRowHeight(28);
+
+        $row = 2;
+        $no = 1;
+        foreach ($pesertas as $peserta) {
+            $m = $peserta->mahasiswa;
+
+            $sheet->fromArray([[
+                $no++,
+                $m?->user?->name ?? '-',
+                $m?->npm ?? '-',
+                $m?->prodi?->fakultas?->nama_fakultas ?? '-',
+                $m?->prodi?->nama_prodi ?? '-',
+            ]], null, "A{$row}");
+
+            foreach ($requiredTypes as $i => $type) {
+                $colLetter = Coordinate::stringFromColumnIndex(6 + $i);
+                $dokumen = $peserta->dokumenPendaftaran
+                    ->firstWhere('jenis_dokumen', $type);
+
+                $cell = $sheet->getCell("{$colLetter}{$row}");
+                $cell->setValue('Lihat');
+
+                if ($dokumen?->file) {
+                    $cell->getHyperlink()->setUrl(url('/dokumen-pendaftaran/'.$dokumen->id));
+                    $cell->getStyle()->getFont()->applyFromArray([
+                        'color' => ['rgb' => '0563C1'],
+                        'underline' => 'single',
+                    ]);
+                }
+            }
+
+            $style = ($no % 2 === 1) ? $this->rowStripeStyle() : $this->altRowStyle();
+            $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray($style);
+            $sheet->getStyle("A{$row}:{$lastCol}{$row}")->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_TOP);
+            $row++;
+        }
+
+        $sheet->getColumnDimension('A')->setWidth(6);
+        $sheet->getColumnDimension('B')->setWidth(30);
+        $sheet->getColumnDimension('C')->setWidth(16);
+        $sheet->getColumnDimension('D')->setWidth(26);
+        $sheet->getColumnDimension('E')->setWidth(26);
+
+        foreach (array_keys($requiredTypes) as $i) {
+            $colLetter = Coordinate::stringFromColumnIndex(6 + $i);
+            $sheet->getColumnDimension($colLetter)->setWidth(16);
+        }
+
+        $namaGelombang = str_replace(['\\', '/', ' ', ':'], '_', $gelombang->nama_gelombang ?? 'Gelombang_'.$gelombangId);
+
+        return $this->streamDownloadResponse(
+            $spreadsheet,
+            'mahasiswa-berkas-lengkap-'.$namaGelombang.'-'.now()->format('Ymd-His').'.xlsx'
+        );
+    }
+
     public function exportMahasiswaXlsx(?int $gelombangId = null): void
     {
         $query = User::with('mahasiswa.prodi.fakultas')
@@ -338,5 +428,19 @@ class ExportService
 
         $response->send();
         exit;
+    }
+
+    private function streamDownloadResponse(Spreadsheet $spreadsheet, string $filename)
+    {
+        $spreadsheet->setActiveSheetIndex(0);
+        $writer = new Xlsx($spreadsheet);
+
+        $callback = function () use ($writer) {
+            $writer->save('php://output');
+        };
+
+        return response()->streamDownload($callback, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 }
