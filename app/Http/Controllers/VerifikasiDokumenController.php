@@ -47,7 +47,7 @@ class VerifikasiDokumenController extends Controller
                 ->when($statusFilter, fn ($q) => $q->where('status_pendaftaran', $statusFilter))
                 ->when(! $statusFilter, fn ($q) => $q->whereIn('status_pendaftaran', [
                     'draft', 'pending_documents', 'pending_verification',
-                    'revision', 'approved', 'rejected', 'expired',
+                    'approved', 'rejected', 'expired',
                 ]))
                 ->latest()
                 ->paginate(20)
@@ -118,7 +118,7 @@ class VerifikasiDokumenController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'status_verifikasi' => 'required|in:verified,revision_required,rejected',
+            'status_verifikasi' => 'required|in:verified,rejected',
             'catatan_revisi' => 'nullable|string',
         ]);
 
@@ -192,7 +192,7 @@ class VerifikasiDokumenController extends Controller
     {
         $request->validate([
             'documents' => 'required|array',
-            'documents.*.status_verifikasi' => 'required|in:verified,revision_required,rejected',
+            'documents.*.status_verifikasi' => 'required|in:verified,rejected',
 
             'documents.*.catatan_revisi' => 'nullable|string',
         ]);

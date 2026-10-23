@@ -42,12 +42,6 @@ class DocumentVerificationService
             return 'rejected';
         }
 
-        if ($requiredDokumen->contains('status_verifikasi', 'revision_required')) {
-            $peserta->update(['status_pendaftaran' => 'revision']);
-
-            return 'revision';
-        }
-
         if ($requiredDokumen->every(fn ($d) => $d->status_verifikasi === 'verified')) {
             $peserta->update(['status_pendaftaran' => 'approved']);
 

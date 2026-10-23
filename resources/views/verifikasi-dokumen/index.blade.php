@@ -31,7 +31,6 @@
                             <option value="">Semua Status</option>
                             <option value="pending_verification" {{ request('status') == 'pending_verification' ? 'selected' : '' }}>Menunggu Verifikasi</option>
                             <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
-                            <option value="revision" {{ request('status') == 'revision' ? 'selected' : '' }}>Perlu Revisi</option>
                             <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
                         </select>
                     </div>
@@ -143,10 +142,6 @@
 
                                                 @case('pending_verification')
                                                     <span class="badge badge-warning">Menunggu Verifikasi</span>
-                                                    @break
-
-                                                @case('revision')
-                                                    <span class="badge badge-danger">Perlu Revisi</span>
                                                     @break
 
                                                 @case('approved')

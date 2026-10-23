@@ -47,22 +47,18 @@
         {{-- SUMMARY --}}
         @php
             $verifiedCount = $peserta->dokumenPendaftaran->where('status_verifikasi', 'verified')->count();
-            $revisionCount = $peserta->dokumenPendaftaran->where('status_verifikasi', 'revision_required')->count();
             $rejectedCount = $peserta->dokumenPendaftaran->where('status_verifikasi', 'rejected')->count();
             $pendingCount = $peserta->dokumenPendaftaran->where('status_verifikasi', 'pending')->count();
         @endphp
 
         <div class="row mb-4">
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="alert alert-success mb-0">Terverifikasi: {{ $verifiedCount }}</div>
             </div>
-            <div class="col-md-3">
-                <div class="alert alert-warning mb-0">Perlu Revisi: {{ $revisionCount }}</div>
-            </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="alert alert-danger mb-0">Ditolak: {{ $rejectedCount }}</div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="alert alert-secondary mb-0">Menunggu: {{ $pendingCount }}</div>
             </div>
         </div>
@@ -82,12 +78,6 @@
                                 class="btn btn-success btn-sm mr-2 bulk-set-status"
                                 data-status="verified">
                             Setujui Semua
-                        </button>
-
-                        <button type="button"
-                                class="btn btn-warning btn-sm mr-2 bulk-set-status"
-                                data-status="revision_required">
-                            Revisi Semua
                         </button>
 
                         <button type="button"
@@ -117,14 +107,12 @@
                                     @php
                                         $rowClass = match($dokumen->status_verifikasi) {
                                             'verified' => 'table',
-                                            'revision_required' => 'table',
                                             'rejected' => 'table',
                                             default => '',
                                         };
 
                                         $statusLabel = match($dokumen->status_verifikasi) {
                                             'verified' => 'Terverifikasi',
-                                            'revision_required' => 'Perlu Revisi',
                                             'rejected' => 'Ditolak',
                                             default => 'Menunggu',
                                         };
@@ -138,7 +126,6 @@
                                         <td>
                                             <span class="badge badge-pill
                                                 @if($dokumen->status_verifikasi === 'verified') badge-success
-                                                @elseif($dokumen->status_verifikasi === 'revision_required') badge-warning
                                                 @elseif($dokumen->status_verifikasi === 'rejected') badge-danger
                                                 @else badge-info
                                                 @endif">
@@ -167,11 +154,6 @@
                                                 <option value="verified"
                                                     {{ $dokumen->status_verifikasi === 'verified' ? 'selected' : '' }}>
                                                     Terverifikasi
-                                                </option>
-
-                                                <option value="revision_required"
-                                                    {{ $dokumen->status_verifikasi === 'revision_required' ? 'selected' : '' }}>
-                                                    Perlu Revisi
                                                 </option>
 
                                                 <option value="rejected"

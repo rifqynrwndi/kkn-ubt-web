@@ -22,7 +22,6 @@ class DokumenVerifiedNotification extends Notification
     public function toDatabase($notifiable): array
     {
         $verified = [];
-        $revision = [];
         $rejected = [];
 
         foreach ($this->peserta->dokumenPendaftaran as $dokumen) {
@@ -31,10 +30,6 @@ class DokumenVerifiedNotification extends Notification
 
                 case 'verified':
                     $verified[] = $dokumen->jenis_dokumen_label;
-                    break;
-
-                case 'revision_required':
-                    $revision[] = $dokumen->jenis_dokumen_label;
                     break;
 
                 case 'rejected':
@@ -48,7 +43,6 @@ class DokumenVerifiedNotification extends Notification
 
             'message' => $this->buildMessage(
                 $verified,
-                $revision,
                 $rejected
             ),
 
@@ -60,7 +54,7 @@ class DokumenVerifiedNotification extends Notification
         ];
     }
 
-    private function buildMessage($verified, $revision, $rejected): string
+    private function buildMessage($verified, $rejected): string
     {
         $messages = [];
 
@@ -70,15 +64,9 @@ class DokumenVerifiedNotification extends Notification
                 implode(', ', $verified).'.';
         }
 
-        if (! empty($revision)) {
-            $messages[] =
-                'Dokumen berikut perlu revisi: '.
-                implode(', ', $revision).'.';
-        }
-
         if (! empty($rejected)) {
             $messages[] =
-                'Dokumen berikut ditolak: '.
+                'Dokumen berikut ditolak dan perlu diunggah ulang: '.
                 implode(', ', $rejected).'.';
         }
 
