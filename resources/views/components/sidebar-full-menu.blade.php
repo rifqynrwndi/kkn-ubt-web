@@ -68,7 +68,7 @@
                     $pesertaAktif = \App\Models\PesertaKkn::where('mahasiswa_id', auth()->id())
                         ->whereHas('gelombang', fn($q) => $q->whereIn('status', ['pendaftaran', 'berjalan']))
                         ->first();
-                    $showDokumen = $pesertaAktif && in_array($pesertaAktif->status_pendaftaran, ['draft', 'pending_documents', 'pending_verification', 'revision']);
+                    $showDokumen = $pesertaAktif && in_array($pesertaAktif->status_pendaftaran, ['draft', 'pending_documents', 'pending_verification', 'rejected']);
                     $warActive = $pesertaAktif && \App\Models\WarSession::where('gelombang_id', $pesertaAktif->gelombang_id)
                         ->whereIn('status', ['scheduled', 'active'])
                         ->exists();

@@ -8,6 +8,7 @@ use App\Models\Gelombang;
 use App\Models\PesertaKkn;
 use App\Models\User;
 use App\Services\DocumentVerificationService;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -110,20 +111,27 @@ class DocumentVerificationServiceTest extends TestCase
         $this->assertEquals('rejected', $peserta->fresh()->status_pendaftaran);
     }
 
-    public function test_revision_when_any_document_requires_revision(): void
+    public function test_revision_required_is_no_longer_a_valid_status(): void
     {
-        $peserta = $this->createPeserta(
-            ['surat_pernyataan', 'surat_ortu'],
-            [
-                ['jenis' => 'surat_pernyataan', 'status' => 'verified'],
-                ['jenis' => 'surat_ortu', 'status' => 'revision_required'],
-            ]
-        );
+        $peserta = $this->createPeserta(['surat_pernyataan'], []);
 
-        $result = $this->service->syncPesertaStatus($peserta);
+        $file = File::create([
+            'user_id' => $peserta->mahasiswa_id,
+            'name' => 'surat-pernyataan.pdf',
+            'path' => 'dokumen-pendaftaran/surat-pernyataan.pdf',
+            'original_name' => 'surat-pernyataan.pdf',
+            'mime_type' => 'application/pdf',
+            'size' => 1024,
+        ]);
 
-        $this->assertEquals('revision', $result);
-        $this->assertEquals('revision', $peserta->fresh()->status_pendaftaran);
+        $this->expectException(QueryException::class);
+
+        DokumenPendaftaran::create([
+            'peserta_kkn_id' => $peserta->id,
+            'file_id' => $file->id,
+            'jenis_dokumen' => 'surat_pernyataan',
+            'status_verifikasi' => 'revision_required',
+        ]);
     }
 
     public function test_approved_when_all_documents_verified(): void

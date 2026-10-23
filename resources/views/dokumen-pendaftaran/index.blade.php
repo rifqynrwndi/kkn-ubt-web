@@ -70,8 +70,6 @@
                                         Draft
                                     @elseif($peserta->status_pendaftaran === 'pending_documents')
                                         Pending Documents
-                                    @elseif($peserta->status_pendaftaran === 'revision')
-                                        Revision
                                     @elseif($peserta->status_pendaftaran === 'verified')
                                         Verified
                                     @elseif($peserta->status_pendaftaran === 'rejected')
@@ -136,11 +134,6 @@
                                                 Verified
                                             </span>
 
-                                        @elseif($doc->status_verifikasi === 'revision_required')
-
-                                            <span class="badge badge-warning">
-                                                Revisi
-                                            </span>
 
                                         @elseif($doc->status_verifikasi === 'rejected')
 
@@ -225,11 +218,6 @@
                                                 Verified
                                             </span>
 
-                                        @elseif($item->status_verifikasi === 'revision_required')
-
-                                            <span class="badge badge-warning">
-                                                Revision
-                                            </span>
 
                                         @elseif($item->status_verifikasi === 'rejected')
 
