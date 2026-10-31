@@ -118,6 +118,10 @@ class WarAllocationService
         string $clientIp,
         int $fakultasId,
     ): WarParticipant {
+        // Validate before persisting
+        $this->assertPesertaBelumPunyaKelompok($peserta);
+        $this->assertBelumJoinSession($session, $peserta);
+
         $peserta->update(['kelompok_kkn_id' => $kelompok->id]);
 
         $kelompok->generateKetua();
