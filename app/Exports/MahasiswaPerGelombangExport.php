@@ -5,6 +5,7 @@ namespace App\Exports;
 use App\Models\Gelombang;
 use App\Models\Mahasiswa;
 use App\Models\PesertaKkn;
+use Illuminate\Support\Enumerable;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -62,7 +63,7 @@ class MahasiswaPerGelombangSheetExport implements FromCollection, WithHeadings, 
         $this->gelombangName = $gelombangName;
     }
 
-    public function collection(): \Illuminate\Support\Enumerable
+    public function collection(): Enumerable
     {
         return PesertaKkn::with([
             'mahasiswa.user',
@@ -128,7 +129,7 @@ class BelumTerdaftarSheetExport implements FromCollection, WithHeadings, WithMap
         $this->gelombangName = $gelombangName;
     }
 
-    public function collection(): \Illuminate\Support\Enumerable
+    public function collection(): Enumerable
     {
         // Get mahasiswa IDs that already have PesertaKkn for this gelombang
         $registeredMahasiswaIds = PesertaKkn::where('gelombang_id', $this->gelombangId)

@@ -307,6 +307,7 @@ class ExportService
         // Group users by gelombang
         $grouped = $users->groupBy(function ($u) {
             $gelombang = $u->mahasiswa?->pesertaKkn?->first()?->gelombang;
+
             return $gelombang ? $gelombang->nama_gelombang : 'Tanpa Gelombang';
         });
 
