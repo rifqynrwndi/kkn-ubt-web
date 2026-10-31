@@ -2,7 +2,7 @@
 
 namespace App\Services\War;
 
-use Illuminate\Support\Facades\Lock;
+use Illuminate\Support\Facades\Cache;
 
 class WarLockService
 {
@@ -12,29 +12,27 @@ class WarLockService
 
     public function acquireUserLock(int $warSessionId, int $pesertaKknId): bool
     {
-        return Lock::store('redis')->block(
-            "war:user:{$warSessionId}:{$pesertaKknId}",
-            self::USER_LOCK_TTL,
-            fn () => true,
-        );
+        $lock = Cache::lock("war:user:{$warSessionId}:{$pesertaKknId}", self::USER_LOCK_TTL);
+
+        return $lock->block(0, fn () => true);
     }
 
     public function releaseUserLock(int $warSessionId, int $pesertaKknId): void
     {
-        Lock::store('redis')->release("war:user:{$warSessionId}:{$pesertaKknId}");
+        $lock = Cache::lock("war:user:{$warSessionId}:{$pesertaKknId}", self::USER_LOCK_TTL);
+        $lock->release();
     }
 
     public function acquireSessionLock(int $warSessionId): bool
     {
-        return Lock::store('redis')->block(
-            "war:session:{$warSessionId}",
-            self::SESSION_LOCK_TTL,
-            fn () => true,
-        );
+        $lock = Cache::lock("war:session:{$warSessionId}", self::SESSION_LOCK_TTL);
+
+        return $lock->block(0, fn () => true);
     }
 
     public function releaseSessionLock(int $warSessionId): void
     {
-        Lock::store('redis')->release("war:session:{$warSessionId}");
+        $lock = Cache::lock("war:session:{$warSessionId}", self::SESSION_LOCK_TTL);
+        $lock->release();
     }
 }
