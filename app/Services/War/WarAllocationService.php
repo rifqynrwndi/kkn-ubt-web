@@ -9,6 +9,8 @@ use App\Models\WarFaculty;
 use App\Models\WarLog;
 use App\Models\WarParticipant;
 use App\Models\WarSession;
+use App\Support\WarCacheKeys;
+use Illuminate\Contracts\Cache\TaggableStore;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -149,8 +151,9 @@ class WarAllocationService
             ]),
         ]);
 
-        // Invalidate cache via tags (if Redis) or keys
-        if (config('war.cache_tags_enabled', true)) {
+        // Invalidate cache via tags (if supported) or keys
+        $store = Cache::getStore();
+        if ($store instanceof TaggableStore && config('war.cache_tags_enabled', true)) {
             Cache::tags(WarCacheKeys::tag($session->id))->flush();
         } else {
             Cache::forget(WarCacheKeys::arena($session->id));

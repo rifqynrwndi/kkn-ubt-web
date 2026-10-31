@@ -147,7 +147,7 @@ class WarAllocationServiceTest extends TestCase
         $peserta = $this->createPeserta();
         $kelompok = $this->createKelompok();
 
-        $participant = $this->service->allocate($session, $peserta, $kelompok);
+        $participant = $this->service->allocate($session, $peserta, $kelompok, '127.0.0.1');
 
         $this->assertInstanceOf(WarParticipant::class, $participant);
         $this->assertEquals($kelompok->id, $participant->kelompok_kkn_id);
@@ -165,7 +165,7 @@ class WarAllocationServiceTest extends TestCase
         $peserta = $this->createPeserta();
         $kelompok = $this->createKelompok();
 
-        $this->service->allocate($session, $peserta, $kelompok);
+        $this->service->allocate($session, $peserta, $kelompok, '127.0.0.1');
 
         $this->assertDatabaseHas('war_logs', [
             'war_session_id' => $session->id,
@@ -180,7 +180,7 @@ class WarAllocationServiceTest extends TestCase
         $peserta = $this->createPeserta();
         $kelompok = $this->createKelompok();
 
-        $this->service->allocate($session, $peserta, $kelompok);
+        $this->service->allocate($session, $peserta, $kelompok, '127.0.0.1');
 
         $filled = DB::table('war_faculties')
             ->where('war_session_id', $session->id)
@@ -215,7 +215,7 @@ class WarAllocationServiceTest extends TestCase
 
         // Now add the 12th member (triggers penuh)
         $peserta = $this->createPeserta();
-        $this->service->allocate($session, $peserta, $kelompok);
+        $this->service->allocate($session, $peserta, $kelompok, '127.0.0.1');
 
         $kelompok->refresh();
         $this->assertEquals('penuh', $kelompok->status);
@@ -227,7 +227,7 @@ class WarAllocationServiceTest extends TestCase
         $kelompok = $this->createKelompok(['kuota' => 12]);
 
         $peserta = $this->createPeserta();
-        $this->service->allocate($session, $peserta, $kelompok);
+        $this->service->allocate($session, $peserta, $kelompok, '127.0.0.1');
 
         $kelompok->refresh();
         $this->assertEquals('dibuka', $kelompok->status);
@@ -242,7 +242,7 @@ class WarAllocationServiceTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Kamu sudah terdaftar di kelompok lain.');
 
-        $this->service->allocate($session, $peserta, $kelompok);
+        $this->service->allocate($session, $peserta, $kelompok, '127.0.0.1');
     }
 
     public function test_throws_when_already_joined_session(): void
@@ -252,7 +252,7 @@ class WarAllocationServiceTest extends TestCase
         $kelompok = $this->createKelompok();
 
         // First allocation succeeds — creates WarParticipant
-        $this->service->allocate($session, $peserta, $kelompok);
+        $this->service->allocate($session, $peserta, $kelompok, '127.0.0.1');
 
         // Reset kelompok_kkn_id to null (simulate stale state) while WarParticipant still exists
         DB::table('peserta_kkn')->where('id', $peserta->id)->update(['kelompok_kkn_id' => null]);
@@ -261,7 +261,7 @@ class WarAllocationServiceTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Kamu sudah join di sesi WAR ini.');
 
-        $this->service->allocate($session, $peserta, $kelompok);
+        $this->service->allocate($session, $peserta, $kelompok, '127.0.0.1');
     }
 
     public function test_user_lock_prevents_concurrent_duplicate(): void
@@ -277,7 +277,7 @@ class WarAllocationServiceTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Request kamu sedang diproses.');
 
-        $this->service->allocate($session, $peserta, $kelompok);
+        $this->service->allocate($session, $peserta, $kelompok, '127.0.0.1');
     }
 
     public function test_clears_cache_after_allocation(): void
@@ -290,7 +290,7 @@ class WarAllocationServiceTest extends TestCase
         \Cache::put("war:arena:{$session->id}", 'data', 60);
         \Cache::put("war:kelompok:{$session->id}", 'data', 60);
 
-        $this->service->allocate($session, $peserta, $kelompok);
+        $this->service->allocate($session, $peserta, $kelompok, '127.0.0.1');
 
         $this->assertNull(\Cache::get("war:arena:{$session->id}"));
         $this->assertNull(\Cache::get("war:kelompok:{$session->id}"));
