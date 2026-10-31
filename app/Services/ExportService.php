@@ -291,7 +291,7 @@ class ExportService
 
     public function exportMahasiswaXlsx(?int $gelombangId = null): void
     {
-        $query = User::with('mahasiswa.prodi.fakultas')
+        $query = User::with(['mahasiswa.prodi.fakultas', 'mahasiswa.pesertaKkn.gelombang'])
             ->role('mahasiswa')
             ->whereHas('mahasiswa');
 
@@ -302,38 +302,55 @@ class ExportService
         $users = $query->orderBy('name')->get();
 
         $spreadsheet = new Spreadsheet;
-        $sheet = $spreadsheet->getActiveSheet();
+        $firstSheet = true;
 
-        $headers = ['No', 'Nama Lengkap', 'NPM', 'Email', 'HP', 'Status', 'Jenis Kelamin', 'Fakultas', 'Prodi', 'Nama Ortu', 'HP Ortu', 'Alamat Ortu'];
-        $sheet->fromArray([$headers], null, 'A1');
-        $sheet->getStyle('A1:L1')->applyFromArray($this->headerStyle());
-        $sheet->getRowDimension(1)->setRowHeight(28);
+        // Group users by gelombang
+        $grouped = $users->groupBy(function ($u) {
+            $gelombang = $u->mahasiswa?->pesertaKkn?->first()?->gelombang;
+            return $gelombang ? $gelombang->nama_gelombang : 'Tanpa Gelombang';
+        });
 
-        $row = 2;
-        $no = 1;
-        foreach ($users as $u) {
-            $m = $u->mahasiswa;
-            $sheet->fromArray([
-                $no++, $u->name,
-                $m->npm ?? '-', $u->email, $m->no_hp ?? '-',
-                $u->email_verified_at ? 'Verified' : 'Unverified',
-                $m->jenis_kelamin === 'L' ? 'Laki-laki' : ($m->jenis_kelamin === 'P' ? 'Perempuan' : '-'),
-                $m->prodi->fakultas->nama_fakultas ?? '-',
-                $m->prodi->nama_prodi ?? '-',
-                $m->nama_ortu ?? '-', $m->no_hp_ortu ?? '-', $m->alamat_ortu ?? '-',
-            ], null, "A{$row}");
+        foreach ($grouped as $gelombangName => $gelombangUsers) {
+            $sheet = $firstSheet ? $spreadsheet->getActiveSheet() : $spreadsheet->createSheet();
+            $firstSheet = false;
 
-            $style = ($no % 2 === 1) ? $this->rowStripeStyle() : $this->altRowStyle();
-            $sheet->getStyle("A{$row}:L{$row}")->applyFromArray($style);
-            $sheet->getStyle("A{$row}:L{$row}")->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_TOP);
-            $row++;
+            $sheet->setTitle($this->safeSheetName($gelombangName));
+
+            $headers = ['No', 'Nama Lengkap', 'NPM', 'Email', 'HP', 'Status', 'Jenis Kelamin', 'Fakultas', 'Prodi', 'Nama Ortu', 'HP Ortu', 'Alamat Ortu'];
+            $sheet->fromArray([$headers], null, 'A1');
+            $sheet->getStyle('A1:L1')->applyFromArray($this->headerStyle());
+            $sheet->getRowDimension(1)->setRowHeight(28);
+
+            $row = 2;
+            $no = 1;
+            foreach ($gelombangUsers as $u) {
+                $m = $u->mahasiswa;
+                $sheet->fromArray([
+                    $no++, $u->name,
+                    $m->npm ?? '-', $u->email, $m->no_hp ?? '-',
+                    $u->email_verified_at ? 'Verified' : 'Unverified',
+                    $m->jenis_kelamin === 'L' ? 'Laki-laki' : ($m->jenis_kelamin === 'P' ? 'Perempuan' : '-'),
+                    $m->prodi->fakultas->nama_fakultas ?? '-',
+                    $m->prodi->nama_prodi ?? '-',
+                    $m->nama_ortu ?? '-', $m->no_hp_ortu ?? '-', $m->alamat_ortu ?? '-',
+                ], null, "A{$row}");
+
+                $style = ($no % 2 === 1) ? $this->rowStripeStyle() : $this->altRowStyle();
+                $sheet->getStyle("A{$row}:L{$row}")->applyFromArray($style);
+                $sheet->getStyle("A{$row}:L{$row}")->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_TOP);
+                $row++;
+            }
+
+            foreach (range('A', 'L') as $col) {
+                $sheet->getColumnDimension($col)->setAutoSize(true);
+            }
         }
 
-        foreach (range('A', 'L') as $col) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
-        }
+        $filename = $gelombangId
+            ? 'data-mahasiswa-gelombang-'.date('YmdHis').'.xlsx'
+            : 'data-mahasiswa-semua-gelombang-'.date('YmdHis').'.xlsx';
 
-        $this->streamDownload($spreadsheet, 'data-mahasiswa-'.date('YmdHis').'.xlsx');
+        $this->streamDownload($spreadsheet, $filename);
     }
 
     private function addKelompokSummarySheet(Spreadsheet $spreadsheet, Collection $kelompoks, bool $firstSheet): void

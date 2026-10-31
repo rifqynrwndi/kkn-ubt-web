@@ -62,7 +62,7 @@ class MahasiswaPerGelombangSheetExport implements FromCollection, WithHeadings, 
         $this->gelombangName = $gelombangName;
     }
 
-    public function collection()
+    public function collection(): \Illuminate\Support\Enumerable
     {
         return PesertaKkn::with([
             'mahasiswa.user',
@@ -110,7 +110,9 @@ class MahasiswaPerGelombangSheetExport implements FromCollection, WithHeadings, 
 
     public function title(): string
     {
-        return str_replace(['\\', '/', '*', '?', '[', ']', ':'], '', $this->gelombangName);
+        $title = str_replace(['\\', '/', '*', '?', '[', ']', ':'], '', $this->gelombangName);
+
+        return strlen($title) > 31 ? substr($title, 0, 31) : $title;
     }
 }
 
@@ -126,7 +128,7 @@ class BelumTerdaftarSheetExport implements FromCollection, WithHeadings, WithMap
         $this->gelombangName = $gelombangName;
     }
 
-    public function collection()
+    public function collection(): \Illuminate\Support\Enumerable
     {
         // Get mahasiswa IDs that already have PesertaKkn for this gelombang
         $registeredMahasiswaIds = PesertaKkn::where('gelombang_id', $this->gelombangId)
@@ -158,7 +160,9 @@ class BelumTerdaftarSheetExport implements FromCollection, WithHeadings, WithMap
     {
         $title = 'Belum Terdaftar - '.$this->gelombangName;
 
-        return str_replace(['\\', '/', '*', '?', '[', ']', ':'], '', $title);
+        $title = str_replace(['\\', '/', '*', '?', '[', ']', ':'], '', $title);
+
+        return strlen($title) > 31 ? substr($title, 0, 31) : $title;
     }
 }
 

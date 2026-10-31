@@ -21,14 +21,16 @@ class ExportController extends Controller
 
     /**
      * Admin: Export mahasiswa per gelombang (multi-sheet Excel)
-     * GET /admin/export/mahasiswa-per-gelombang
+     * GET /admin/export/mahasiswa-per-gelombang?gelombang_id=X
      */
-    public function mahasiswaPerGelombang()
+    public function mahasiswaPerGelombang(Request $request)
     {
         Gate::authorize('isSuperAdmin');
 
+        $gelombangId = $request->filled('gelombang_id') ? (int) $request->gelombang_id : null;
+
         return Excel::download(
-            new MahasiswaPerGelombangExport,
+            new MahasiswaPerGelombangExport($gelombangId),
             'mahasiswa-per-gelombang-'.now()->format('Ymd-His').'.xlsx'
         );
     }

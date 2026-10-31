@@ -68,7 +68,7 @@
                                 @endforeach
                             </select>
                             <div class="input-group-append">
-                                <a href="{{ route('mahasiswa.export') }}" class="btn btn-success" id="export-btn" onclick="this.href=this.href+'?gelombang_id='+document.getElementById('export-gelombang').value">
+                                <a href="{{ route('mahasiswa.export') }}" class="btn btn-success" id="export-btn" onclick="const base = this.href.split('?')[0]; this.href = base + '?gelombang_id=' + document.getElementById('export-gelombang').value;">
                                     <i class="fas fa-download mr-1"></i> Export
                                 </a>
                             </div>
