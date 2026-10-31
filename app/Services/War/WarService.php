@@ -13,7 +13,7 @@ class WarService
         private readonly WarAllocationService $allocationService,
     ) {}
 
-    public function joinKelompok(WarSession $session, int $kelompokId, int $mahasiswaId): array
+    public function joinKelompok(WarSession $session, int $kelompokId, int $mahasiswaId, string $clientIp): array
     {
         $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswaId)
             ->where('gelombang_id', $session->gelombang_id)
@@ -24,7 +24,7 @@ class WarService
 
         $this->validationService->validateJoinRequest($session, $peserta, $kelompok);
 
-        $participant = $this->allocationService->allocate($session, $peserta, $kelompok);
+        $participant = $this->allocationService->allocate($session, $peserta, $kelompok, $clientIp);
 
         return [
             'success' => true,
