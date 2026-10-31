@@ -514,5 +514,13 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
             Route::get('/export', [PenilaianAdminController::class, 'export'])->name('export');
         });
 
+        /*
+        |--------------------------------------------------------------------------
+        | Export Routes
+        |--------------------------------------------------------------------------
+        */
+
+        require __DIR__.'/export.php';
+
     });
 });

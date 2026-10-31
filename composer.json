@@ -15,6 +15,7 @@
         "laravel/ui": "^4.6",
         "league/flysystem-aws-s3-v3": "^3.34",
         "livewire/livewire": "^3.6",
+        "maatwebsite/excel": "^4.0",
         "mews/purifier": "^3.4",
         "phpoffice/phpspreadsheet": "^5.9",
         "predis/predis": "^3.4",

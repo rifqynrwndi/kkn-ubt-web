@@ -2,21 +2,39 @@
 
 namespace App\Services\War;
 
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Lock;
 
 class WarLockService
 {
-    private const LOCK_TTL = 10;
+    private const USER_LOCK_TTL = 10;
 
-    private const PREFIX = 'war_lock:';
+    private const SESSION_LOCK_TTL = 30;
 
     public function acquireUserLock(int $warSessionId, int $pesertaKknId): bool
     {
-        return Cache::add(self::PREFIX."user:{$warSessionId}:{$pesertaKknId}", 1, self::LOCK_TTL);
+        return Lock::store('redis')->block(
+            "war:user:{$warSessionId}:{$pesertaKknId}",
+            self::USER_LOCK_TTL,
+            fn () => true,
+        );
     }
 
     public function releaseUserLock(int $warSessionId, int $pesertaKknId): void
     {
-        Cache::forget(self::PREFIX."user:{$warSessionId}:{$pesertaKknId}");
+        Lock::store('redis')->release("war:user:{$warSessionId}:{$pesertaKknId}");
+    }
+
+    public function acquireSessionLock(int $warSessionId): bool
+    {
+        return Lock::store('redis')->block(
+            "war:session:{$warSessionId}",
+            self::SESSION_LOCK_TTL,
+            fn () => true,
+        );
+    }
+
+    public function releaseSessionLock(int $warSessionId): void
+    {
+        Lock::store('redis')->release("war:session:{$warSessionId}");
     }
 }

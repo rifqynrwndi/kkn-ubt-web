@@ -18,9 +18,10 @@ class WarAllocationService
     public function __construct(
         private readonly WarRuleService $ruleService,
         private readonly WarLockService $lockService,
+        private readonly WarFacultyShardService $shardService,
     ) {}
 
-    public function allocate(WarSession $session, PesertaKkn $peserta, KelompokKkn $kelompok): WarParticipant
+    public function allocate(WarSession $session, PesertaKkn $peserta, KelompokKkn $kelompok, string $clientIp): WarParticipant
     {
         if (! $this->lockService->acquireUserLock($session->id, $peserta->id)) {
             throw new \RuntimeException('Request kamu sedang diproses. Mohon tunggu sebentar.');
@@ -32,7 +33,7 @@ class WarAllocationService
 
             while ($attempt < $maxRetries) {
                 try {
-                    return $this->executeTransaction($session, $peserta, $kelompok);
+                    return $this->executeTransaction($session, $peserta, $kelompok, $clientIp);
                 } catch (QueryException $e) {
                     $attempt++;
                     if ($attempt >= $maxRetries || ! str_contains($e->getMessage(), 'Deadlock')) {
@@ -46,19 +47,13 @@ class WarAllocationService
         }
     }
 
-    private function executeTransaction(WarSession $session, PesertaKkn $peserta, KelompokKkn $kelompok): WarParticipant
+    private function executeTransaction(WarSession $session, PesertaKkn $peserta, KelompokKkn $kelompok, string $clientIp): WarParticipant
     {
-        return DB::transaction(function () use ($session, $peserta, $kelompok) {
-            $kelompokLocked = KelompokKkn::lockForUpdate()->findOrFail($kelompok->id);
+        return DB::transaction(function () use ($session, $peserta, $kelompok, $clientIp) {
+            $fakultasId = $peserta->mahasiswa->prodi->fakultas_id;
 
-            $pesertaLocked = PesertaKkn::lockForUpdate()
-                ->with(['mahasiswa.prodi.fakultas'])
-                ->findOrFail($peserta->id);
-
-            $this->assertPesertaBelumPunyaKelompok($pesertaLocked);
-            $this->assertBelumJoinSession($session, $pesertaLocked);
-
-            $fakultasId = $pesertaLocked->mahasiswa->prodi->fakultas_id;
+            // Ensure shards exist for this fakultas
+            $this->shardService->ensureShardsExist($session->id, $fakultasId);
 
             // Lock & re-check WarFaculty timing inside the transaction (authoritative check)
             $warFacultyLocked = WarFaculty::where('war_session_id', $session->id)
@@ -70,25 +65,21 @@ class WarAllocationService
                 throw new \RuntimeException('Giliran WAR untuk fakultas kamu sudah berakhir.');
             }
 
-            $kelompokKuotaQ = KelompokKuota::where('kelompok_kkn_id', $kelompokLocked->id)
-                ->where('fakultas_id', $fakultasId)
-                ->orderBy('id')
-                ->lockForUpdate();
-
-            $kelompokKuota = $kelompokKuotaQ->first();
-
-            if (! $kelompokKuota) {
-                KelompokKuota::create([
-                    'kelompok_kkn_id' => $kelompokLocked->id,
+            // Use firstOrCreate (atomic with unique constraint) instead of create + firstOrFail
+            $kelompokKuota = KelompokKuota::firstOrCreate(
+                [
+                    'kelompok_kkn_id' => $kelompok->id,
                     'fakultas_id' => $fakultasId,
-                    'kuota' => $kelompokLocked->kuota,
+                ],
+                [
+                    'kuota' => $kelompok->kuota,
                     'kuota_laki' => 0,
                     'kuota_perempuan' => 0,
-                ]);
-                $kelompokKuota = $kelompokKuotaQ->firstOrFail();
-            }
+                ]
+            );
 
-            $currentMembers = PesertaKkn::where('kelompok_kkn_id', $kelompokLocked->id)
+            // Load current members with lock (for rule checks)
+            $currentMembers = PesertaKkn::where('kelompok_kkn_id', $kelompok->id)
                 ->with(['mahasiswa.prodi'])
                 ->orderBy('id')
                 ->lockForUpdate()
@@ -96,8 +87,8 @@ class WarAllocationService
                 ->toArray();
 
             $violations = $this->ruleService->checkAllRules(
-                $kelompokLocked,
-                $pesertaLocked,
+                $kelompok,
+                $peserta,
                 $currentMembers,
                 $kelompokKuota,
             );
@@ -108,9 +99,11 @@ class WarAllocationService
 
             return $this->persistAllocation(
                 $session,
-                $pesertaLocked,
-                $kelompokLocked,
+                $peserta,
+                $kelompok,
                 count($currentMembers),
+                $clientIp,
+                $fakultasId,
             );
         }, 10);
     }
@@ -120,6 +113,8 @@ class WarAllocationService
         PesertaKkn $peserta,
         KelompokKkn $kelompok,
         int $membersBefore,
+        string $clientIp,
+        int $fakultasId,
     ): WarParticipant {
         $peserta->update(['kelompok_kkn_id' => $kelompok->id]);
 
@@ -133,13 +128,14 @@ class WarAllocationService
             'joined_at' => now(),
         ]);
 
-        if (($membersBefore + 1) >= WarRuleService::MAX_KELOMPOK_SIZE) {
+        $newMemberCount = $membersBefore + 1;
+
+        if ($newMemberCount >= WarRuleService::MAX_KELOMPOK_SIZE) {
             $kelompok->update(['status' => 'penuh']);
         }
 
-        WarFaculty::where('war_session_id', $session->id)
-            ->where('fakultas_id', $peserta->mahasiswa->prodi->fakultas_id)
-            ->increment('filled');
+        // Increment sharded counter (async aggregation updates WarFaculty.filled)
+        $this->shardService->increment($session->id, $fakultasId, $peserta->id);
 
         WarLog::create([
             'war_session_id' => $session->id,
@@ -148,14 +144,19 @@ class WarAllocationService
             'meta' => json_encode([
                 'kelompok_id' => $kelompok->id,
                 'kelompok_nama' => $kelompok->nama_kelompok,
-                'member_count' => $membersBefore + 1,
-                'ip' => request()->ip(),
+                'member_count' => $newMemberCount,
+                'ip' => $clientIp,
             ]),
         ]);
 
-        // Hapus cache kelompok agar data realtime terlihat
-        Cache::forget("war:arena:{$session->id}");
-        Cache::forget("war:kelompok:{$session->id}");
+        // Invalidate cache via tags (if Redis) or keys
+        if (config('war.cache_tags_enabled', true)) {
+            Cache::tags(WarCacheKeys::tag($session->id))->flush();
+        } else {
+            Cache::forget(WarCacheKeys::arena($session->id));
+            Cache::forget(WarCacheKeys::kelompok($session->id));
+            Cache::forget(WarCacheKeys::list($session->id));
+        }
 
         return $participant;
     }
