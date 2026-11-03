@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Gelombang;
 use App\Models\KelompokKkn;
 use App\Models\TugasKelompok;
+use App\Services\DraftArtikelService;
 use App\Services\ExportService;
+use App\Support\TugasTemplate;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -13,7 +15,7 @@ use Illuminate\View\View;
 
 class TugasAdminController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, DraftArtikelService $draftArtikelService): View
     {
         $gelombangs = Gelombang::orderBy('created_at', 'desc')->get();
         $selectedGelombang = $request->input('gelombang_id', $gelombangs->first()?->id);
@@ -33,7 +35,7 @@ class TugasAdminController extends Controller
             ->sortBy('kategori')
             ->values();
 
-        $wn = ['Program Kerja', 'Video Profil Desa', 'Draft Artikel', 'Laporan Program KKN'];
+        $wn = TugasTemplate::WAJIB;
         $semuaTasks = TugasKelompok::whereIn('nama_tugas', $wn)->get();
 
         $kelompoks = KelompokKkn::with(['desaGelombang.desa.kecamatan',
@@ -45,7 +47,14 @@ class TugasAdminController extends Controller
 
         $rekap = $kelompoks->orderBy('nama_kelompok')->get();
 
-        return view('tugas-admin.index', compact('tugasList', 'rekap', 'semuaTasks', 'gelombangs', 'selectedGelombang'));
+        $draftArtikel = null;
+        if ($selectedGelombang) {
+            $draftArtikel = $draftArtikelService->summarize(
+                $draftArtikelService->rows((int) $selectedGelombang)
+            );
+        }
+
+        return view('tugas-admin.index', compact('tugasList', 'rekap', 'semuaTasks', 'gelombangs', 'selectedGelombang', 'draftArtikel'));
     }
 
     public function export(Request $request)
@@ -115,6 +124,13 @@ class TugasAdminController extends Controller
             'nama_tugas' => 'required|string|max:255',
             'kategori' => 'required|in:tugas_kelompok,luaran_wajib,luaran_lain,laporan',
         ]);
+
+        if ($request->nama_tugas !== $request->old_nama
+            && (TugasTemplate::isBuiltIn($request->old_nama) || TugasTemplate::isBuiltIn($request->nama_tugas))) {
+            return back()
+                ->withErrors(['nama_tugas' => 'Nama tugas bawaan tidak dapat diubah atau dipakai ulang.'])
+                ->withInput();
+        }
 
         $count = TugasKelompok::where('nama_tugas', $request->old_nama)->update([
             'nama_tugas' => $request->nama_tugas,

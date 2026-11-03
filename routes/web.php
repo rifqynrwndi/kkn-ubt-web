@@ -7,6 +7,7 @@ use App\Http\Controllers\DhsController;
 use App\Http\Controllers\DokumenPendaftaranController;
 use App\Http\Controllers\DosenPembimbingLapanganController;
 use App\Http\Controllers\DplController;
+use App\Http\Controllers\DraftArtikelExportController;
 use App\Http\Controllers\FakultasProdiController;
 use App\Http\Controllers\FileManagerController;
 use App\Http\Controllers\FileProxyController;
@@ -174,6 +175,11 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
         Route::get('/kelompok', [DplController::class, 'kelompokIndex'])->name('kelompok.index');
         Route::get('/kelompok/{kelompok}', [DplController::class, 'kelompokShow'])->name('kelompok.show');
         Route::get('/mahasiswa/{peserta}', [DplController::class, 'mahasiswaShow'])->name('mahasiswa.show');
+
+        Route::prefix('draft-artikel')->name('draft-artikel.')->group(function () {
+            Route::get('/summary', [DraftArtikelExportController::class, 'dplSummary'])->name('summary');
+            Route::get('/zip', [DraftArtikelExportController::class, 'dplZip'])->name('zip');
+        });
         Route::get('/profile/edit', [DplController::class, 'profileEdit'])->name('profile.edit');
         Route::put('/profile/update', [DplController::class, 'profileUpdate'])->name('profile.update');
         Route::post('/kelompok/{kelompok}/laporan', [DplController::class, 'laporanStore'])->name('laporan.store');
@@ -499,6 +505,7 @@ Route::middleware(['auth', 'biodata.complete', 'email.verified.except.superadmin
             Route::put('/update', [TugasAdminController::class, 'updateByNama'])->name('updateByNama');
             Route::delete('/destroy-by-nama', [TugasAdminController::class, 'destroyByNama'])->name('destroyByNama');
             Route::get('/export', [TugasAdminController::class, 'export'])->name('export');
+            Route::get('/draft-artikel/zip', [DraftArtikelExportController::class, 'adminZip'])->name('draft-artikel.zip');
         });
 
         /*

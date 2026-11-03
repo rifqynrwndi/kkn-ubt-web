@@ -5,6 +5,11 @@
     <div class="section-header d-flex justify-content-between align-items-center">
         <h1>Template Tugas Kelompok</h1>
         <div class="d-flex align-items-center gap-2">
+            @if($selectedGelombang && $draftArtikel)
+            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modalDraftArtikelAdmin">
+                <i class="fas fa-file-archive mr-1"></i> Unduh Draft Artikel (ZIP)
+            </button>
+            @endif
             @if($selectedGelombang)
             <a href="{{ route('admin.tugas.export', ['gelombang_id' => $selectedGelombang]) }}" class="btn btn-success">
                 <i class="fas fa-file-excel mr-1"></i> Export Excel
@@ -134,6 +139,83 @@
         @endif
 
     </div>
+
+    @push('modals')
+    @if($selectedGelombang && $draftArtikel)
+    <div class="modal fade" id="modalDraftArtikelAdmin" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-file-archive mr-1"></i> Unduh Draft Artikel</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Tutup"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <strong>{{ $draftArtikel['total_kelompok'] }} kelompok</strong> ·
+                        {{ $draftArtikel['submitted'] }} sudah mengumpulkan ·
+                        {{ $draftArtikel['missing'] }} belum ·
+                        <strong>{{ $draftArtikel['file_count'] }} file</strong> ({{ $draftArtikel['total_size'] }})
+                        @if($draftArtikel['file_hilang'] > 0)
+                            · <span class="text-danger">{{ $draftArtikel['file_hilang'] }} file hilang</span>
+                        @endif
+                    </div>
+                    @if($draftArtikel['over_limit'])
+                        <div class="alert alert-warning mb-3">
+                            Ukuran melebihi batas {{ $draftArtikel['max_files'] }} file / {{ $draftArtikel['max_size'] }}. Persempit pilihan gelombang atau hubungi admin.
+                        </div>
+                    @endif
+                    @if($draftArtikel['file_count'] === 0)
+                        <div class="alert alert-warning mb-3">Belum ada Draft Artikel yang dikumpulkan pada gelombang ini.</div>
+                    @endif
+                    <div class="table-responsive" style="max-height:320px;overflow-y:auto;">
+                        <table class="table table-sm table-striped mb-0">
+                            <thead style="background:#2D3A8A;">
+                                <tr>
+                                    <th class="text-white">Kelompok</th>
+                                    <th class="text-white">DPL</th>
+                                    <th class="text-white">Judul</th>
+                                    <th class="text-white text-center" width="120">Catatan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($draftArtikel['rows'] as $row)
+                                <tr>
+                                    <td>{{ $row['kelompok'] }}</td>
+                                    <td><small>{{ $row['dpl'] }}</small></td>
+                                    <td><small>{{ $row['judul'] ?: '-' }}</small></td>
+                                    <td class="text-center">
+                                        @if($row['catatan'] === 'OK')
+                                            <span class="badge badge-success">OK</span>
+                                        @elseif($row['catatan'] === 'Belum mengumpulkan')
+                                            <span class="badge badge-danger">Belum</span>
+                                        @else
+                                            <span class="badge badge-warning">{{ $row['catatan'] }}</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+                                @if($draftArtikel['rows']->isEmpty())
+                                <tr><td colspan="4" class="text-center text-muted py-3">Tidak ada kelompok pada gelombang ini.</td></tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                    @if($draftArtikel['file_count'] > 0 && ! $draftArtikel['over_limit'])
+                        <a href="{{ route('admin.tugas.draft-artikel.zip', ['gelombang_id' => $selectedGelombang]) }}" class="btn btn-primary">
+                            <i class="fas fa-download mr-1"></i> Unduh ZIP
+                        </a>
+                    @else
+                        <button type="button" class="btn btn-primary" disabled>Unduh ZIP</button>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+    @endpush
 </section>
 @endsection
 @push('scripts')

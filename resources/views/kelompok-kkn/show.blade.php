@@ -336,6 +336,15 @@
                             <strong>{{ $t->nama_tugas }}</strong>
                             <span class="badge badge-danger">Wajib</span>
                         </div>
+                        @php
+                            $draft = $t->nama_tugas === \App\Support\TugasTemplate::DRAFT_ARTIKEL ? $t->submissions->sortByDesc('id')->first() : null;
+                            $draftExists = $draft && $draft->file_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($draft->file_path);
+                        @endphp
+                        @if($draftExists)
+                        <a href="{{ storage_url($draft->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                            <i class="fas fa-download mr-1"></i> Unduh Draft Artikel
+                        </a>
+                        @endif
                         @if($t->submissions->count())
                         <table class="table table-striped table-sm mt-2 mb-0">
                             <thead style="background:#2D3A8A;"><tr><th class="text-white text-center" width="40">#</th><th class="text-white">Judul</th><th class="text-white" width="160">Oleh</th>                <th class="text-white text-center" width="100">Status</th><th class="text-white text-center" width="50">Aksi</th></tr></thead>

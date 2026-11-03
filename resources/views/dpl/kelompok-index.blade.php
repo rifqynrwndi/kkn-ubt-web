@@ -4,8 +4,13 @@
 
 @section('content')
 <section class="section">
-    <div class="section-header">
+    <div class="section-header d-flex justify-content-between align-items-center">
         <h1>DPL Dashboard</h1>
+        @if($gelombangs->isNotEmpty())
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalDraftArtikelDpl">
+            <i class="fas fa-file-archive mr-1"></i> Unduh Draft Artikel
+        </button>
+        @endif
     </div>
 
     <div class="section-body">
@@ -151,6 +156,159 @@
             });
         });
         </script>
+
+        @push('modals')
+        <div class="modal fade" id="modalDraftArtikelDpl" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-file-archive mr-1"></i> Unduh Draft Artikel</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Tutup"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Gelombang</label>
+                            <select id="da-gelombang" class="form-control">
+                                <option value="">-- Pilih Gelombang --</option>
+                                @foreach($gelombangs as $g)
+                                <option value="{{ $g->id }}">{{ $g->nama_gelombang }} ({{ $g->tahun }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div id="da-empty" class="text-muted text-center py-3">Pilih gelombang untuk melihat ringkasan.</div>
+
+                        <div id="da-summary" class="d-none">
+                            <div class="alert alert-info" id="da-stats"></div>
+                            <div id="da-warning" class="alert alert-warning d-none"></div>
+                            <div class="table-responsive" style="max-height:320px;overflow-y:auto;">
+                                <table class="table table-sm table-striped mb-0">
+                                    <thead style="background:#2D3A8A;">
+                                        <tr>
+                                            <th class="text-white">Kelompok</th>
+                                            <th class="text-white">Judul</th>
+                                            <th class="text-white text-center" width="120">Catatan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="da-rows"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                        <a id="da-download" href="#" class="btn btn-primary disabled" aria-disabled="true" style="pointer-events:none;">
+                            <i class="fas fa-download mr-1"></i> Unduh ZIP
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        (function () {
+            var select = document.getElementById('da-gelombang');
+            if (!select) return;
+
+            var summaryUrl = @json(route('dpl.draft-artikel.summary'));
+            var summaryBox = document.getElementById('da-summary');
+            var emptyBox = document.getElementById('da-empty');
+            var statsBox = document.getElementById('da-stats');
+            var warningBox = document.getElementById('da-warning');
+            var rowsBox = document.getElementById('da-rows');
+            var download = document.getElementById('da-download');
+
+            function setDownload(active, href) {
+                download.href = active ? href : '#';
+                download.classList.toggle('disabled', !active);
+                download.setAttribute('aria-disabled', active ? 'false' : 'true');
+                download.style.pointerEvents = active ? '' : 'none';
+            }
+
+            function addCell(tr, text, className) {
+                var td = document.createElement('td');
+                td.textContent = text || '-';
+                if (className) td.className = className;
+                tr.appendChild(td);
+                return td;
+            }
+
+            select.addEventListener('change', function () {
+                var id = this.value;
+                rowsBox.innerHTML = '';
+                warningBox.classList.add('d-none');
+                setDownload(false, '#');
+
+                if (!id) {
+                    summaryBox.classList.add('d-none');
+                    emptyBox.textContent = 'Pilih gelombang untuk melihat ringkasan.';
+                    emptyBox.classList.remove('d-none');
+                    return;
+                }
+
+                emptyBox.textContent = 'Memuat ringkasan...';
+                emptyBox.classList.remove('d-none');
+
+                fetch(summaryUrl + '?gelombang_id=' + encodeURIComponent(id), {
+                    headers: { 'Accept': 'application/json' },
+                })
+                    .then(function (response) {
+                        if (!response.ok) throw new Error('Gagal memuat ringkasan. Coba lagi.');
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        summaryBox.classList.remove('d-none');
+                        emptyBox.classList.toggle('d-none', data.rows.length > 0);
+                        if (!data.rows.length) emptyBox.textContent = 'Tidak ada kelompok pada gelombang ini.';
+
+                        statsBox.textContent = data.total_kelompok + ' kelompok · '
+                            + data.submitted + ' sudah mengumpulkan · '
+                            + data.missing + ' belum · '
+                            + data.file_count + ' file (' + data.total_size + ')'
+                            + (data.file_hilang > 0 ? ' · ' + data.file_hilang + ' file hilang' : '');
+
+                        data.rows.forEach(function (row) {
+                            var tr = document.createElement('tr');
+                            addCell(tr, row.kelompok);
+                            addCell(tr, row.judul);
+
+                            var td = document.createElement('td');
+                            td.className = 'text-center';
+                            var badge = document.createElement('span');
+                            if (row.catatan === 'OK') {
+                                badge.className = 'badge badge-success';
+                                badge.textContent = 'OK';
+                            } else if (row.catatan === 'Belum mengumpulkan') {
+                                badge.className = 'badge badge-danger';
+                                badge.textContent = 'Belum';
+                            } else {
+                                badge.className = 'badge badge-warning';
+                                badge.textContent = row.catatan;
+                            }
+                            td.appendChild(badge);
+                            tr.appendChild(td);
+                            rowsBox.appendChild(tr);
+                        });
+
+                        if (data.over_limit) {
+                            warningBox.textContent = 'Ukuran melebihi batas ' + data.max_files
+                                + ' file / ' + data.max_size + '. Persempit pilihan atau hubungi admin.';
+                            warningBox.classList.remove('d-none');
+                        }
+
+                        if (data.file_count > 0 && !data.over_limit) {
+                            setDownload(true, data.download_url);
+                        }
+                    })
+                    .catch(function (error) {
+                        summaryBox.classList.add('d-none');
+                        emptyBox.textContent = error.message;
+                        emptyBox.classList.remove('d-none');
+                    });
+            });
+        })();
+        </script>
+        @endpush
     </div>
 </section>
 @endsection

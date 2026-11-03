@@ -165,6 +165,9 @@
     <!-- Cropper.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
+    <!-- Modals (rendered outside .section stacking context) -->
+    @stack('modals')
+
     <!-- Additional JS (if any) -->
     @stack('scripts')
 </body>
