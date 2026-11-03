@@ -12,6 +12,7 @@ use App\Models\PenilaianKomponen;
 use App\Models\PesertaKkn;
 use App\Models\TugasKelompok;
 use App\Services\StatusService;
+use App\Support\TugasTemplate;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -58,7 +59,7 @@ class DplController extends Controller
             ->whereHas('kelompokKkn', fn ($q) => $q->where('dosen_pembimbing_lapangan_id', $dpl->id))
             ->get();
 
-        $wn = ['Program Kerja', 'Video Profil Desa', 'Draft Artikel', 'Laporan Program KKN'];
+        $wn = TugasTemplate::WAJIB;
         $semuaTasks = TugasKelompok::whereIn('nama_tugas', $wn)
             ->whereHas('kelompokKkn', fn ($q) => $q->where('dosen_pembimbing_lapangan_id', $dpl->id))
             ->get();
@@ -67,7 +68,13 @@ class DplController extends Controller
             $k->load(['tugasKelompok' => fn ($q) => $q->whereIn('nama_tugas', $wn)->with(['submissions.pesertaKkn.mahasiswa.user'])]);
         });
 
-        return view('dpl.kelompok-index', compact('dpl', 'kelompoks', 'semuaTasks'));
+        $gelombangs = $kelompoks->pluck('desaGelombang.gelombang')
+            ->filter()
+            ->unique('id')
+            ->sortByDesc('tahun')
+            ->values();
+
+        return view('dpl.kelompok-index', compact('dpl', 'kelompoks', 'semuaTasks', 'gelombangs'));
     }
 
     /*

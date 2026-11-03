@@ -20,10 +20,14 @@
                     <div class="card-body">
                         <form action="{{ route('admin.tugas.updateByNama') }}" method="POST">
                             @csrf @method('PUT')
+                            @php $isBuiltIn = \App\Support\TugasTemplate::isBuiltIn($tugas->nama_tugas); @endphp
                             <input type="hidden" name="old_nama" value="{{ $tugas->nama_tugas }}">
                             <div class="form-group">
                                 <label class="font-weight-bold">Nama Tugas</label>
-                                <input name="nama_tugas" class="form-control @error('nama_tugas') is-invalid @enderror" value="{{ old('nama_tugas', $tugas->nama_tugas) }}" required>
+                                <input name="nama_tugas" class="form-control @error('nama_tugas') is-invalid @enderror" value="{{ old('nama_tugas', $tugas->nama_tugas) }}" required {{ $isBuiltIn ? 'readonly' : '' }}>
+                                @if($isBuiltIn)
+                                    <small class="text-muted">Nama tugas bawaan tidak dapat diubah.</small>
+                                @endif
                                 @error('nama_tugas')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="form-group">
