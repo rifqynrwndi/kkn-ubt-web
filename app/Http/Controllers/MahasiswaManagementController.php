@@ -44,13 +44,15 @@ class MahasiswaManagementController extends Controller
             }
         }
 
-        if ($request->ajax()) {
-            $mahasiswas = $query->latest()->paginate(10);
-
-            return view('mahasiswa.partials.table', compact('mahasiswas'))->render();
+        if ($request->filled('gelombang_id')) {
+            $query->whereHas('mahasiswa.pesertaKkn', fn ($q) => $q->where('gelombang_id', $request->gelombang_id));
         }
 
         $mahasiswas = $query->latest()->paginate(10)->withQueryString();
+
+        if ($request->ajax()) {
+            return view('mahasiswa.partials.table', compact('mahasiswas'))->render();
+        }
 
         return view('mahasiswa.index', compact('mahasiswas'));
     }

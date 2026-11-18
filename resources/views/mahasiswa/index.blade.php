@@ -41,7 +41,7 @@
         <div class="card-body">
 
             {{-- Search + Filter --}}
-            <form method="GET" class="mb-3">
+            <form id="filter-form" method="GET" class="mb-3">
                 <div class="row align-items-end">
                     <div class="col-md-4 mb-2">
                         <div class="input-group">
@@ -50,7 +50,7 @@
                         </div>
                     </div>
                     <div class="col-md-3 mb-2">
-                        <select name="status" class="form-control" onchange="this.form.submit()">
+                        <select name="status" class="form-control">
                             <option value="">Semua Status</option>
                             <option value="verified" {{ request('status')=='verified'?'selected':'' }}>Email Verified</option>
                             <option value="unverified" {{ request('status')=='unverified'?'selected':'' }}>Email Belum Verified</option>
@@ -61,14 +61,14 @@
                     </div>
                     <div class="col-md-3 mb-2">
                         <div class="input-group">
-                            <select id="export-gelombang" class="form-control">
+                            <select name="gelombang_id" id="filter-gelombang" class="form-control">
                                 <option value="">Semua Gelombang</option>
                                 @foreach(\App\Models\Gelombang::orderBy('tahun','desc')->get() as $g)
-                                <option value="{{ $g->id }}">{{ $g->nama_gelombang }}</option>
+                                <option value="{{ $g->id }}" {{ request('gelombang_id')==$g->id?'selected':'' }}>{{ $g->nama_gelombang }}</option>
                                 @endforeach
                             </select>
                             <div class="input-group-append">
-                                <a href="{{ route('mahasiswa.export') }}" class="btn btn-success" id="export-btn" onclick="const base = this.href.split('?')[0]; this.href = base + '?gelombang_id=' + document.getElementById('export-gelombang').value;">
+                                <a href="{{ route('mahasiswa.export') }}" class="btn btn-success" id="export-btn">
                                     <i class="fas fa-download mr-1"></i> Export
                                 </a>
                             </div>
@@ -92,102 +92,10 @@
                         </tr>
                     </thead>
 
-                    <tbody>
-                        @forelse($mahasiswas as $mhs)
-                        <tr>
-                            <td class="text-center">
-                                {{ $loop->iteration + ($mahasiswas->firstItem() - 1) }}
-                            </td>
-
-                            <td class="name-column">
-                                {{ $mhs->name }}
-                            </td>
-
-                            <td>{{ $mhs->mahasiswa?->npm ?? '-' }}</td>
-
-                            <td>{{ $mhs->email }}</td>
-
-                            <td class="text-center">
-                                @if($mhs->email_verified_at)
-                                    <span class="badge badge-success">Verified</span>
-                                @else
-                                    <span class="badge badge-danger">Not Verified</span>
-                                @endif
-                            </td>
-
-                            <td class="text-center">
-                                @if($mhs->mahasiswa?->is_biodata_complete && $mhs->mahasiswa?->dhs_status === 'verified')
-                                    <span class="badge badge-success">Lengkap</span>
-                                @elseif($mhs->mahasiswa?->is_biodata_complete && $mhs->mahasiswa?->dhs_status === 'rejected')
-                                    <span class="badge badge-danger">DHS Ditolak</span>
-                                @elseif($mhs->mahasiswa?->is_biodata_complete && $mhs->mahasiswa?->dhs_path)
-                                    <span class="badge badge-warning">Menunggu DHS</span>
-                                @elseif($mhs->mahasiswa?->is_biodata_complete)
-                                    <span class="badge badge-info">Biodata OK</span>
-                                @else
-                                    <span class="badge badge-secondary">Belum Lengkap</span>
-                                @endif
-                            </td>
-
-                            <td>
-                                @if($mhs->mahasiswa?->pesertaKkn && $mhs->mahasiswa->pesertaKkn->count() > 0)
-                                    <span class="badge badge-outline-info">
-                                        {{ $mhs->mahasiswa->pesertaKkn
-                                            ->map(fn($p) => $p->gelombang->nama_gelombang)
-                                            ->join(', ') }}
-                                    </span>
-                                @else
-                                    <span class="badge badge-outline-secondary">
-                                        Belum Terdaftar
-                                    </span>
-                                @endif
-                            </td>
-
-                            <td class="text-center action-column">
-                                <a href="{{ route('mahasiswa.show', $mhs->id) }}"
-                                   class="btn btn-info btn-sm"
-                                   data-toggle="tooltip"
-                                   title="Detail">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-
-                                <a href="{{ route('mahasiswa.edit', $mhs->id) }}"
-                                   class="btn btn-warning btn-sm mx-1"
-                                   data-toggle="tooltip"
-                                   title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-
-                                <form action="{{ route('mahasiswa.destroy', $mhs->id) }}"
-                                      method="POST"
-                                      class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <button class="btn btn-danger btn-sm"
-                                            onclick="return confirm('Hapus mahasiswa ini?')"
-                                            data-toggle="tooltip"
-                                            title="Hapus">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
-                                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
-                                Data tidak ditemukan
-                            </td>
-                        </tr>
-                        @endforelse
+                    <tbody id="mahasiswa-table-body">
+                        @include('mahasiswa.partials.table')
                     </tbody>
                 </table>
-            </div>
-
-            {{-- Pagination --}}
-            <div class="mt-4" style="display: flex; justify-content: center;">
-                {{ $mahasiswas->links() }}
             </div>
 
         </div>
@@ -197,8 +105,56 @@
 @push('scripts')
 <script>
     $(function () {
-      $('[data-toggle="tooltip"]').tooltip()
-    })
+        $('[data-toggle="tooltip"]').tooltip();
+
+        // AJAX form submission for filters
+        $('#filter-form').on('submit change', 'select[name="status"], select[name="gelombang_id"]', function(e) {
+            e.preventDefault();
+            submitFilterForm();
+        });
+
+        $('#filter-form').on('submit', function(e) {
+            e.preventDefault();
+            submitFilterForm();
+        });
+
+        function submitFilterForm() {
+            const form = $('#filter-form');
+            const url = form.attr('action') || window.location.pathname;
+            const data = form.serialize();
+
+            $.ajax({
+                url: url,
+                method: 'GET',
+                data: data,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                beforeSend: function() {
+                    $('#mahasiswa-table-body').html('<tr><td colspan="8" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin fa-2x"></i></td></tr>');
+                },
+                success: function(html) {
+                    $('#mahasiswa-table-body').html(html);
+                    $('[data-toggle="tooltip"]').tooltip();
+                    updateExportButton();
+                },
+                error: function() {
+                    $('#mahasiswa-table-body').html('<tr><td colspan="8" class="text-center text-danger py-4">Gagal memuat data</td></tr>');
+                }
+            });
+        }
+
+        function updateExportButton() {
+            const gelombangId = $('#filter-gelombang').val();
+            const exportBtn = $('#export-btn');
+            const baseUrl = exportBtn.data('base-url') || exportBtn.attr('href').split('?')[0];
+            exportBtn.attr('href', baseUrl + (gelombangId ? '?gelombang_id=' + gelombangId : ''));
+        }
+
+        // Initialize export button base URL
+        $('#export-btn').data('base-url', $('#export-btn').attr('href').split('?')[0]);
+        updateExportButton();
+    });
 </script>
 @endpush
 
