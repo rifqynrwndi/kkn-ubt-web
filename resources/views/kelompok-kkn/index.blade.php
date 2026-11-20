@@ -13,7 +13,7 @@
                 <i class="fas fa-plus mr-1"></i>
                 Tambah Kelompok
             </a>
-            <a href="{{ route('kelompok-kkn.export') }}"
+            <a href="{{ route('kelompok-kkn.export', request('gelombang_id') ? ['gelombang_id' => request('gelombang_id')] : []) }}"
                class="btn btn-success">
                 <i class="fas fa-file-excel mr-1"></i>
                 Export XLSX
@@ -23,13 +23,42 @@
 
     <div class="section-body">
 
+        {{-- Gelombang Selector --}}
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <form method="GET" action="{{ route('kelompok-kkn.index') }}" class="row align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold">Pilih Gelombang</label>
+                        <select name="gelombang_id" class="form-control" onchange="this.form.submit()">
+                            <option value="">-- Pilih Gelombang --</option>
+                            @foreach($gelombangs as $g)
+                                <option value="{{ $g->id }}" {{ $gelombangId == $g->id ? 'selected' : '' }}>
+                                    {{ $g->nama_gelombang }} ({{ $g->tahun }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @if(!$gelombangId)
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-users-cog fa-3x text-muted mb-3 d-block"></i>
+                <h5 class="font-weight-bold mb-2">Pilih Gelombang Terlebih Dahulu</h5>
+                <p class="text-muted mb-0">Silakan pilih gelombang KKN untuk melihat daftar kelompok KKN.</p>
+            </div>
+        </div>
+        @else
+
         {{-- FILTER --}}
         <div class="card shadow-sm mb-3">
             <div class="card-body py-3">
                 <div class="d-flex flex-wrap align-items-center">
                     <div class="text-center flex-grow-1 mb-2 mb-md-0">
                         <div class="d-inline-flex flex-wrap justify-content-center gap-2">
-                            <a href="{{ route('kelompok-kkn.index') }}" class="btn {{ !request('kabupaten') && !request('status') ? 'btn-primary' : 'btn-outline-secondary' }} mr-1 mb-1" style="font-weight:600;">
+                            <a href="{{ route('kelompok-kkn.index', ['gelombang_id' => $gelombangId]) }}" class="btn {{ !request('kabupaten') && !request('status') ? 'btn-primary' : 'btn-outline-secondary' }} mr-1 mb-1" style="font-weight:600;">
                                 Semua
                             </a>
                             @foreach($kabupatens as $kab)
@@ -67,6 +96,7 @@
                             <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
                         </div>
                     </div>
+                    <input type="hidden" name="gelombang_id" value="{{ $gelombangId }}">
                     @if(request('kabupaten'))<input type="hidden" name="kabupaten" value="{{ request('kabupaten') }}">@endif
                     @if(request('status'))<input type="hidden" name="status" value="{{ request('status') }}">@endif
                 </form>
@@ -289,6 +319,8 @@
             @endif
 
         </div>
+
+        @endif
 
     </div>
 

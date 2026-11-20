@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DesaGelombang;
 use App\Models\DosenPembimbingLapangan;
+use App\Models\Gelombang;
 use App\Models\Kecamatan;
 use App\Models\KelompokKkn;
 use App\Models\KelompokProposal;
@@ -20,6 +21,7 @@ use App\Services\ScoreService;
 use App\Services\StatusService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -27,12 +29,27 @@ class KelompokKknController extends Controller
 {
     public function index(Request $request): View
     {
+        $gelombangs = Gelombang::orderByDesc('tahun')->orderByDesc('id')->get();
+        $gelombangId = $request->input('gelombang_id');
+
         $query = KelompokKkn::with([
             'desaGelombang.desa.kecamatan',
             'desaGelombang.gelombang',
             'dosenPembimbingLapangan.user',
             'pesertaKkn',
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Filter Gelombang
+        |--------------------------------------------------------------------------
+        */
+
+        if ($gelombangId) {
+            $query->whereHas('desaGelombang', function ($q) use ($gelombangId) {
+                $q->where('gelombang_id', $gelombangId);
+            });
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -100,14 +117,13 @@ class KelompokKknController extends Controller
                 ->get();
         }
 
-        $kelompok = $query
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $kelompok = $gelombangId
+            ? $query->latest()->paginate(10)->withQueryString()
+            : new LengthAwarePaginator([], 0, 10);
 
         return view(
             'kelompok-kkn.index',
-            compact('kelompok', 'kabupatens', 'kecamatans', 'selectedKabupaten')
+            compact('kelompok', 'kabupatens', 'kecamatans', 'selectedKabupaten', 'gelombangs', 'gelombangId')
         );
     }
 
@@ -453,9 +469,11 @@ class KelompokKknController extends Controller
         );
     }
 
-    public function exportXlsx()
+    public function exportXlsx(Request $request)
     {
-        app(ExportService::class)->exportKelompokXlsx();
+        app(ExportService::class)->exportKelompokXlsx(
+            $request->integer('gelombang_id') ?: null
+        );
     }
 
     public function laporanStore(Request $request, KelompokKkn $kelompok_kkn): RedirectResponse

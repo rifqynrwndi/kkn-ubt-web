@@ -17,14 +17,20 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ExportService
 {
-    public function exportKelompokXlsx(): void
+    public function exportKelompokXlsx(?int $gelombangId = null): void
     {
         $kelompoks = KelompokKkn::with([
             'pesertaKkn.mahasiswa.user',
             'pesertaKkn.mahasiswa.prodi.fakultas',
             'dosenPembimbingLapangan.user',
             'desaGelombang.desa.kecamatan',
-        ])->orderBy('nama_kelompok')->get();
+        ])
+            ->when($gelombangId, fn ($q) => $q->whereHas(
+                'desaGelombang',
+                fn ($dq) => $dq->where('gelombang_id', $gelombangId)
+            ))
+            ->orderBy('nama_kelompok')
+            ->get();
 
         $grouped = $kelompoks->groupBy(fn ($k) => $k->desaGelombang?->desa?->kecamatan?->kabupaten ?? 'Tanpa Kabupaten');
 
