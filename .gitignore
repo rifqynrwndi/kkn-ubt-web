@@ -65,3 +65,6 @@ architecture-review-*.html
 strix_runs/
 strix-results/
 storage/debugbar/
+
+# One-off data import artifacts (jangan ikut ke production)
+docs/import/
