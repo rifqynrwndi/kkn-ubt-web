@@ -9,23 +9,25 @@
             <i class="fas fa-clock"></i>
         </div>
         <h3>Sesi Telah Berakhir</h3>
-        <p>Sesi Anda telah berakhir karena tidak ada aktivitas dalam waktu lama.<br>Silakan refresh halaman untuk melanjutkan.</p>
+        <p>Sesi Anda telah berakhir karena tidak ada aktivitas dalam waktu lama.<br>Silakan login kembali untuk melanjutkan.</p>
     </div>
-    <button onclick="location.reload()" class="btn btn-primary w-100 mb-3" id="refresh-btn">
-        <i class="fas fa-sync-alt mr-2"></i> Refresh Halaman
-    </button>
-    <p class="small text-muted text-center">Halaman akan otomatis refresh dalam <span id="countdown">5</span> detik...</p>
+    <a href="{{ route('login') }}" class="btn btn-primary w-100 mb-3" id="login-btn">
+        <i class="fas fa-sign-in-alt mr-2"></i> Login Kembali
+    </a>
+    <p class="small text-muted text-center">Anda akan diarahkan ke halaman login dalam <span id="countdown">5</span> detik...</p>
 </div>
 @endsection
 
 @push('scripts')
 <script>
     let sec = 5;
+    const loginUrl = @json(route('login'));
+
     setInterval(() => {
         sec--;
         const el = document.getElementById('countdown');
         if (el) el.textContent = sec;
-        if (sec <= 0) location.reload();
+        if (sec <= 0) window.location.replace(loginUrl);
     }, 1000);
 </script>
 @endpush
