@@ -74,6 +74,19 @@
 @endpush
 
 @section('content')
+@php
+    $desaKelompok = $kelompok->desaGelombang?->desa;
+    $isDummyLokasi = function ($value) {
+        $value = trim((string) $value);
+        return $value === '' || strtoupper($value) === 'BELUM DITENTUKAN';
+    };
+    $lokasiParts = collect([
+        $desaKelompok?->nama_desa,
+        $desaKelompok?->kecamatan?->nama_kecamatan,
+        $desaKelompok?->kecamatan?->kabupaten,
+    ])->reject($isDummyLokasi)->implode(', ');
+    $lokasiTampil = $lokasiParts !== '' ? $lokasiParts : 'Lokasi belum ditentukan';
+@endphp
 <section class="section">
     <div class="section-header">
         <h1>Kelompok KKN</h1>
@@ -111,7 +124,7 @@
                     <h2 style="font-weight:800;margin-bottom:6px;font-size:1.5rem;">{{ $kelompok->nama_kelompok }}</h2>
                     <div style="opacity:.75;font-size:.85rem;">
                         <i class="fas fa-map-marker-alt mr-1"></i>
-                        {{ $kelompok->desaGelombang->desa->nama_desa ?? '-' }}, {{ $kelompok->desaGelombang->desa->kecamatan->nama_kecamatan ?? '-' }}, {{ $kelompok->desaGelombang->desa->kecamatan->kabupaten ?? '-' }}
+                        {{ $lokasiTampil }}
                     </div>
                     <div style="opacity:.6;font-size:.8rem;margin-top:2px;">
                         <i class="fas fa-calendar-alt mr-1"></i>
@@ -202,9 +215,7 @@
                     <h2>{{ $kelompok->nama_kelompok }}</h2>
                     <div class="doc-meta">
                         <i class="fas fa-map-marker-alt mr-1"></i>
-                        {{ $kelompok->desaGelombang->desa->nama_desa ?? '-' }},
-                        {{ $kelompok->desaGelombang->desa->kecamatan->nama_kecamatan ?? '-' }},
-                        {{ $kelompok->desaGelombang->desa->kecamatan->kabupaten ?? '-' }}
+                        {{ $lokasiTampil }}
                         &nbsp;&middot;&nbsp;
                         <i class="fas fa-calendar-alt mr-1"></i>
                         {{ \Carbon\Carbon::parse($kelompok->desaGelombang->gelombang->tgl_mulai ?? now())->format('d M Y') }}
