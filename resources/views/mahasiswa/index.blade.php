@@ -44,12 +44,14 @@
             <form id="filter-form" method="GET" class="mb-3">
                 <div class="row align-items-end">
                     <div class="col-md-4 mb-2">
+                        <label class="form-label font-weight-bold">Cari Mahasiswa</label>
                         <div class="input-group">
                             <input type="text" name="search" class="form-control" placeholder="Cari nama / npm / email..." value="{{ request('search') }}">
                             <div class="input-group-append"><button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button></div>
                         </div>
                     </div>
                     <div class="col-md-3 mb-2">
+                        <label class="form-label font-weight-bold">Status</label>
                         <select name="status" class="form-control">
                             <option value="">Semua Status</option>
                             <option value="verified" {{ request('status')=='verified'?'selected':'' }}>Email Verified</option>
@@ -60,6 +62,7 @@
                         </select>
                     </div>
                     <div class="col-md-3 mb-2">
+                        <label class="form-label font-weight-bold">Gelombang</label>
                         <div class="input-group">
                             <select name="gelombang_id" id="filter-gelombang" class="form-control">
                                 <option value="">Semua Gelombang</option>
