@@ -58,11 +58,11 @@
                 <div class="d-flex flex-wrap align-items-center">
                     <div class="text-center flex-grow-1 mb-2 mb-md-0">
                         <div class="d-inline-flex flex-wrap justify-content-center gap-2">
-                            <a href="{{ route('kelompok-kkn.index', ['gelombang_id' => $gelombangId]) }}" class="btn {{ !request('kabupaten') && !request('status') ? 'btn-primary' : 'btn-outline-secondary' }} mr-1 mb-1" style="font-weight:600;">
+                            <a href="{{ route('kelompok-kkn.index', ['gelombang_id' => $gelombangId]) }}" class="btn {{ !$selectedKabupaten && !request('status') ? 'btn-primary' : 'btn-outline-secondary' }} mr-1 mb-1" style="font-weight:600;">
                                 Semua
                             </a>
                             @foreach($kabupatens as $kab)
-                                <a href="{{ route('kelompok-kkn.index', array_filter(array_merge(request()->all(), ['kabupaten' => $kab, 'kecamatan_id' => null, 'search' => null]))) }}" class="btn {{ request('kabupaten') == $kab ? 'btn-primary' : 'btn-outline-secondary' }} mr-1 mb-1" style="font-weight:600;">
+                                <a href="{{ route('kelompok-kkn.index', array_filter(array_merge(request()->all(), ['kabupaten' => $kab, 'search' => null]))) }}" class="btn {{ $selectedKabupaten == $kab ? 'btn-primary' : 'btn-outline-secondary' }} mr-1 mb-1" style="font-weight:600;">
                                     {{ $kab }}
                                 </a>
                             @endforeach

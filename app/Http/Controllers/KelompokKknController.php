@@ -70,30 +70,6 @@ class KelompokKknController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Filter Kabupaten
-        |--------------------------------------------------------------------------
-        */
-
-        if ($request->filled('kabupaten')) {
-            $query->whereHas('desaGelombang.desa.kecamatan', function ($q) use ($request) {
-                $q->where('kabupaten', $request->kabupaten);
-            });
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Filter Kecamatan
-        |--------------------------------------------------------------------------
-        */
-
-        if ($request->filled('kecamatan_id')) {
-            $query->whereHas('desaGelombang.desa.kecamatan', function ($q) use ($request) {
-                $q->where('id', $request->kecamatan_id);
-            });
-        }
-
-        /*
-        |--------------------------------------------------------------------------
         | Filter Status
         |--------------------------------------------------------------------------
         */
@@ -107,14 +83,35 @@ class KelompokKknController extends Controller
 
         }
 
-        $kabupatens = Kecamatan::select('kabupaten')->distinct()->orderBy('kabupaten')->pluck('kabupaten');
-        $kecamatans = collect();
-        $selectedKabupaten = $request->get('kabupaten');
+        /*
+        |--------------------------------------------------------------------------
+        | Filter Kabupaten
+        | Hanya kabupaten yang punya desa pada gelombang terpilih.
+        |--------------------------------------------------------------------------
+        */
 
-        if ($selectedKabupaten) {
-            $kecamatans = Kecamatan::where('kabupaten', $selectedKabupaten)
-                ->orderBy('nama_kecamatan')
-                ->get();
+        $kabupatens = collect();
+        $selectedKabupaten = null;
+
+        if ($gelombangId) {
+            $kabupatens = Kecamatan::whereHas(
+                'desa.desaGelombang',
+                fn ($q) => $q->where('gelombang_id', $gelombangId)
+            )
+                ->select('kabupaten')
+                ->distinct()
+                ->orderBy('kabupaten')
+                ->pluck('kabupaten');
+
+            $requestedKabupaten = $request->get('kabupaten');
+
+            if ($requestedKabupaten && $kabupatens->contains($requestedKabupaten)) {
+                $selectedKabupaten = $requestedKabupaten;
+
+                $query->whereHas('desaGelombang.desa.kecamatan', function ($q) use ($selectedKabupaten) {
+                    $q->where('kabupaten', $selectedKabupaten);
+                });
+            }
         }
 
         $kelompok = $gelombangId
@@ -123,7 +120,7 @@ class KelompokKknController extends Controller
 
         return view(
             'kelompok-kkn.index',
-            compact('kelompok', 'kabupatens', 'kecamatans', 'selectedKabupaten', 'gelombangs', 'gelombangId')
+            compact('kelompok', 'kabupatens', 'selectedKabupaten', 'gelombangs', 'gelombangId')
         );
     }
 
